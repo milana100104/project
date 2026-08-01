@@ -181,6 +181,33 @@ a.ws-item-full:hover{border-color:var(--gold);}
 .pr-exit:hover{color:var(--gold);}
 .pr-navbtns{display:flex;gap:10px;}
 
+/* picked-but-not-revealed choice (during a test) */
+.pr-choice.picked{border-color:var(--gold-line);background:var(--gold-soft);}
+.pr-choice.picked .mark{border-color:var(--gold-line);color:var(--gold);}
+
+/* full-skill test timer + results */
+.pr-timer{font-family:var(--mono);font-size:.82rem;color:var(--gold);white-space:nowrap;}
+.pr-result{max-width:640px;margin:0 auto;}
+.pr-score{display:flex;flex-direction:column;align-items:center;gap:4px;padding:26px;border-radius:16px;margin-bottom:22px;color:#0a1a12;}
+.pr-score.pass{background:linear-gradient(135deg,#43c48a,#2f9e6b);}
+.pr-score.fail{background:linear-gradient(135deg,#e0bc4f,#c99a2b);}
+.pr-score .pct{font-size:2.6rem;font-weight:800;line-height:1;}
+.pr-score .frac{font-size:.95rem;font-weight:600;opacity:.92;}
+.pr-review{display:flex;flex-direction:column;gap:8px;margin-bottom:24px;}
+.pr-rev{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);
+  border-left:3px solid var(--border-strong);border-radius:11px;padding:13px 15px;}
+.pr-rev.ok{border-left-color:var(--good);}
+.pr-rev.no{border-left-color:var(--bad);}
+.pr-rev-n{font-family:var(--mono);font-size:.78rem;color:var(--muted);flex-shrink:0;margin-top:2px;min-width:18px;}
+.pr-rev-main{flex:1;min-width:0;}
+.pr-rev-q{color:var(--ink);font-weight:600;font-size:.94rem;}
+.pr-rev-a{color:var(--ink-2);font-size:.86rem;margin-top:3px;}
+.pr-rev-a b{color:var(--good);}
+.pr-rev.no .pr-rev-a b{color:var(--ink);}
+.pr-rev-mark{font-size:1.05rem;flex-shrink:0;}
+.pr-rev.ok .pr-rev-mark{color:var(--good);}
+.pr-rev.no .pr-rev-mark{color:var(--bad);}
+
 .pr-finished{max-width:560px;margin:0 auto;text-align:center;padding:70px 20px;}
 .pr-finished .fin-mark{width:64px;height:64px;border-radius:50%;background:var(--good-bg);border:1px solid var(--good-line);
   color:var(--good);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 22px;}

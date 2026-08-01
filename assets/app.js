@@ -386,6 +386,20 @@
           body.appendChild(item);
         }
       });
+
+      // optional: assemble a full, exam-style test from every question in this skill
+      if (!dev && skill.skillTest) {
+        var tot = BeaconStore.questionsFor(exam, skill.id, null).length;
+        var tItem = el('a', 'ws-item ws-item-full');
+        tItem.href = 'practice.html?mode=test&exam=' + exam + '&skill=' + skill.id;
+        tItem.innerHTML =
+          '<div class="ws-item-main"><h3>Take a full ' + esc(skill.name) + ' test</h3>' +
+          '<p>A timed, exam-style test built from every ' + esc(skill.name) + ' question — scored at the end, no hints along the way.</p></div>' +
+          '<span class="ws-count">' + (tot ? tot + ' Qs' : 'no questions yet') + '</span>' +
+          '<span class="ws-go">Start test →</span>';
+        body.appendChild(tItem);
+      }
+
       acc.appendChild(body);
       head.addEventListener('click', function () { acc.classList.toggle('open'); });
       root.appendChild(acc);
@@ -410,39 +424,49 @@
     if (!root) return;
 
     var favMode = qs('fav') === '1';
+    var testMode = qs('mode') === 'test';
     var exam = qs('exam'), skill = qs('skill'), type = qs('type');
-    var pool, title, crumb, bucket;
+    var pool, crumb, bucket = null, reveal = true;
 
     if (favMode) {
       pool = BeaconStore.favoriteQuestions();
-      title = 'Favorites'; crumb = 'favorites · redo pool'; bucket = null;
+      crumb = 'favorites · redo pool';
+      if (pool.length === 0) { root.innerHTML = errorCard('No favorites yet.', 'Star questions during practice to build a redo pool.'); return; }
+    } else if (testMode) {
+      if (!exam || !skill) { root.innerHTML = errorCard('Nothing to test yet.', 'Pick a section from an exam page.'); return; }
+      pool = BeaconStore.questionsFor(exam, skill, null); // whole skill, every type
+      if (pool.length === 0) { root.innerHTML = errorCard('No questions here yet.', 'This section has no questions to build a test from.'); return; }
+      crumb = exam + ' · ' + skill + ' · full test';
+      reveal = false; // exam-style: no per-question feedback until the end
     } else {
       if (!exam || !skill) { root.innerHTML = errorCard('Nothing to practice yet.', 'Pick a section from an exam page.'); return; }
       pool = BeaconStore.unsolvedPool(exam, skill, type);
       var counts = BeaconStore.counts(exam, skill, type);
       crumb = [exam, skill, prettyType(type)].filter(Boolean).join(' · ');
-      title = crumb;
       bucket = { exam: exam, skill: skill, type: type };
-      // whole pool cleared
-      if (pool.length === 0 && counts.total > 0) {
-        root.innerHTML = clearedCard(bucket);
-        wireCleared(root, bucket);
-        return;
-      }
+      if (pool.length === 0 && counts.total > 0) { root.innerHTML = clearedCard(bucket); wireCleared(root, bucket); return; }
       if (counts.total === 0) { root.innerHTML = errorCard('No questions here yet.', 'An admin hasn’t added questions to this section.'); return; }
     }
 
-    if (favMode && pool.length === 0) { root.innerHTML = errorCard('No favorites yet.', 'Star questions during practice to build a redo pool.'); return; }
-
-    // shuffle for variety
     pool = shuffle(pool.slice());
-    var idx = 0, answered = false;
+    var idx = 0, answered = false, answers = {};
+
+    // exam-style countdown for full-skill tests
+    var remaining = testMode ? pool.length * (skill === 'listening' ? 60 : 90) : 0;
+    var timerId = null;
+    if (testMode) {
+      timerId = setInterval(function () {
+        remaining--;
+        var t = root.querySelector('.pr-timer'); if (t) t.textContent = '⏱ ' + fmtTime(remaining);
+        if (remaining <= 0) { clearInterval(timerId); timerId = null; finish(); }
+      }, 1000);
+    }
 
     function draw() {
       answered = false;
       var q = pool[idx];
       root.innerHTML = '';
-      root.appendChild(bar(idx, pool.length, crumb));
+      root.appendChild(bar(idx, pool.length, crumb, testMode ? remaining : null));
 
       var stage = el('div', 'pr-stage');
       var card = el('div', 'pr-card');
@@ -466,7 +490,7 @@
         var au = el('div', 'pr-audio');
         au.innerHTML = q.audioSrc
           ? '<audio controls src="' + esc(q.audioSrc) + '"></audio>'
-          : '<div class="ph"><span class="ico">▶</span> Audio placeholder — read the transcript after answering.</div>';
+          : '<div class="ph"><span class="ico">▶</span> Audio placeholder' + (reveal ? ' — read the transcript after answering.' : '.') + '</div>';
         card.appendChild(au);
       }
       card.appendChild(el('div', 'pr-prompt', esc(q.prompt)));
@@ -476,17 +500,17 @@
       // render mode: q.format overrides, else derived from q.type
       var fmt = q.format || q.type;
       if (fmt === 'complete-the-words' || fmt === 'cloze') {
-        card.appendChild(clozeBlock(q, feedback, onResolved));
+        card.appendChild(clozeBlock(q, feedback, onResolved, reveal));
       } else if (fmt === 'text') {
-        card.appendChild(textBlock(q, feedback, onResolved));
+        card.appendChild(textBlock(q, feedback, onResolved, reveal));
       } else {
-        card.appendChild(choiceBlock(q, feedback, onResolved));
+        card.appendChild(choiceBlock(q, feedback, onResolved, reveal));
       }
       card.appendChild(feedback);
 
-      // transcript for listening (after answering)
+      // transcript for listening (shown after answering — practice only, not during a test)
       var transcriptEls = null;
-      if (q.transcript) {
+      if (q.transcript && reveal) {
         var tbtn = el('button', 'btn btn-ghost pr-transcript-btn', 'Show transcript');
         tbtn.type = 'button'; tbtn.style.display = 'none';
         var tp = el('div', 'pr-transcript', '<span class="tlabel">Transcript</span>' + esc(q.transcript));
@@ -499,9 +523,10 @@
       root.appendChild(stage);
       root.appendChild(nav());
 
-      function onResolved() {
+      function onResolved(correct) {
         answered = true;
-        if (bucket) BeaconStore.markSolved(bucket.exam, bucket.skill, bucket.type, q.id);
+        answers[q.id] = !!correct;
+        if (bucket && !testMode) BeaconStore.markSolved(bucket.exam, bucket.skill, bucket.type, q.id);
         if (transcriptEls) transcriptEls.style.display = '';
         var next = root.querySelector('[data-next]');
         if (next) { next.classList.remove('btn-ghost'); next.classList.add('btn-gold'); next.removeAttribute('disabled'); }
@@ -512,9 +537,10 @@
       var n = el('div', 'pr-nav');
       var exit = el('a', 'pr-exit', '← Exit');
       exit.href = favMode ? 'account.html?tab=favorites' : (exam + '.html');
+      exit.addEventListener('click', function () { if (timerId) { clearInterval(timerId); timerId = null; } });
       var btns = el('div', 'pr-navbtns');
       var last = idx === pool.length - 1;
-      var nextBtn = el('button', 'btn btn-ghost', last ? 'Finish' : 'Next →');
+      var nextBtn = el('button', 'btn btn-ghost', last ? (testMode ? 'Submit test' : 'Finish') : 'Next →');
       nextBtn.type = 'button'; nextBtn.setAttribute('data-next', '1'); nextBtn.setAttribute('disabled', '');
       nextBtn.addEventListener('click', function () {
         if (!answered) return;
@@ -526,6 +552,8 @@
     }
 
     function finish() {
+      if (timerId) { clearInterval(timerId); timerId = null; }
+      if (testMode) { root.innerHTML = testResult(); return; }
       root.innerHTML = '';
       var f = el('div', 'pr-finished');
       f.innerHTML =
@@ -542,10 +570,33 @@
       root.appendChild(f);
     }
 
+    function testResult() {
+      var total = pool.length, correct = 0;
+      pool.forEach(function (q) { if (answers[q.id]) correct++; });
+      var pct = total ? Math.round(correct / total * 100) : 0;
+      var rows = pool.map(function (q, i) {
+        var ok = !!answers[q.id];
+        var ans = q.choices ? q.choices[q.answer] : q.answer;
+        return '<div class="pr-rev ' + (ok ? 'ok' : 'no') + '">' +
+          '<span class="pr-rev-n">' + (i + 1) + '</span>' +
+          '<div class="pr-rev-main"><div class="pr-rev-q">' + esc(shortenPrompt(q.prompt)) + '</div>' +
+          '<div class="pr-rev-a">Answer: <b>' + esc(ans) + '</b>' + (q.explanation ? ' — ' + esc(q.explanation) : '') + '</div></div>' +
+          '<span class="pr-rev-mark">' + (ok ? '✓' : '✗') + '</span></div>';
+      }).join('');
+      return '<div class="pr-stage"><div class="pr-result">' +
+        '<div class="pr-score ' + (pct >= 60 ? 'pass' : 'fail') + '"><span class="pct">' + pct + '%</span>' +
+        '<span class="frac">' + correct + ' / ' + total + ' correct</span></div>' +
+        '<div class="pr-review">' + rows + '</div>' +
+        '<div class="fin-actions">' +
+        '<a class="btn btn-gold" href="' + exam + '.html">Back to ' + exam.toUpperCase() + '</a>' +
+        '<a class="btn btn-ghost" href="practice.html' + location.search + '">Retake test</a>' +
+        '</div></div></div>';
+    }
+
     draw();
   }
 
-  function bar(idx, total, crumb) {
+  function bar(idx, total, crumb, remaining) {
     var b = el('div', 'pr-bar');
     var pct = total ? Math.round(((idx) / total) * 100) : 0;
     b.innerHTML =
@@ -553,11 +604,12 @@
       '<span class="pr-crumb">' + esc(crumb) + '</span>' +
       '<div class="pr-progress-wrap"><div class="pr-progress-track"><div class="pr-progress-fill" style="width:' + pct + '%"></div></div></div>' +
       '<span class="pr-count">' + (idx + 1) + ' / ' + total + '</span>' +
+      (remaining != null ? '<span class="pr-timer">⏱ ' + fmtTime(remaining) + '</span>' : '') +
       '</div>';
     return b;
   }
 
-  function choiceBlock(q, feedback, done) {
+  function choiceBlock(q, feedback, done, reveal) {
     var wrap = el('div', 'pr-choices');
     q.choices.forEach(function (choice, i) {
       var btn = el('button', 'pr-choice');
@@ -569,17 +621,21 @@
         var correct = i === q.answer;
         var kids = wrap.querySelectorAll('.pr-choice');
         kids.forEach(function (k) { k.setAttribute('disabled', ''); });
-        btn.classList.add(correct ? 'correct' : 'wrong');
-        if (!correct) kids[q.answer].classList.add('correct');
-        showFeedback(feedback, correct, q.explanation);
-        done();
+        if (reveal) {
+          btn.classList.add(correct ? 'correct' : 'wrong');
+          if (!correct) kids[q.answer].classList.add('correct');
+          showFeedback(feedback, correct, q.explanation);
+        } else {
+          btn.classList.add('picked');
+        }
+        done(correct);
       });
       wrap.appendChild(btn);
     });
     return wrap;
   }
 
-  function clozeBlock(q, feedback, done) {
+  function clozeBlock(q, feedback, done, reveal) {
     var wrap = el('div');
     var text = el('div', 'cloze-text');
     var inputs = [];
@@ -605,20 +661,23 @@
       var allCorrect = true;
       inputs.forEach(function (inp) {
         var ok = inp.value.trim().toLowerCase() === inp.dataset.answer;
-        inp.classList.add(ok ? 'correct' : 'wrong');
+        if (!ok) allCorrect = false;
         inp.readOnly = true;
-        if (!ok) { allCorrect = false; inp.value = inp.value ? inp.value : ''; inp.title = 'Answer: ' + inp.dataset.answer; }
+        if (reveal) {
+          inp.classList.add(ok ? 'correct' : 'wrong');
+          if (!ok) inp.title = 'Answer: ' + inp.dataset.answer;
+        }
       });
       check.style.display = 'none';
-      showFeedback(feedback, allCorrect, q.explanation);
-      done();
+      if (reveal) showFeedback(feedback, allCorrect, q.explanation);
+      done(allCorrect);
     });
     actions.appendChild(check);
     wrap.appendChild(actions);
     return wrap;
   }
 
-  function textBlock(q, feedback, done) {
+  function textBlock(q, feedback, done, reveal) {
     var wrap = el('div');
     var row = el('div', 'pr-textrow');
     var inp = document.createElement('input');
@@ -631,10 +690,10 @@
       if (wrap.dataset.done) return;
       wrap.dataset.done = '1';
       var ok = accept.indexOf(inp.value.trim().toLowerCase()) !== -1;
-      inp.classList.add(ok ? 'correct' : 'wrong'); inp.readOnly = true;
+      inp.readOnly = true;
       check.style.display = 'none';
-      showFeedback(feedback, ok, q.explanation || ('Answer: ' + q.answer));
-      done();
+      if (reveal) { inp.classList.add(ok ? 'correct' : 'wrong'); showFeedback(feedback, ok, q.explanation || ('Answer: ' + q.answer)); }
+      done(ok);
     });
     return wrap;
   }
@@ -668,6 +727,8 @@
     return t.replace(/-/g, ' ');
   }
   function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var x = a[i]; a[i] = a[j]; a[j] = x; } return a; }
+  function fmtTime(s) { if (s < 0) s = 0; var m = Math.floor(s / 60), r = s % 60; return m + ':' + (r < 10 ? '0' : '') + r; }
+  function shortenPrompt(s) { s = String(s || ''); return s.length > 90 ? s.slice(0, 90) + '…' : s; }
 
   /* ============================ exports + autorun ============================ */
   window.BeaconStore = BeaconStore;
