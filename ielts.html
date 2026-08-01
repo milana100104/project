@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IELTS &mdash; Beacon</title>
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<script src="assets/auth.js" defer></script>
+</head>
+<body>
+<div class="grain"></div>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="index.html" class="brand">
+      <span class="logo-mark" role="img" aria-label="Beacon"></span>
+      <span class="brand-name">Beacon</span>
+    </a>
+    <nav class="main-nav"><a href="toefl.html">TOEFL</a><a href="ielts.html" class="active">IELTS</a><a href="sat.html">SAT</a><a href="webinars.html">Webinars</a></nav>
+    <div class="header-actions">
+      <a href="auth.html?view=login" class="link-quiet">Log in</a>
+      <a href="auth.html?view=register" class="btn btn-gold">Start free</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="page-head">
+      <span class="mono-label">// ielts workspace &middot; academic & general</span>
+      <h1>IELTS</h1>
+      <p>The classic format, matched to the real exam. <b>Reading and Listening are free</b> with instant checks. Writing and Speaking are being built now.</p>
+    </div>
+    <div class="skill-grid">
+      <article class="skill-card">
+        <div class="skill-top">
+          <h3>Reading</h3>
+          <span class="status-pill free">Free · instant checks</span>
+        </div>
+        <p>Full passages with the real mix of question types, from matching headings to completing tables and labelling diagrams.</p>
+        <div class="skill-meta">3 sections · 40 questions</div>
+        <div class="skill-tags"><span>Matching headings</span><span>True / False / Not Given</span><span>Sentence & table completion</span><span>Diagram labelling</span></div>
+        <a href="practice.html?exam=ielts&skill=reading&type=all" class="btn btn-gold">Start practice</a>
+      </article>
+      <article class="skill-card">
+        <div class="skill-top">
+          <h3>Listening</h3>
+          <span class="status-pill free">Free · instant checks</span>
+        </div>
+        <p>Four sections that build from an everyday conversation up to a group discussion and a full academic lecture.</p>
+        <div class="skill-meta">4 sections · 40 questions</div>
+        <div class="skill-tags"><span>Everyday conversation</span><span>Group discussion</span><span>Monologue / lecture</span></div>
+        <a href="practice.html?exam=ielts&skill=listening&type=all" class="btn btn-gold">Start practice</a>
+      </article>
+      <article class="skill-card is-dev">
+        <div class="skill-top">
+          <h3>Writing</h3>
+          <span class="status-pill dev">In development</span>
+        </div>
+        <p>Describe a chart or process in 150+ words, then argue an essay in 250+ words that counts double. Coming soon.</p>
+        
+        <div class="skill-tags"><span>Task 1 — chart / graph</span><span>Task 2 — essay</span></div>
+        <span class="btn btn-disabled">In development</span>
+      </article>
+      <article class="skill-card is-dev">
+        <div class="skill-top">
+          <h3>Speaking</h3>
+          <span class="status-pill dev">In development</span>
+        </div>
+        <p>Personal questions, a two-minute cue-card talk, and a deeper back-and-forth discussion. Coming soon.</p>
+        
+        <div class="skill-tags"><span>Part 1 — you</span><span>Part 2 — cue card</span><span>Part 3 — discussion</span></div>
+        <span class="btn btn-disabled">In development</span>
+      </article>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="index.html" class="brand">
+          <span class="logo-mark" role="img" aria-label="Beacon"></span>
+          <span class="brand-name">Beacon</span>
+        </a>
+        <p>A study workspace for the TOEFL, IELTS and SAT &mdash; real questions, marked the moment you answer.</p>
+        <span class="hand-note">made by a small team, mostly by hand</span>
+      </div>
+      <div class="footer-links">
+        <div><h5>Exams</h5><ul>
+          <li><a href="toefl.html">TOEFL</a></li><li><a href="ielts.html">IELTS</a></li><li><a href="sat.html">SAT</a></li>
+        </ul></div>
+        <div><h5>More</h5><ul>
+          <li><a href="webinars.html">Webinars</a></li><li><a href="auth.html?view=login">Log in</a></li><li><a href="auth.html?view=register">Sign up</a></li>
+        </ul></div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Beacon</p>
+      <p>Reading &amp; Listening, free &mdash; and we mean it.</p>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,13 +1,264 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Exam Prep — TOEFL · SAT · IELTS</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beacon — practice the TOEFL, IELTS & SAT with instant checks</title>
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<script src="assets/auth.js" defer></script>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="#top" class="brand">
+      <span class="logo-mark" role="img" aria-label="Beacon"></span>
+      <span class="brand-name">Beacon</span>
+    </a>
+    <nav class="main-nav">
+      <a href="toefl.html">TOEFL</a><a href="ielts.html">IELTS</a><a href="sat.html">SAT</a><a href="webinars.html">Webinars</a>
+    </nav>
+    <div class="header-actions">
+      <a href="auth.html?view=login" class="link-quiet">Log in</a>
+      <a href="auth.html?view=register" class="btn btn-gold">Start free</a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <p class="hand-eyebrow">built by people who sat these exams, not a content farm</p>
+        <h1 class="hero-title">Find your line to a <span class="mark-underline">better score<svg viewBox="0 0 300 20" aria-hidden="true"><path class="u-ghost" pathLength="100" d="M8 15 C 72 10, 122 18, 172 13 C 222 9, 256 17, 292 13"/><path class="u-main" pathLength="100" d="M6 12 C 62 6, 112 16, 166 10 C 212 5, 250 15, 294 9"/></svg></span>.</h1>
+        <p class="hero-sub">A study workspace for the TOEFL, IELTS and SAT. You answer real questions, they're marked the second you commit, and nothing you've solved comes back until you've cleared the set. <b>Reading and Listening are free</b> — no card, no trial clock.</p>
+        <div class="hero-ctas">
+          <a href="toefl.html" class="btn btn-gold btn-lg">Start practicing</a>
+          <a href="#exams" class="link-quiet link-arrow">see the three exams &#8595;</a>
+        </div>
+        <p class="hand-note">no sign-up to try a few &#8599;</p>
+      </div>
+
+      <div class="hero-illo">
+        <svg class="chart-illo" viewBox="0 0 560 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A hand-drawn lighthouse on a nautical chart, casting a beam of light over a plotted course.">
+          <defs>
+            <filter id="ink" x="-20%" y="-20%" width="140%" height="140%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="2" seed="7" result="n"/>
+              <feDisplacementMap in="SourceGraphic" in2="n" scale="4"/>
+            </filter>
+            <filter id="ink2" x="-20%" y="-20%" width="140%" height="140%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="3" result="n"/>
+              <feDisplacementMap in="SourceGraphic" in2="n" scale="3"/>
+            </filter>
+            <linearGradient id="beamGrad" x1="0" y1="1" x2="1" y2="0">
+              <stop offset="0" stop-color="#f0cf6a" stop-opacity="0.26"/>
+              <stop offset="1" stop-color="#f0cf6a" stop-opacity="0"/>
+            </linearGradient>
+            <radialGradient id="lampGlow" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0" stop-color="#f7e199" stop-opacity="0.95"/>
+              <stop offset="1" stop-color="#f0cf6a" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+
+          <g fill="none" stroke="#f6f1e4" stroke-opacity="0.08" stroke-width="1">
+            <path d="M300 205 A 215 215 0 0 1 515 420"/>
+            <path d="M300 250 A 165 165 0 0 1 465 415"/>
+            <path d="M300 295 A 112 112 0 0 1 412 407"/>
+          </g>
+
+          <polygon points="232,150 502,50 522,150" fill="url(#beamGrad)"/>
+
+          <g filter="url(#ink)">
+            <path class="course" d="M70 508 C 122 470, 92 430, 152 414 C 190 404, 196 388, 205 372" fill="none" stroke="#f0cf6a" stroke-width="2" stroke-dasharray="2 9" stroke-linecap="round"/>
+            <circle cx="70" cy="508" r="5" fill="none" stroke="#f0cf6a" stroke-width="2"/>
+            <circle cx="152" cy="414" r="4.5" fill="#0a1a3a" stroke="#f0cf6a" stroke-width="2"/>
+            <circle cx="152" cy="414" r="1.6" fill="#f0cf6a"/>
+            <path d="M60 511 l15 -3 -4 10 z" fill="none" stroke="#f6f1e4" stroke-opacity="0.6" stroke-width="1.6"/>
+          </g>
+
+          <g filter="url(#ink2)" stroke="#f6f1e4" stroke-opacity="0.26" stroke-width="1.6" fill="none" stroke-linecap="round">
+            <path d="M150 380 q10 -7 20 0 t20 0 t20 0 t20 0"/>
+            <path d="M182 393 q10 -7 20 0 t20 0 t20 0"/>
+            <path d="M120 402 q10 -6 20 0 t20 0 t20 0 t20 0"/>
+          </g>
+
+          <g filter="url(#ink)" fill="none" stroke="#f6f1e4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M182 372 q18 -14 34 -8 q14 -12 30 -2 q16 -6 32 8" stroke-opacity="0.7"/>
+            <path d="M206 366 Q210 270 222 172"/>
+            <path d="M258 366 Q254 270 242 172"/>
+            <path d="M200 368 Q232 377 264 366"/>
+            <path d="M210 330 Q232 336 254 330" stroke="#f0cf6a" stroke-opacity="0.85"/>
+            <path d="M214 288 Q232 293 250 288" stroke="#f0cf6a" stroke-opacity="0.85"/>
+            <path d="M217 246 Q232 250 247 246" stroke="#f0cf6a" stroke-opacity="0.85"/>
+            <path d="M212 172 L252 172"/>
+            <path d="M215 172 L215 165 M225 172 L225 165 M235 172 L235 165 M245 172 L245 165"/>
+            <path d="M218 172 L218 140 L246 140 L246 172"/>
+            <path d="M232 140 L232 172" stroke-opacity="0.65"/>
+            <path d="M212 140 L232 115 L252 140"/>
+            <path d="M232 115 L232 105"/>
+            <circle cx="232" cy="102" r="2.6" stroke="#f0cf6a"/>
+          </g>
+
+          <circle class="lamp" cx="232" cy="155" r="18" fill="url(#lampGlow)"/>
+
+          <g filter="url(#ink)" fill="none" stroke="#f0cf6a" stroke-linecap="round">
+            <path d="M235 152 L500 52" stroke-width="1.6" stroke-opacity="0.5"/>
+            <path d="M236 157 L518 128" stroke-width="1.6" stroke-opacity="0.32"/>
+            <path d="M234 148 L472 22" stroke-width="1.4" stroke-opacity="0.28"/>
+          </g>
+
+          <g filter="url(#ink2)" fill="none" stroke="#f6f1e4" stroke-opacity="0.5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M96 92 L104 128 L96 164 L88 128 Z"/>
+            <path d="M60 128 L132 128"/>
+            <path d="M74 106 L118 150 M118 106 L74 150" stroke-opacity="0.25"/>
+            <circle cx="96" cy="128" r="3"/>
+          </g>
+
+          <text class="compass-n" x="96" y="80">N</text>
+          <text class="anno-mono" x="66" y="188">42&#176;17'N &#183; 71&#176;03'W</text>
+
+          <text class="anno" x="58" y="470">you are here</text>
+          <path d="M108 455 q30 -2 40 -34" fill="none" stroke="#f0cf6a" stroke-width="1.6"/>
+          <path d="M148 421 l-3 8 8 -2" fill="none" stroke="#f0cf6a" stroke-width="1.6"/>
+
+          <text class="anno anno-gold" x="298" y="152">the new 2026 format</text>
+          <path d="M294 158 q-26 6 -46 -2" fill="none" stroke="#f0cf6a" stroke-width="1.6"/>
+          <path d="M248 156 l7 -5 -1 8" fill="none" stroke="#f0cf6a" stroke-width="1.6"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="exams" id="exams">
+    <div class="wrap">
+      <div class="section-head-left">
+        <span class="mono-label">// your destinations</span>
+        <h2 class="section-title">Three exams, <span class="mark-underline">one chart<svg viewBox="0 0 300 20" aria-hidden="true"><path class="u-ghost" pathLength="100" d="M8 15 C 72 10, 122 18, 172 13 C 222 9, 256 17, 292 13"/><path class="u-main" pathLength="100" d="M6 12 C 62 6, 112 16, 166 10 C 212 5, 250 15, 294 9"/></svg></span>.</h2>
+      </div>
+      <div class="route">
+        <svg class="route-connector" viewBox="0 0 900 34" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M4 20 C 150 4, 300 30, 450 16 C 600 3, 750 28, 896 14"/>
+        </svg>
+        <article class="stop">
+          <span class="stop-dot"></span>
+          <span class="mono-label">rebuilt for the Jan 2026 redesign</span>
+          <h3>TOEFL</h3>
+          <p>Adaptive Reading and Listening, plus the new Build-a-Sentence, Listen-and-Repeat and Academic Discussion tasks.</p>
+          <a href="toefl.html" class="link-arrow">Open TOEFL &#8594;</a>
+        </article>
+        <article class="stop">
+          <span class="stop-dot"></span>
+          <span class="mono-label">academic &amp; general</span>
+          <h3>IELTS</h3>
+          <p>Reading and Listening sets that follow the real section formats, one question type at a time.</p>
+          <a href="ielts.html" class="link-arrow">Open IELTS &#8594;</a>
+        </article>
+        <article class="stop">
+          <span class="stop-dot"></span>
+          <span class="mono-label">practice + full test</span>
+          <h3>SAT</h3>
+          <p>Drill Math and Reading &amp; Writing by topic at easy, medium or hard &mdash; or sit a full test built like the Digital SAT.</p>
+          <a href="sat.html" class="link-arrow">Open SAT &#8594;</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="logbook">
+    <div class="wrap">
+      <div class="logbook-inner">
+        <span class="mono-label">// the honest version</span>
+        <ul class="log-list">
+          <li>
+            <span class="tick"><svg viewBox="0 0 26 26" aria-hidden="true"><path d="M4 14 q4 6 7 7 q3 -12 12 -18"/></svg></span>
+            <span>Every answer is <b>written and double-checked by us</b>, not scraped off some old answer key. If it&rsquo;s wrong, that&rsquo;s on us &mdash; tell us and we&rsquo;ll fix it.</span>
+          </li>
+          <li>
+            <span class="tick"><svg viewBox="0 0 26 26" aria-hidden="true"><path d="M4 14 q4 6 7 7 q3 -12 12 -18"/></svg></span>
+            <span>Star anything into <b>Favorites</b> and drill it as many times as you like. Questions you&rsquo;ve already solved stay out of your normal flow until you&rsquo;ve cleared the set.</span>
+          </li>
+          <li>
+            <span class="tick"><svg viewBox="0 0 26 26" aria-hidden="true"><path d="M4 14 q4 6 7 7 q3 -12 12 -18"/></svg></span>
+            <span>Writing, Speaking and the full adaptive SAT test are still in the workshop. Some of it may cost money one day &mdash; <b>we&rsquo;ll say so plainly</b> before it ever does.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="webinars" id="webinars">
+    <div class="wrap">
+      <div class="section-head-left">
+        <span class="mono-label">// this week, live</span>
+        <h2 class="section-title">Some things are easier shown than read.</h2>
+      </div>
+      <div class="webinar-grid">
+        <div class="webinar-card">
+          <div class="webinar-thumb">
+            <!-- Admin: add a cover image here later, e.g. <img class="webinar-cover" src="assets/webinars/name.jpg" alt="The new TOEFL Speaking, decoded"> -->
+            <div class="thumb-ph"><svg class="ph-glyph" viewBox="0 0 56 56" aria-hidden="true"><path d="M22 48 Q24 33 26 19"/><path d="M34 48 Q32 33 30 19"/><path d="M19 48 L37 48"/><path d="M25 19 L31 19"/><path d="M24 19 L24 11 L32 11 L32 19"/><path d="M21 11 L28 4 L35 11"/><path class="ph-beam" d="M33 9 L47 4"/><path class="ph-beam" d="M33 12 L48 13"/></svg></div>
+          </div>
+          <div class="webinar-body">
+            <div class="webinar-date">Aug 02 &#183; 6:00 PM</div>
+            <h4>The new TOEFL Speaking, decoded</h4>
+            <p>What Listen-and-Repeat and the interview task actually reward &mdash; and how to rehearse for them.</p>
+            <a href="webinars.html" class="link-arrow">Join &#8594;</a>
+          </div>
+        </div>
+        <div class="webinar-card">
+          <div class="webinar-thumb">
+            <!-- Admin: add a cover image here later, e.g. <img class="webinar-cover" src="assets/webinars/name.jpg" alt="An IELTS Task 2 that actually scores"> -->
+            <div class="thumb-ph"><svg class="ph-glyph" viewBox="0 0 56 56" aria-hidden="true"><path d="M22 48 Q24 33 26 19"/><path d="M34 48 Q32 33 30 19"/><path d="M19 48 L37 48"/><path d="M25 19 L31 19"/><path d="M24 19 L24 11 L32 11 L32 19"/><path d="M21 11 L28 4 L35 11"/><path class="ph-beam" d="M33 9 L47 4"/><path class="ph-beam" d="M33 12 L48 13"/></svg></div>
+          </div>
+          <div class="webinar-body">
+            <div class="webinar-date">Aug 09 &#183; 6:00 PM</div>
+            <h4>An IELTS Task 2 that actually scores</h4>
+            <p>A structure examiners recognize, and the mistakes that quietly cost you a band.</p>
+            <a href="webinars.html" class="link-arrow">Join &#8594;</a>
+          </div>
+        </div>
+      </div>
+      <a href="webinars.html" class="link-arrow">All webinars &#8594;</a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="#top" class="brand">
+          <span class="logo-mark" role="img" aria-label="Beacon"></span>
+          <span class="brand-name">Beacon</span>
+        </a>
+        <p>A study workspace for the TOEFL, IELTS and SAT &mdash; real questions, marked the moment you answer.</p>
+        <span class="hand-note">made by a small team, mostly by hand</span>
+      </div>
+      <div class="footer-links">
+        <div>
+          <h5>Exams</h5>
+          <ul><li><a href="toefl.html">TOEFL</a></li><li><a href="ielts.html">IELTS</a></li><li><a href="sat.html">SAT</a></li></ul>
+        </div>
+        <div>
+          <h5>More</h5>
+          <ul><li><a href="webinars.html">Webinars</a></li><li><a href="auth.html?view=login">Log in</a></li><li><a href="auth.html?view=register">Sign up</a></li></ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Beacon</p>
+      <p>Reading &amp; Listening, free &mdash; and we mean it.</p>
+    </div>
+  </div>
+</footer>
+
+</body>
 </html>

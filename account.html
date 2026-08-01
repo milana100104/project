@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account — Beacon</title>
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<script src="assets/app.js" defer></script>
+<script src="assets/auth.js" defer></script>
+</head>
+<body>
+<div class="grain"></div>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="index.html" class="brand"><span class="logo-mark" role="img" aria-label="Beacon"></span><span class="brand-name">Beacon</span></a>
+    <nav class="main-nav"><a href="toefl.html">TOEFL</a><a href="ielts.html">IELTS</a><a href="sat.html">SAT</a><a href="webinars.html">Webinars</a></nav>
+    <div class="header-actions">
+      <a href="auth.html?view=login" class="link-quiet">Log in</a>
+      <a href="auth.html?view=register" class="btn btn-gold">Start free</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap" style="max-width:820px">
+    <div class="page-head" style="padding-bottom:0"><h1 id="acct-title">Your account</h1></div>
+    <nav class="tabs" id="tabs">
+      <a href="account.html?tab=profile" data-tab="profile">Profile</a>
+      <a href="account.html?tab=favorites" data-tab="favorites">Favorites</a>
+      <a href="account.html?tab=progress" data-tab="progress">Progress</a>
+    </nav>
+    <div id="panel"></div>
+  </div>
+</main>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var user = BeaconAuth.requireAuth();
+  if (!user) return;
+  function qs(n){var m=new RegExp("[?&]"+n+"=([^&]*)").exec(location.search);return m?decodeURIComponent(m[1]):null;}
+  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+  var tab = qs("tab") || "profile";
+  var panel = document.getElementById("panel");
+  document.querySelectorAll("#tabs a").forEach(function (a) { if (a.dataset.tab === tab) a.classList.add("active"); });
+
+  if (tab === "favorites") renderFavorites();
+  else if (tab === "progress") renderProgress();
+  else renderProfile();
+
+  function renderProfile() {
+    panel.innerHTML =
+      '<div class="card">' +
+      '<h1>' + esc(user.name) + '</h1>' +
+      '<p class="sub">' + esc(user.email) + (user.role === "admin" ? ' · admin' : ' · student') + '</p>' +
+      '<div class="data-row"><div class="rl-main"><b>Favorites</b><span>Questions you starred to redo.</span></div>' +
+        '<span class="rl-num">' + BeaconStore.favCount() + '</span></div>' +
+      (user.role === "admin" ? '<a href="admin.html" class="btn btn-ghost full" style="margin-top:16px">Open admin panel</a>' : '') +
+      '<button class="btn btn-gold full" id="lo" style="margin-top:12px">Log out</button>' +
+      '</div>';
+    document.getElementById("lo").onclick = function () { BeaconAuth.logout(); };
+  }
+
+  function renderFavorites() {
+    var favs = BeaconStore.favoriteQuestions();
+    if (!favs.length) {
+      panel.innerHTML = '<div class="empty-state">No favorites yet.<span class="hand-note">star a question during practice to redo it later &#8599;</span></div>';
+      return;
+    }
+    var rows = favs.map(function (q) {
+      return '<div class="data-row"><div class="rl-main"><b>' + esc(shorten(q.prompt)) + '</b>' +
+        '<span>' + esc(q.exam) + ' · ' + esc(q.skill) + ' · ' + esc((q.type||"").replace(/-/g," ")) + '</span></div>' +
+        (q.difficulty ? '<span class="pill-diff">' + esc(q.difficulty) + '</span>' : '') +
+        '<button class="icon-btn" data-id="' + esc(q.id) + '">Remove</button></div>';
+    }).join("");
+    panel.innerHTML =
+      '<a class="btn btn-gold" href="practice.html?fav=1" style="margin-bottom:16px">Practice favorites (' + favs.length + ')</a>' +
+      '<div class="row-list">' + rows + '</div>';
+    panel.querySelectorAll(".icon-btn").forEach(function (b) {
+      b.onclick = function () { BeaconStore.toggleFav(b.dataset.id); renderFavorites(); };
+    });
+  }
+
+  function renderProgress() {
+    var qsList = BeaconStore.allQuestions();
+    var buckets = {};
+    qsList.forEach(function (q) {
+      var key = q.exam + "|" + q.skill + "|" + q.type;
+      if (!buckets[key]) buckets[key] = { exam:q.exam, skill:q.skill, type:q.type };
+    });
+    var byExam = {};
+    Object.keys(buckets).forEach(function (k) {
+      var b = buckets[k]; (byExam[b.exam] = byExam[b.exam] || []).push(b);
+    });
+    var exams = Object.keys(byExam);
+    if (!exams.length) { panel.innerHTML = '<div class="empty-state">No questions available yet.</div>'; return; }
+    var html = "";
+    exams.forEach(function (ex) {
+      html += '<div class="group-title">' + esc(ex) + '</div><div class="row-list">';
+      byExam[ex].forEach(function (b) {
+        var c = BeaconStore.counts(b.exam, b.skill, b.type);
+        var pct = c.total ? Math.round(c.solved / c.total * 100) : 0;
+        html += '<div class="data-row"><div class="rl-main"><b>' + esc((b.type||"").replace(/-/g," ")) + '</b>' +
+          '<span>' + esc(b.skill) + '</span></div>' +
+          '<span class="rl-num">' + c.solved + '/' + c.total + '</span>' +
+          '<span class="mini-track"><span class="mini-fill" style="width:' + pct + '%"></span></span></div>';
+      });
+      html += '</div>';
+    });
+    panel.innerHTML = html;
+  }
+
+  function shorten(s){ s=String(s||""); return s.length>78 ? s.slice(0,78)+"…" : s; }
+});
+</script>
+</body>
+</html>

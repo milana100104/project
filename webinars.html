@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Webinars — Beacon</title>
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<script src="assets/app.js" defer></script>
+<script src="assets/auth.js" defer></script>
+</head>
+<body>
+<div class="grain"></div>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="index.html" class="brand"><span class="logo-mark" role="img" aria-label="Beacon"></span><span class="brand-name">Beacon</span></a>
+    <nav class="main-nav"><a href="toefl.html">TOEFL</a><a href="ielts.html">IELTS</a><a href="sat.html">SAT</a><a href="webinars.html" class="active">Webinars</a></nav>
+    <div class="header-actions">
+      <a href="auth.html?view=login" class="link-quiet">Log in</a>
+      <a href="auth.html?view=register" class="btn btn-gold">Start free</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="page-head">
+      <span class="mono-label">// this week &amp; beyond, live</span>
+      <h1>Webinars</h1>
+      <p>Short live sessions on the parts of these exams that are easier shown than read. Free to join &mdash; bring questions.</p>
+    </div>
+    <section style="padding-top:8px">
+      <div class="webinar-grid" id="webinar-list"></div>
+    </section>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="index.html" class="brand"><span class="logo-mark" role="img" aria-label="Beacon"></span><span class="brand-name">Beacon</span></a>
+        <p>A study workspace for the TOEFL, IELTS and SAT &mdash; real questions, marked the moment you answer.</p>
+        <span class="hand-note">made by a small team, mostly by hand</span>
+      </div>
+      <div class="footer-links">
+        <div><h5>Exams</h5><ul><li><a href="toefl.html">TOEFL</a></li><li><a href="ielts.html">IELTS</a></li><li><a href="sat.html">SAT</a></li></ul></div>
+        <div><h5>More</h5><ul><li><a href="webinars.html">Webinars</a></li><li><a href="auth.html?view=login">Log in</a></li><li><a href="auth.html?view=register">Sign up</a></li></ul></div>
+      </div>
+    </div>
+    <div class="footer-bottom"><p>&copy; 2026 Beacon</p><p>Reading &amp; Listening, free &mdash; and we mean it.</p></div>
+  </div>
+</footer>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var list = document.getElementById("webinar-list");
+  var glyph = '<div class="thumb-ph"><svg class="ph-glyph" viewBox="0 0 56 56" aria-hidden="true"><path d="M22 48 Q24 33 26 19"/><path d="M34 48 Q32 33 30 19"/><path d="M19 48 L37 48"/><path d="M25 19 L31 19"/><path d="M24 19 L24 11 L32 11 L32 19"/><path d="M21 11 L28 4 L35 11"/><path class="ph-beam" d="M33 9 L47 4"/><path class="ph-beam" d="M33 12 L48 13"/></svg></div>';
+  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+  var items = (window.BeaconStore ? BeaconStore.webinars() : []);
+  list.innerHTML = items.map(function (w) {
+    var thumb = w.cover ? '<img class="webinar-cover" src="' + esc(w.cover) + '" alt="' + esc(w.title) + '">' : glyph;
+    return '<div class="webinar-card"><div class="webinar-thumb">' + thumb + '</div>' +
+      '<div class="webinar-body"><div class="webinar-date">' + esc(w.date) + '</div>' +
+      '<h4>' + esc(w.title) + '</h4><p>' + esc(w.desc) + '</p>' +
+      '<a href="' + esc(w.url || '#') + '" class="link-arrow">Join &#8594;</a></div></div>';
+  }).join("");
+  if (!items.length) list.innerHTML = '<p style="color:var(--muted)">No webinars scheduled right now — check back soon.</p>';
+});
+</script>
+</body>
+</html>

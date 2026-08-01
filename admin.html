@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Beacon</title>
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css">
+<script src="assets/app.js" defer></script>
+<script src="assets/auth.js" defer></script>
+</head>
+<body>
+<div class="grain"></div>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="index.html" class="brand"><span class="logo-mark" role="img" aria-label="Beacon"></span><span class="brand-name">Beacon</span></a>
+    <nav class="main-nav"><a href="toefl.html">TOEFL</a><a href="ielts.html">IELTS</a><a href="sat.html">SAT</a><a href="webinars.html">Webinars</a></nav>
+    <div class="header-actions">
+      <a href="auth.html?view=login" class="link-quiet">Log in</a>
+      <a href="auth.html?view=register" class="btn btn-gold">Start free</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap" style="max-width:860px">
+    <div class="page-head" style="padding-bottom:0"><span class="mono-label">// admin</span><h1>Content admin</h1></div>
+    <nav class="tabs" id="tabs">
+      <a href="admin.html?tab=questions" data-tab="questions">Questions</a>
+      <a href="admin.html?tab=webinars" data-tab="webinars">Webinars</a>
+    </nav>
+    <div id="panel"></div>
+  </div>
+</main>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var user = BeaconAuth.requireAuth();
+  if (!user) return;
+  if (user.role !== "admin") { document.getElementById("panel").innerHTML = '<div class="empty-state">Admin only. Log in as the admin account.</div>'; return; }
+
+  function qs(n){var m=new RegExp("[?&]"+n+"=([^&]*)").exec(location.search);return m?decodeURIComponent(m[1]):null;}
+  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+  var tab = qs("tab") || "questions";
+  var panel = document.getElementById("panel");
+  document.querySelectorAll("#tabs a").forEach(function (a){ if (a.dataset.tab === tab) a.classList.add("active"); });
+
+  var SKILLS = {
+    toefl: { reading: ["multiple-choice","complete-the-words","whole-text"], listening: ["best-response","dialogues","lectures"] },
+    ielts: { reading: ["true-false-notgiven","matching-headings","multiple-choice","sentence-completion","table-completion","diagram-labelling"], listening: ["form-completion","multiple-choice","matching","map-labelling"] },
+    sat:   { math: ["algebra","advanced-math","problem-solving-data-analysis","geometry-trig"], english: ["information-ideas","craft-structure","expression-ideas","standard-conventions"] }
+  };
+
+  if (tab === "webinars") renderWebinars(); else renderQuestions();
+
+  /* ---------------- questions ---------------- */
+  function renderQuestions() {
+    panel.innerHTML =
+      '<div class="card" style="margin-bottom:24px"><h1 style="font-size:1.3rem">Add a question</h1>' +
+      '<p class="sub">Choice-based questions (multiple choice, best response, T/F/NG, etc.). Passage and audio are optional.</p>' +
+      '<div class="field"><label>Exam</label><select id="f-exam"></select></div>' +
+      '<div class="field"><label>Skill</label><select id="f-skill"></select></div>' +
+      '<div class="field"><label>Type</label><select id="f-type"></select></div>' +
+      '<div class="field"><label>Difficulty</label><select id="f-diff"><option>easy</option><option selected>medium</option><option>hard</option></select></div>' +
+      '<div class="field"><label>Passage / context <span class="hint">(optional)</span></label><textarea id="f-passage" placeholder="Reading passage or spoken context…"></textarea></div>' +
+      '<div class="field"><label><input type="checkbox" id="f-audio"> Listening item (show audio placeholder)</label></div>' +
+      '<div class="field"><label>Transcript <span class="hint">(optional, for listening)</span></label><textarea id="f-transcript"></textarea></div>' +
+      '<div class="field"><label>Prompt</label><input id="f-prompt" placeholder="The question itself"></div>' +
+      '<div class="field"><label>Choices <span class="hint">one per line</span></label><textarea id="f-choices" placeholder="Option A&#10;Option B&#10;Option C&#10;Option D"></textarea></div>' +
+      '<div class="field"><label>Correct choice number <span class="hint">(1 = first line)</span></label><input id="f-answer" inputmode="numeric" placeholder="1"></div>' +
+      '<div class="field"><label>Explanation <span class="hint">(optional)</span></label><textarea id="f-exp"></textarea></div>' +
+      '<button class="btn btn-gold full" id="add">Add question</button>' +
+      '<div class="form-msg" id="m"></div></div>' +
+      '<h2 class="group-title">Existing questions</h2><div class="row-list" id="qlist"></div>';
+
+    var exam = document.getElementById("f-exam"), skill = document.getElementById("f-skill"), type = document.getElementById("f-type");
+    Object.keys(SKILLS).forEach(function (e){ exam.appendChild(opt(e)); });
+    function fillSkills(){ skill.innerHTML=""; Object.keys(SKILLS[exam.value]).forEach(function (s){ skill.appendChild(opt(s)); }); fillTypes(); }
+    function fillTypes(){ type.innerHTML=""; SKILLS[exam.value][skill.value].forEach(function (t){ type.appendChild(opt(t)); }); }
+    exam.onchange = fillSkills; skill.onchange = fillTypes; fillSkills();
+
+    document.getElementById("add").onclick = function () {
+      var m = document.getElementById("m");
+      var choices = document.getElementById("f-choices").value.split("\n").map(function (s){return s.trim();}).filter(Boolean);
+      var ans = parseInt(document.getElementById("f-answer").value, 10) - 1;
+      var prompt = document.getElementById("f-prompt").value.trim();
+      if (!prompt) return fail(m, "Add a prompt.");
+      if (choices.length < 2) return fail(m, "Add at least two choices.");
+      if (isNaN(ans) || ans < 0 || ans >= choices.length) return fail(m, "Correct choice number is out of range.");
+      var q = {
+        id: "q-" + Date.now().toString(36) + "-" + Math.floor(Math.random()*1e4).toString(36),
+        exam: exam.value, skill: skill.value, type: type.value,
+        difficulty: document.getElementById("f-diff").value,
+        prompt: prompt, choices: choices, answer: ans,
+        explanation: document.getElementById("f-exp").value.trim() || undefined
+      };
+      var passage = document.getElementById("f-passage").value.trim(); if (passage) q.passage = passage;
+      if (document.getElementById("f-audio").checked) q.audio = true;
+      var tr = document.getElementById("f-transcript").value.trim(); if (tr) q.transcript = tr;
+      BeaconStore.addQuestion(q);
+      m.className = "form-msg show good"; m.textContent = "Added. It’s live in that section now.";
+      document.getElementById("f-prompt").value = ""; document.getElementById("f-choices").value = "";
+      document.getElementById("f-answer").value = ""; document.getElementById("f-exp").value = "";
+      document.getElementById("f-passage").value = ""; document.getElementById("f-transcript").value = "";
+      listQuestions();
+    };
+
+    listQuestions();
+    function listQuestions() {
+      var list = document.getElementById("qlist");
+      var all = BeaconStore.allQuestions();
+      list.innerHTML = all.map(function (q) {
+        return '<div class="data-row"><div class="rl-main"><b>' + esc(shorten(q.prompt)) + '</b>' +
+          '<span>' + esc(q.exam) + ' · ' + esc(q.skill) + ' · ' + esc((q.type||"").replace(/-/g," ")) + '</span></div>' +
+          (q.difficulty ? '<span class="pill-diff">' + esc(q.difficulty) + '</span>' : '') +
+          '<button class="icon-btn" data-id="' + esc(q.id) + '">Delete</button></div>';
+      }).join("") || '<div class="empty-state">No questions yet.</div>';
+      list.querySelectorAll(".icon-btn").forEach(function (b){ b.onclick = function (){ BeaconStore.removeQuestion(b.dataset.id); listQuestions(); }; });
+    }
+  }
+
+  /* ---------------- webinars ---------------- */
+  function renderWebinars() {
+    panel.innerHTML =
+      '<div class="card" style="margin-bottom:24px"><h1 style="font-size:1.3rem">Add a webinar</h1>' +
+      '<div class="field"><label>Date / time</label><input id="w-date" placeholder="Aug 23 · 6:00 PM"></div>' +
+      '<div class="field"><label>Title</label><input id="w-title"></div>' +
+      '<div class="field"><label>Description</label><textarea id="w-desc"></textarea></div>' +
+      '<div class="field"><label>Link</label><input id="w-url" placeholder="https://…"></div>' +
+      '<div class="field"><label>Cover image URL <span class="hint">(optional)</span></label><input id="w-cover" placeholder="assets/webinars/…"></div>' +
+      '<button class="btn btn-gold full" id="wadd">Add webinar</button>' +
+      '<div class="form-msg" id="wm"></div></div>' +
+      '<h2 class="group-title">Scheduled</h2><div class="row-list" id="wlist"></div>';
+    document.getElementById("wadd").onclick = function () {
+      var wm = document.getElementById("wm");
+      var title = document.getElementById("w-title").value.trim();
+      if (!title) { wm.className="form-msg show bad"; wm.textContent="Add a title."; return; }
+      BeaconStore.addWebinar({
+        id: "w-" + Date.now().toString(36),
+        date: document.getElementById("w-date").value.trim(),
+        title: title, desc: document.getElementById("w-desc").value.trim(),
+        url: document.getElementById("w-url").value.trim() || "#",
+        cover: document.getElementById("w-cover").value.trim()
+      });
+      wm.className="form-msg show good"; wm.textContent="Added.";
+      ["w-date","w-title","w-desc","w-url","w-cover"].forEach(function (id){ document.getElementById(id).value=""; });
+      listWebinars();
+    };
+    listWebinars();
+    function listWebinars() {
+      var list = document.getElementById("wlist");
+      list.innerHTML = BeaconStore.webinars().map(function (w) {
+        return '<div class="data-row"><div class="rl-main"><b>' + esc(w.title) + '</b><span>' + esc(w.date) + '</span></div>' +
+          '<button class="icon-btn" data-id="' + esc(w.id) + '">Delete</button></div>';
+      }).join("") || '<div class="empty-state">No webinars yet.</div>';
+      list.querySelectorAll(".icon-btn").forEach(function (b){ b.onclick = function (){ BeaconStore.removeWebinar(b.dataset.id); listWebinars(); }; });
+    }
+  }
+
+  function opt(v){ var o=document.createElement("option"); o.value=v; o.textContent=v.replace(/-/g," "); return o; }
+  function fail(m,t){ m.className="form-msg show bad"; m.textContent=t; }
+  function shorten(s){ s=String(s||""); return s.length>72 ? s.slice(0,72)+"…" : s; }
+});
+</script>
+</body>
+</html>

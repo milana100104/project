@@ -1,11 +1,8 @@
-node_modules
-dist
-dist-ssr
-*.local
+# OS / editor
 .DS_Store
-.env
-.env.*
-!.env.example
+Thumbs.db
 *.log
-.vite
-coverage
+.vscode/
+.idea/
+
+# nothing to build — this is a static site (plain HTML/CSS/JS)

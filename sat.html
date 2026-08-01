@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAT — Beacon</title>
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/workspace.css">
+<script src="assets/auth.js" defer></script>
+<script src="assets/app.js" defer></script>
+</head>
+<body>
+<header class="ws-topbar">
+  <div class="ws-topbar-inner">
+    <a href="index.html" class="ws-brand"><span class="logo"></span><span>Beacon</span></a>
+    <nav class="ws-nav"><a href="toefl.html">TOEFL</a><a href="ielts.html">IELTS</a><a href="sat.html" class="active">SAT</a><a href="webinars.html">Webinars</a></nav>
+    <div class="header-actions">
+      <a href="auth.html?view=login" class="link-quiet">Log in</a>
+      <a href="auth.html?view=register" class="ws-btn ws-btn-primary">Start free</a>
+    </div>
+  </div>
+</header>
+<main class="ws-page">
+  <div class="ws-eyebrow">SAT workspace · Digital SAT</div>
+  <h1 class="ws-h1">SAT</h1>
+  <p class="ws-sub">Drill Math and Reading &amp; Writing by topic — or pull a random mix from a whole section. Answers are checked instantly. The full adaptive test opens once it is ready.</p>
+  <div id="workspace"></div>
+</main>
+<footer class="ws-footer">
+  <div class="ws-footer-inner">
+    <span>&copy; 2026 Beacon</span>
+    <span><a href="index.html">Home</a> &middot; <a href="webinars.html">Webinars</a> &middot; <a href="auth.html?view=login">Log in</a></span>
+  </div>
+</footer>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  if (window.BEACON_SAMPLE) BeaconStore.seedIfEmpty(window.BEACON_SAMPLE);
+  renderWorkspace("#workspace", {
+    examId: "sat",
+    skills: [
+      { id: "math", name: "Math", status: "free", blurb: "Four domains · answers checked instantly", types: [
+        { id: "algebra", name: "Algebra", desc: "Linear equations, inequalities and systems." },
+        { id: "advanced-math", name: "Advanced Math", desc: "Quadratics, functions and nonlinear relationships." },
+        { id: "problem-solving-data-analysis", name: "Problem-Solving & Data Analysis", desc: "Ratios, percentages, rates and reading data." },
+        { id: "geometry-trig", name: "Geometry & Trigonometry", desc: "Lines, angles, circles and right triangles." },
+        { id: "random", name: "Random mix", desc: "A shuffled pull from every Math domain." }
+      ]},
+      { id: "english", name: "Reading & Writing", status: "free", blurb: "Four domains · answers checked instantly", types: [
+        { id: "information-ideas", name: "Information & Ideas", desc: "Central ideas, evidence and inferences." },
+        { id: "craft-structure", name: "Craft & Structure", desc: "Vocabulary in context, purpose and connections." },
+        { id: "expression-ideas", name: "Expression of Ideas", desc: "Transitions, concision and rhetorical goals." },
+        { id: "standard-conventions", name: "Standard English Conventions", desc: "Punctuation, agreement and sentence structure." },
+        { id: "random", name: "Random mix", desc: "A shuffled pull from every Reading & Writing domain." }
+      ]}
+    ],
+    fullTest: {
+      title: "Full adaptive SAT test",
+      desc: "Two Reading & Writing modules and two Math modules under real timing, with a second module that adapts to your first — scored on the 400–1600 scale. It opens once the question pool is deep enough."
+    }
+  });
+});
+</script>
+</body>
+</html>
