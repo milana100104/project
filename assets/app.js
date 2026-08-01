@@ -89,34 +89,79 @@
       choices:['For a holiday','For maintenance','For an exam','For a lecture'],
       answer:1, explanation:'The announcement states the early closure is for maintenance, with labs vacated by 4 p.m.' }),
 
-    /* ---------------- IELTS · Reading (mixed types) ---------------- */
+    /* ---------------- IELTS · Reading (real question types) ---------------- */
+    Q({ id:'i-r-mc-1', exam:'ielts', skill:'reading', type:'multiple-choice', difficulty:'medium',
+      passage:'The Eden Project, built in a disused clay pit in Cornwall, opened in 2001. Its giant biomes recreate a rainforest and a Mediterranean climate under vast domes, and it now draws over a million visitors a year.',
+      prompt:'What was the site of the Eden Project before it was built?',
+      choices:['A working farm','An abandoned clay pit','A public park','A shipping port'], answer:1,
+      explanation:'The passage says it was "built in a disused clay pit in Cornwall."' }),
     Q({ id:'i-r-1', exam:'ielts', skill:'reading', type:'true-false-notgiven', difficulty:'medium',
       passage:'Bamboo is one of the fastest-growing plants on Earth, with some species growing nearly a metre a day. Although it resembles a tree, it is in fact a giant grass.',
-      prompt:'Statement: "Bamboo is a type of tree." Choose the correct answer.',
+      prompt:'Statement: "Bamboo is a type of tree." Choose True, False or Not Given.',
       choices:['True','False','Not Given'], answer:1,
       explanation:'The passage says bamboo "is in fact a giant grass," so the statement is False.' }),
     Q({ id:'i-r-2', exam:'ielts', skill:'reading', type:'true-false-notgiven', difficulty:'medium',
       passage:'Bamboo is one of the fastest-growing plants on Earth, with some species growing nearly a metre a day. Although it resembles a tree, it is in fact a giant grass.',
-      prompt:'Statement: "Bamboo is cheaper than timber." Choose the correct answer.',
+      prompt:'Statement: "Bamboo is cheaper than timber." Choose True, False or Not Given.',
       choices:['True','False','Not Given'], answer:2,
       explanation:'The passage never mentions price, so this is Not Given.' }),
+    Q({ id:'i-r-yn-1', exam:'ielts', skill:'reading', type:'yes-no-notgiven', difficulty:'hard',
+      passage:'The writer argues that remote work, far from harming productivity, has forced managers to judge staff on results rather than on hours seen at a desk — a change she considers long overdue.',
+      prompt:'Statement: "The writer believes judging staff by results is a positive change." Choose Yes, No or Not Given.',
+      choices:['Yes','No','Not Given'], answer:0,
+      explanation:'She calls the shift "long overdue," which signals she views it positively — Yes.' }),
     Q({ id:'i-r-3', exam:'ielts', skill:'reading', type:'matching-headings', difficulty:'hard',
       passage:'Paragraph: "The first attempts to measure longitude at sea failed for a simple reason: no clock of the day could keep accurate time on a rolling ship. The breakthrough came from a carpenter, not an astronomer."',
       prompt:'Choose the heading that best fits the paragraph.',
       choices:['A surprising source of the solution','The history of astronomy','How ships are built','The cost of sea travel'],
       answer:0, explanation:'The paragraph highlights that the solution came from a carpenter, not an astronomer — a surprising source.' }),
+    Q({ id:'i-r-mi-1', exam:'ielts', skill:'reading', type:'matching-information', difficulty:'medium',
+      passage:'A. Honeybees communicate the direction of food with a "waggle dance".\nB. A single hive may contain up to 60,000 bees in summer.\nC. Bees maintain the hive at a steady 35°C by fanning their wings.\nD. Beekeeping dates back at least 4,500 years in ancient Egypt.',
+      prompt:'Which paragraph mentions how bees control the temperature of the hive?',
+      choices:['Paragraph A','Paragraph B','Paragraph C','Paragraph D'], answer:2,
+      explanation:'Paragraph C describes bees keeping the hive at 35°C by fanning their wings.' }),
+    Q({ id:'i-r-sc-1', exam:'ielts', skill:'reading', type:'sentence-completion', difficulty:'medium', format:'text',
+      passage:'The lighthouse was powered by a rotating lens floating on a bath of mercury, which allowed the heavy assembly to turn with almost no friction.',
+      prompt:'Complete the sentence with ONE word from the passage: "The lens floated on a bath of ______ to reduce friction."',
+      answer:'mercury', accept:['Mercury'],
+      explanation:'The passage states the lens floated "on a bath of mercury."' }),
+    Q({ id:'i-r-sum-1', exam:'ielts', skill:'reading', type:'summary-completion', difficulty:'hard', format:'text',
+      passage:'Coral reefs grow only a few centimetres a year, yet over millennia they build structures large enough to be seen from space. The Great Barrier Reef is the largest such structure on Earth.',
+      prompt:'Complete the summary with ONE word: "Although coral grows slowly, over thousands of years it forms huge ______ visible from space."',
+      answer:'structures', accept:['structure'],
+      explanation:'The passage refers to the reefs as "structures large enough to be seen from space."' }),
 
-    /* ---------------- IELTS · Listening ---------------- */
-    Q({ id:'i-l-1', exam:'ielts', skill:'listening', type:'form-completion', difficulty:'easy',
-      audio:true, transcript:'Receptionist: "Can I take your name?" Caller: "It’s Amara Okafor — that’s O-K-A-F-O-R." Receptionist: "And a contact number?" Caller: "Oh-seven-double-four, three-one-two."',
-      prompt:'What is the caller’s surname?',
-      choices:['Okafor','Ferrara','O’Connor','Akano'], answer:0,
-      explanation:'The caller spells the surname aloud: O-K-A-F-O-R.' }),
+    /* ---------------- IELTS · Listening (real question types) ---------------- */
     Q({ id:'i-l-2', exam:'ielts', skill:'listening', type:'multiple-choice', difficulty:'medium',
       audio:true, transcript:'Guide: "The tour meets at the north gate, not the main entrance, at a quarter past nine. Please arrive five minutes early."',
       prompt:'Where does the tour meet?',
       choices:['The main entrance','The north gate','The car park','The gift shop'], answer:1,
       explanation:'The guide says the tour meets "at the north gate, not the main entrance."' }),
+    Q({ id:'i-l-1', exam:'ielts', skill:'listening', type:'form-completion', difficulty:'easy', format:'text',
+      audio:true, transcript:'Receptionist: "Can I take your surname?" Caller: "It’s Okafor — that’s O-K-A-F-O-R."',
+      prompt:'Complete the form. Surname: ______ (type what you hear).',
+      answer:'okafor', accept:['Okafor'],
+      explanation:'The caller spells the surname aloud: O-K-A-F-O-R.' }),
+    Q({ id:'i-l-match-1', exam:'ielts', skill:'listening', type:'matching', difficulty:'medium',
+      audio:true, transcript:'Tutor: "Priya will handle the survey, Sam is writing the introduction, and Lena is preparing the slides for the presentation."',
+      prompt:'Who is preparing the slides?',
+      choices:['Priya','Sam','Lena','The tutor'], answer:2,
+      explanation:'The tutor says "Lena is preparing the slides."' }),
+    Q({ id:'i-l-map-1', exam:'ielts', skill:'listening', type:'plan-map-diagram-labelling', difficulty:'medium',
+      audio:true, transcript:'Warden: "As you come through the main entrance, the café is immediately on your left, and the toilets are straight ahead, past the information desk."',
+      prompt:'Coming through the main entrance, where is the café?',
+      choices:['On the left','On the right','Straight ahead','Upstairs'], answer:0,
+      explanation:'The warden says the café is "immediately on your left."' }),
+    Q({ id:'i-l-sc-1', exam:'ielts', skill:'listening', type:'sentence-completion', difficulty:'medium', format:'text',
+      audio:true, transcript:'Lecturer: "Please note the essay deadline has moved to Friday, and it must be submitted online."',
+      prompt:'Complete the sentence with ONE word: "The essay must be submitted ______."',
+      answer:'online', accept:[],
+      explanation:'The lecturer says the essay "must be submitted online."' }),
+    Q({ id:'i-l-sa-1', exam:'ielts', skill:'listening', type:'short-answer', difficulty:'easy', format:'text',
+      audio:true, transcript:'Clerk: "The museum is open every day except Monday."',
+      prompt:'On which day is the museum closed? (ONE word)',
+      answer:'monday', accept:['Monday'],
+      explanation:'The clerk says it is open "every day except Monday."' }),
 
     /* ---------------- SAT · Math ---------------- */
     Q({ id:'s-m-alg-1', exam:'sat', skill:'math', type:'algebra', difficulty:'easy',
@@ -346,9 +391,7 @@
       root.appendChild(acc);
     });
 
-    // open the first non-dev skill by default
-    var firstOpen = root.querySelector('.acc:not(.is-dev)');
-    if (firstOpen) firstOpen.classList.add('open');
+    // accordions start collapsed — the user opens the skill they want
 
     // full test panel
     if (config.fullTest) {
@@ -430,9 +473,11 @@
 
       var feedback = el('div', 'pr-feedback');
 
-      if (q.type === 'complete-the-words') {
+      // render mode: q.format overrides, else derived from q.type
+      var fmt = q.format || q.type;
+      if (fmt === 'complete-the-words' || fmt === 'cloze') {
         card.appendChild(clozeBlock(q, feedback, onResolved));
-      } else if (q.type === 'text') {
+      } else if (fmt === 'text') {
         card.appendChild(textBlock(q, feedback, onResolved));
       } else {
         card.appendChild(choiceBlock(q, feedback, onResolved));

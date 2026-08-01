@@ -3,108 +3,73 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IELTS &mdash; Beacon</title>
+<title>IELTS — Beacon</title>
 <link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/workspace.css">
 <script src="assets/auth.js" defer></script>
+<script src="assets/app.js" defer></script>
 </head>
 <body>
-<div class="grain"></div>
-
-<header class="site-header">
-  <div class="wrap header-inner">
-    <a href="index.html" class="brand">
-      <span class="logo-mark" role="img" aria-label="Beacon"></span>
-      <span class="brand-name">Beacon</span>
-    </a>
-    <nav class="main-nav"><a href="toefl.html">TOEFL</a><a href="ielts.html" class="active">IELTS</a><a href="sat.html">SAT</a><a href="webinars.html">Webinars</a></nav>
+<header class="ws-topbar">
+  <div class="ws-topbar-inner">
+    <a href="index.html" class="ws-brand"><span class="logo"></span><span>Beacon</span></a>
+    <nav class="ws-nav"><a href="toefl.html">TOEFL</a><a href="ielts.html" class="active">IELTS</a><a href="sat.html">SAT</a><a href="webinars.html">Webinars</a></nav>
     <div class="header-actions">
       <a href="auth.html?view=login" class="link-quiet">Log in</a>
-      <a href="auth.html?view=register" class="btn btn-gold">Start free</a>
+      <a href="auth.html?view=register" class="ws-btn ws-btn-primary">Start free</a>
     </div>
   </div>
 </header>
-
-<main>
-  <div class="wrap">
-    <div class="page-head">
-      <span class="mono-label">// ielts workspace &middot; academic & general</span>
-      <h1>IELTS</h1>
-      <p>The classic format, matched to the real exam. <b>Reading and Listening are free</b> with instant checks. Writing and Speaking are being built now.</p>
-    </div>
-    <div class="skill-grid">
-      <article class="skill-card">
-        <div class="skill-top">
-          <h3>Reading</h3>
-          <span class="status-pill free">Free · instant checks</span>
-        </div>
-        <p>Full passages with the real mix of question types, from matching headings to completing tables and labelling diagrams.</p>
-        <div class="skill-meta">3 sections · 40 questions</div>
-        <div class="skill-tags"><span>Matching headings</span><span>True / False / Not Given</span><span>Sentence & table completion</span><span>Diagram labelling</span></div>
-        <a href="practice.html?exam=ielts&skill=reading&type=all" class="btn btn-gold">Start practice</a>
-      </article>
-      <article class="skill-card">
-        <div class="skill-top">
-          <h3>Listening</h3>
-          <span class="status-pill free">Free · instant checks</span>
-        </div>
-        <p>Four sections that build from an everyday conversation up to a group discussion and a full academic lecture.</p>
-        <div class="skill-meta">4 sections · 40 questions</div>
-        <div class="skill-tags"><span>Everyday conversation</span><span>Group discussion</span><span>Monologue / lecture</span></div>
-        <a href="practice.html?exam=ielts&skill=listening&type=all" class="btn btn-gold">Start practice</a>
-      </article>
-      <article class="skill-card is-dev">
-        <div class="skill-top">
-          <h3>Writing</h3>
-          <span class="status-pill dev">In development</span>
-        </div>
-        <p>Describe a chart or process in 150+ words, then argue an essay in 250+ words that counts double. Coming soon.</p>
-        
-        <div class="skill-tags"><span>Task 1 — chart / graph</span><span>Task 2 — essay</span></div>
-        <span class="btn btn-disabled">In development</span>
-      </article>
-      <article class="skill-card is-dev">
-        <div class="skill-top">
-          <h3>Speaking</h3>
-          <span class="status-pill dev">In development</span>
-        </div>
-        <p>Personal questions, a two-minute cue-card talk, and a deeper back-and-forth discussion. Coming soon.</p>
-        
-        <div class="skill-tags"><span>Part 1 — you</span><span>Part 2 — cue card</span><span>Part 3 — discussion</span></div>
-        <span class="btn btn-disabled">In development</span>
-      </article>
-    </div>
-  </div>
+<main class="ws-page">
+  <div class="ws-eyebrow">IELTS workspace · academic &amp; general</div>
+  <h1 class="ws-h1">IELTS</h1>
+  <p class="ws-sub">The classic format, matched to the real exam. Reading and Listening are free with instant checks — one question type at a time. Writing and Speaking are being built now.</p>
+  <div id="workspace"></div>
 </main>
-
-<footer class="site-footer">
-  <div class="wrap">
-    <div class="footer-inner">
-      <div class="footer-brand">
-        <a href="index.html" class="brand">
-          <span class="logo-mark" role="img" aria-label="Beacon"></span>
-          <span class="brand-name">Beacon</span>
-        </a>
-        <p>A study workspace for the TOEFL, IELTS and SAT &mdash; real questions, marked the moment you answer.</p>
-        <span class="hand-note">made by a small team, mostly by hand</span>
-      </div>
-      <div class="footer-links">
-        <div><h5>Exams</h5><ul>
-          <li><a href="toefl.html">TOEFL</a></li><li><a href="ielts.html">IELTS</a></li><li><a href="sat.html">SAT</a></li>
-        </ul></div>
-        <div><h5>More</h5><ul>
-          <li><a href="webinars.html">Webinars</a></li><li><a href="auth.html?view=login">Log in</a></li><li><a href="auth.html?view=register">Sign up</a></li>
-        </ul></div>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>&copy; 2026 Beacon</p>
-      <p>Reading &amp; Listening, free &mdash; and we mean it.</p>
-    </div>
+<footer class="ws-footer">
+  <div class="ws-footer-inner">
+    <span>&copy; 2026 Beacon</span>
+    <span><a href="index.html">Home</a> &middot; <a href="webinars.html">Webinars</a> &middot; <a href="auth.html?view=login">Log in</a></span>
   </div>
 </footer>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  if (window.BEACON_SAMPLE) BeaconStore.seedIfEmpty(window.BEACON_SAMPLE);
+  renderWorkspace("#workspace", {
+    examId: "ielts",
+    skills: [
+      { id: "reading", name: "Reading", status: "free", blurb: "3 sections · 40 questions", types: [
+        { id: "multiple-choice", name: "Multiple choice", desc: "Choose the correct option from a list." },
+        { id: "true-false-notgiven", name: "True / False / Not Given", desc: "Decide whether a statement agrees with the text." },
+        { id: "yes-no-notgiven", name: "Yes / No / Not Given", desc: "Decide whether a claim matches the writer’s views." },
+        { id: "matching-headings", name: "Matching headings", desc: "Match the best heading to a paragraph." },
+        { id: "matching-information", name: "Matching information", desc: "Find which paragraph contains a given detail." },
+        { id: "sentence-completion", name: "Sentence completion", desc: "Complete a sentence with a word from the text." },
+        { id: "summary-completion", name: "Summary completion", desc: "Fill the gaps in a summary of the passage." }
+      ]},
+      { id: "listening", name: "Listening", status: "free", blurb: "4 sections · 40 questions", types: [
+        { id: "multiple-choice", name: "Multiple choice", desc: "Choose the correct option from what you hear." },
+        { id: "form-completion", name: "Form / note / table completion", desc: "Fill in a form, note or table as you listen." },
+        { id: "matching", name: "Matching", desc: "Match speakers or items to a set of options." },
+        { id: "plan-map-diagram-labelling", name: "Plan / map / diagram labelling", desc: "Label a plan, map or diagram." },
+        { id: "sentence-completion", name: "Sentence completion", desc: "Complete a sentence with what you hear." },
+        { id: "short-answer", name: "Short-answer questions", desc: "Answer with a word or short phrase." }
+      ]},
+      { id: "writing", name: "Writing", status: "dev", blurb: "Being built now", types: [
+        { id: "task-1", name: "Task 1", desc: "Describe a chart, table, map or process in 150+ words." },
+        { id: "task-2", name: "Task 2", desc: "Write an essay of 250+ words — it counts double." }
+      ]},
+      { id: "speaking", name: "Speaking", status: "dev", blurb: "Being built now", types: [
+        { id: "part-1", name: "Part 1 — you", desc: "Short questions on familiar personal topics." },
+        { id: "part-2", name: "Part 2 — cue card", desc: "A two-minute talk from a task card." },
+        { id: "part-3", name: "Part 3 — discussion", desc: "A two-way discussion on broader ideas." }
+      ]}
+    ]
+  });
+});
+</script>
 </body>
 </html>
