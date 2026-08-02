@@ -583,9 +583,10 @@
           '<div class="pr-rev-a">Answer: <b>' + esc(ans) + '</b>' + (q.explanation ? ' — ' + esc(q.explanation) : '') + '</div></div>' +
           '<span class="pr-rev-mark">' + (ok ? '✓' : '✗') + '</span></div>';
       }).join('');
+      var sc = examScore(exam, skill, correct, total);
       return '<div class="pr-stage"><div class="pr-result">' +
-        '<div class="pr-score ' + (pct >= 60 ? 'pass' : 'fail') + '"><span class="pct">' + pct + '%</span>' +
-        '<span class="frac">' + correct + ' / ' + total + ' correct</span></div>' +
+        '<div class="pr-score ' + (sc.pass ? 'pass' : 'fail') + '"><span class="pct">' + esc(sc.big) + '</span>' +
+        '<span class="frac">' + esc(sc.sub) + '</span></div>' +
         '<div class="pr-review">' + rows + '</div>' +
         '<div class="fin-actions">' +
         '<a class="btn btn-gold" href="' + exam + '.html">Back to ' + exam.toUpperCase() + '</a>' +
@@ -729,6 +730,27 @@
   function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var x = a[i]; a[i] = a[j]; a[j] = x; } return a; }
   function fmtTime(s) { if (s < 0) s = 0; var m = Math.floor(s / 60), r = s % 60; return m + ':' + (r < 10 ? '0' : '') + r; }
   function shortenPrompt(s) { s = String(s || ''); return s.length > 90 ? s.slice(0, 90) + '…' : s; }
+
+  // IELTS raw%->band curve (approximates the Academic Reading/Listening tables)
+  function ieltsBand(pct) {
+    var t = [[97, 9], [92, 8.5], [85, 8], [81, 7.5], [75, 7], [65, 6.5], [57, 6], [50, 5.5], [40, 5], [32, 4.5], [25, 4], [18, 3.5]];
+    for (var i = 0; i < t.length; i++) { if (pct >= t[i][0]) return t[i][1]; }
+    return 3;
+  }
+  // Turn a correct-count into the score that exam actually reports for one section.
+  function examScore(exam, skill, correct, total) {
+    var pct = total ? Math.round(correct / total * 100) : 0;
+    var label = skill === 'listening' ? 'Listening' : (skill === 'reading' ? 'Reading' : skill);
+    if (exam === 'ielts') {
+      var b = ieltsBand(pct);
+      return { big: b.toFixed(1), sub: 'Estimated IELTS ' + label + ' band (max 9.0) · ' + correct + ' / ' + total + ' correct', pass: b >= 6 };
+    }
+    if (exam === 'toefl') {
+      var s = Math.round(pct / 100 * 30);
+      return { big: s + ' / 30', sub: 'Estimated TOEFL ' + label + ' section — the full exam scores 0–120 across four sections · ' + correct + ' / ' + total + ' correct', pass: s >= 20 };
+    }
+    return { big: pct + '%', sub: correct + ' / ' + total + ' correct', pass: pct >= 60 };
+  }
 
   /* ============================ exports + autorun ============================ */
   window.BeaconStore = BeaconStore;

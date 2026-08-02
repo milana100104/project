@@ -45,6 +45,16 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .acct-chip{font-family:var(--mono);font-size:.8rem;color:var(--gold);background:var(--gold-soft);
   border:1px solid var(--gold-line);padding:5px 12px;border-radius:999px;white-space:nowrap;}
 
+/* generic .btn (used inside practice: Check, Next, results actions) */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 20px;border-radius:11px;
+  font-weight:600;font-size:.92rem;white-space:nowrap;border:1px solid transparent;cursor:pointer;
+  transition:background .15s,border-color .15s,color .15s;}
+.btn-gold{background:var(--gold-btn);color:#241a02;}
+.btn-gold:hover{background:var(--gold-btn-hover);}
+.btn-ghost{background:transparent;border-color:var(--border-strong);color:var(--ink);}
+.btn-ghost:hover{border-color:var(--gold-line);color:var(--gold);}
+.btn[disabled],.btn.is-disabled{opacity:.4;cursor:not-allowed;pointer-events:none;}
+
 /* ---- badges ---- */
 .ws-badge{font-family:var(--mono);font-size:.64rem;letter-spacing:.05em;text-transform:uppercase;
   padding:4px 9px;border-radius:999px;white-space:nowrap;font-weight:500;}
