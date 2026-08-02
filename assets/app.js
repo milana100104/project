@@ -563,8 +563,8 @@
         (favMode ? '' : ' They’ll stay out of your normal flow until you clear the whole pool.') + '</p>' +
         '<div class="fin-actions">' +
         (favMode
-          ? '<a class="btn btn-gold" href="account.html?tab=favorites">Back to favorites</a>'
-          : '<a class="btn btn-gold" href="' + exam + '.html">Back to ' + exam.toUpperCase() + '</a>' +
+          ? '<a class="btn btn-white" href="account.html?tab=favorites">Back to favorites</a>'
+          : '<a class="btn btn-white" href="' + exam + '.html">Back to ' + exam.toUpperCase() + '</a>' +
             '<a class="btn btn-ghost" href="practice.html' + location.search + '">Keep going</a>') +
         '</div>';
       root.appendChild(f);
@@ -589,7 +589,7 @@
         '<span class="frac">' + esc(sc.sub) + '</span></div>' +
         '<div class="pr-review">' + rows + '</div>' +
         '<div class="fin-actions">' +
-        '<a class="btn btn-gold" href="' + exam + '.html">Back to ' + exam.toUpperCase() + '</a>' +
+        '<a class="btn btn-white" href="' + exam + '.html">Back to ' + exam.toUpperCase() + '</a>' +
         '<a class="btn btn-ghost" href="practice.html' + location.search + '">Retake test</a>' +
         '</div></div></div>';
     }
@@ -707,14 +707,14 @@
 
   function errorCard(title, sub) {
     return '<div class="pr-finished"><h2>' + esc(title) + '</h2><p>' + esc(sub) + '</p>' +
-      '<div class="fin-actions"><a class="btn btn-gold" href="index.html">Home</a></div></div>';
+      '<div class="fin-actions"><a class="btn btn-white" href="index.html">Home</a></div></div>';
   }
   function clearedCard(b) {
     return '<div class="pr-finished"><div class="fin-mark">✓</div>' +
       '<h2>You’ve cleared this set</h2>' +
       '<p>You’ve solved every question here. New questions are added over time — or reset to run through them again.</p>' +
       '<div class="fin-actions">' +
-      '<button class="btn btn-gold" data-reset>Reset & redo</button>' +
+      '<button class="btn btn-white" data-reset>Reset & redo</button>' +
       '<a class="btn btn-ghost" href="' + b.exam + '.html">Back to ' + b.exam.toUpperCase() + '</a>' +
       '</div></div>';
   }
@@ -743,12 +743,11 @@
     var label = skill === 'listening' ? 'Listening' : (skill === 'reading' ? 'Reading' : skill);
     if (exam === 'ielts') {
       var b = ieltsBand(pct);
-      return { big: b.toFixed(1), sub: 'Estimated IELTS ' + label + ' band (max 9.0) · ' + correct + ' / ' + total + ' correct', pass: b >= 6 };
+      return { big: b.toFixed(1), sub: 'IELTS ' + label + ' band · ' + correct + ' / ' + total + ' correct', pass: b >= 6 };
     }
     if (exam === 'toefl') {
-      var s120 = Math.round(pct / 100 * 120);         // familiar 0–120 scale
-      var s6 = Math.round((1 + pct / 100 * 5) * 10) / 10; // new 2026 scale, 1.0–6.0
-      return { big: String(s120), sub: '(' + s6.toFixed(1) + ' / 6.0 on the new 1–6 scale) · estimated TOEFL score from your ' + label + ' · ' + correct + ' / ' + total + ' correct', pass: s120 >= 84 };
+      var s6 = Math.round((1 + pct / 100 * 5) * 2) / 2; // 1.0–6.0, rounded to nearest 0.5
+      return { big: s6.toFixed(1), sub: 'TOEFL ' + label + ' · out of 6 · ' + correct + ' / ' + total + ' correct', pass: s6 >= 4 };
     }
     return { big: pct + '%', sub: correct + ' / ' + total + ' correct', pass: pct >= 60 };
   }
