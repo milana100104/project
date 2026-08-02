@@ -31,7 +31,7 @@
     <div class="page-head" style="padding-bottom:0"><h1 id="acct-title">Your account</h1></div>
     <nav class="tabs" id="tabs">
       <a href="account.html?tab=profile" data-tab="profile">Profile</a>
-      <a href="account.html?tab=favorites" data-tab="favorites">Favorites</a>
+      <a href="account.html?tab=favorites" data-tab="favorites">Saved</a>
       <a href="account.html?tab=progress" data-tab="progress">Progress</a>
     </nav>
     <div id="panel"></div>
@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", function () {
       '<div class="card">' +
       '<h1>' + esc(user.name) + '</h1>' +
       '<p class="sub">' + esc(user.email) + (user.role === "admin" ? ' · admin' : ' · student') + '</p>' +
-      '<div class="data-row"><div class="rl-main"><b>Favorites</b><span>Questions you starred to redo.</span></div>' +
+      '<div class="data-row"><div class="rl-main"><b>Saved</b><span>Questions you saved to redo.</span></div>' +
         '<span class="rl-num">' + BeaconStore.favCount() + '</span></div>' +
       (user.role === "admin" ? '<a href="admin.html" class="btn btn-ghost full" style="margin-top:16px">Open admin panel</a>' : '') +
       '<button class="btn btn-gold full" id="lo" style="margin-top:12px">Log out</button>' +
@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function renderFavorites() {
     var favs = BeaconStore.favoriteQuestions();
     if (!favs.length) {
-      panel.innerHTML = '<div class="empty-state">No favorites yet.<span class="hand-note">star a question during practice to redo it later &#8599;</span></div>';
+      panel.innerHTML = '<div class="empty-state">Nothing saved yet.<span class="hand-note">tap “Save” on a question during practice to redo it later &#8599;</span></div>';
       return;
     }
     var rows = favs.map(function (q) {
@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", function () {
         '<button class="icon-btn" data-id="' + esc(q.id) + '">Remove</button></div>';
     }).join("");
     panel.innerHTML =
-      '<a class="btn btn-gold" href="practice.html?fav=1" style="margin-bottom:16px">Practice favorites (' + favs.length + ')</a>' +
+      '<a class="btn btn-gold" href="practice.html?fav=1" style="margin-bottom:16px">Practice saved (' + favs.length + ')</a>' +
       '<div class="row-list">' + rows + '</div>';
     panel.querySelectorAll(".icon-btn").forEach(function (b) {
       b.onclick = function () { BeaconStore.toggleFav(b.dataset.id); renderFavorites(); };

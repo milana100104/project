@@ -347,8 +347,8 @@
     saved.href = 'account.html?tab=favorites';
     saved.innerHTML =
       '<span class="star">' + (favN ? '★' : '☆') + '</span>' +
-      '<span class="saved-main"><b>Favorites</b><span>' +
-      (favN ? 'Revisit questions you starred — a separate pool you can redo any time.' : 'Star a question during practice to build a redo pool.') +
+      '<span class="saved-main"><b>Saved</b><span>' +
+      (favN ? 'Questions you saved while practising — a separate pool you can redo any time.' : 'Tap “Save” on any question to keep it here and come back to it later.') +
       '</span></span>' +
       '<span class="saved-count">' + favN + '</span>';
     root.appendChild(saved);
@@ -428,10 +428,13 @@
     var exam = qs('exam'), skill = qs('skill'), type = qs('type');
     var pool, crumb, bucket = null, reveal = true;
 
+    // white frames on TOEFL & IELTS practice (matches those workspace pages)
+    if (exam === 'toefl' || exam === 'ielts') document.body.classList.add('ws-white');
+
     if (favMode) {
       pool = BeaconStore.favoriteQuestions();
-      crumb = 'favorites · redo pool';
-      if (pool.length === 0) { root.innerHTML = errorCard('No favorites yet.', 'Star questions during practice to build a redo pool.'); return; }
+      crumb = 'saved · redo pool';
+      if (pool.length === 0) { root.innerHTML = errorCard('Nothing saved yet.', 'Tap “Save” on a question during practice to keep it here.'); return; }
     } else if (testMode) {
       if (!exam || !skill) { root.innerHTML = errorCard('Nothing to test yet.', 'Pick a section from an exam page.'); return; }
       pool = BeaconStore.questionsFor(exam, skill, null); // whole skill, every type
@@ -563,7 +566,7 @@
         (favMode ? '' : ' They’ll stay out of your normal flow until you clear the whole pool.') + '</p>' +
         '<div class="fin-actions">' +
         (favMode
-          ? '<a class="btn btn-white" href="account.html?tab=favorites">Back to favorites</a>'
+          ? '<a class="btn btn-white" href="account.html?tab=favorites">Back to saved</a>'
           : '<a class="btn btn-white" href="' + exam + '.html">Back to ' + exam.toUpperCase() + '</a>' +
             '<a class="btn btn-ghost" href="practice.html' + location.search + '">Keep going</a>') +
         '</div>';

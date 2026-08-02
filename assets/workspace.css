@@ -220,6 +220,19 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 .ws-footer-inner a{color:var(--ink-2);}
 .ws-footer-inner a:hover{color:var(--gold);}
 
+/* ---- white frames on TOEFL & IELTS (body.ws-white) ---- */
+.ws-white .saved-card,
+.ws-white .acc,
+.ws-white .ws-fulltest,
+.ws-white .pr-card,
+.ws-white .pr-choice,
+.ws-white .pr-rev,
+.ws-white .pr-textin,
+.ws-white .pr-transcript{border-color:#ffffff !important;}
+.ws-white .acc:hover,
+.ws-white a.saved-card:hover{border-color:#ffffff !important;}
+.ws-white .pr-choice{border-width:1.5px;}
+
 @media (max-width:720px){
   body{font-size:16px;}
   .ws-nav a{padding:8px 9px;font-size:.9rem;}
