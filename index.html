@@ -33,42 +33,44 @@
 
 <main id="top">
 
-  <!-- Auto-rotating banner (TOEFL / IELTS / SAT), switches every 3s. Pure CSS.
-       Drop your image into each .bnr-media, replacing the <span class="bnr-ph"> line, e.g.:
-       <img src="assets/banner/toefl.jpg" alt="TOEFL"> -->
-  <section class="banner" aria-label="TOEFL, IELTS and SAT">
-    <div class="wrap">
-      <div class="banner-viewport">
-        <article class="bnr bnr-1">
-          <div class="bnr-media"><span class="bnr-ph">add TOEFL image</span></div>
-          <div class="bnr-copy">
-            <span class="bnr-tag">01 / 03</span>
-            <h2>TOEFL</h2>
-            <p>Adaptive Reading &amp; Listening — the new 2026 format, marked the second you answer.</p>
-            <a href="toefl.html" class="btn btn-gold">Open TOEFL</a>
-          </div>
-        </article>
-        <article class="bnr bnr-2">
-          <div class="bnr-media"><span class="bnr-ph">add IELTS image</span></div>
-          <div class="bnr-copy">
-            <span class="bnr-tag">02 / 03</span>
-            <h2>IELTS</h2>
-            <p>Real Academic &amp; General section formats, one question type at a time — checked instantly.</p>
-            <a href="ielts.html" class="btn btn-gold">Open IELTS</a>
-          </div>
-        </article>
-        <article class="bnr bnr-3">
-          <div class="bnr-media"><span class="bnr-ph">add SAT image</span></div>
-          <div class="bnr-copy">
-            <span class="bnr-tag">03 / 03</span>
-            <h2>SAT</h2>
-            <p>Drill Math and Reading &amp; Writing by topic, or sit a full Digital-SAT-style test.</p>
-            <a href="sat.html" class="btn btn-gold">Open SAT</a>
-          </div>
-        </article>
+  <!-- Top banner: one big word (TOEFL / IELTS / SAT) on white. Auto-switches
+       every 3s; the navy arrows switch it by hand. No links here. -->
+  <section class="banner" aria-label="TOEFL, IELTS, SAT">
+    <div class="wrap banner-inner">
+      <button class="bnr-arrow bnr-prev" type="button" aria-label="Previous">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <div class="bnr-stage">
+        <div class="bnr-word is-active"><span>T</span><span>O</span><span>E</span><span>F</span><span>L</span></div>
+        <div class="bnr-word"><span>I</span><span>E</span><span>L</span><span>T</span><span>S</span></div>
+        <div class="bnr-word"><span>S</span><span>A</span><span>T</span></div>
       </div>
-      <div class="banner-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+      <button class="bnr-arrow bnr-next" type="button" aria-label="Next">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
     </div>
+    <div class="banner-dots">
+      <button type="button" data-dot="0" class="on" aria-label="TOEFL"></button>
+      <button type="button" data-dot="1" aria-label="IELTS"></button>
+      <button type="button" data-dot="2" aria-label="SAT"></button>
+    </div>
+    <script>
+    (function(){
+      var b=document.currentScript.closest('.banner');
+      var words=[].slice.call(b.querySelectorAll('.bnr-word'));
+      var dots=[].slice.call(b.querySelectorAll('[data-dot]'));
+      var i=0,timer;
+      function show(n){i=(n+words.length)%words.length;
+        words.forEach(function(w,k){w.classList.toggle('is-active',k===i);});
+        dots.forEach(function(d,k){d.classList.toggle('on',k===i);});}
+      function next(){show(i+1);} function prev(){show(i-1);}
+      function reset(){clearInterval(timer);timer=setInterval(next,3000);}
+      b.querySelector('.bnr-next').addEventListener('click',function(){next();reset();});
+      b.querySelector('.bnr-prev').addEventListener('click',function(){prev();reset();});
+      dots.forEach(function(d,k){d.addEventListener('click',function(){show(k);reset();});});
+      reset();
+    })();
+    </script>
   </section>
 
   <section class="hero">
@@ -174,6 +176,34 @@
     </div>
   </section>
 
+  <section class="exams" id="exams">
+    <div class="wrap">
+      <div class="section-head-left">
+        <span class="mono-label">// your destinations</span>
+        <h2 class="section-title">Three exams, <span class="mark-underline">one chart<svg viewBox="0 0 300 20" aria-hidden="true"><path class="u-ghost" pathLength="100" d="M8 15 C 72 10, 122 18, 172 13 C 222 9, 256 17, 292 13"/><path class="u-main" pathLength="100" d="M6 12 C 62 6, 112 16, 166 10 C 212 5, 250 15, 294 9"/></svg></span>.</h2>
+      </div>
+      <div class="showcase">
+        <article class="sc-card">
+          <div class="sc-photo"><!-- add your image: <img src="assets/exam/toefl.jpg" alt="TOEFL"> --><span class="sc-ph">add TOEFL photo</span></div>
+          <h3>TOEFL</h3>
+          <p>Adaptive Reading &amp; Listening, marked the second you answer.</p>
+          <a href="toefl.html" class="link-arrow">Open TOEFL &#8594;</a>
+        </article>
+        <article class="sc-card">
+          <div class="sc-photo"><!-- add your image: <img src="assets/exam/ielts.jpg" alt="IELTS"> --><span class="sc-ph">add IELTS photo</span></div>
+          <h3>IELTS</h3>
+          <p>Real section formats, one question type at a time — checked instantly.</p>
+          <a href="ielts.html" class="link-arrow">Open IELTS &#8594;</a>
+        </article>
+        <article class="sc-card">
+          <div class="sc-photo"><!-- add your image: <img src="assets/exam/sat.jpg" alt="SAT"> --><span class="sc-ph">add SAT photo</span></div>
+          <h3>SAT</h3>
+          <p>Drill Math &amp; Reading/Writing by topic, or sit a full Digital-SAT-style test.</p>
+          <a href="sat.html" class="link-arrow">Open SAT &#8594;</a>
+        </article>
+      </div>
+    </div>
+  </section>
 
   <section class="logbook">
     <div class="wrap">

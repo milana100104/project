@@ -140,37 +140,36 @@ section{padding:58px 0;}
 .stop h3{font-size:1.6rem;margin:12px 0 8px;}
 .stop p{color:var(--ink-2);font-size:1rem;margin-bottom:16px;}
 
-/* ---------- top auto-rotating banner (TOEFL / IELTS / SAT, every 3s, pure CSS) ---------- */
-.banner{background:#f3ede0;border-bottom:3px solid var(--gold-line);}
-.banner-viewport{display:grid;}                 /* stacks slides in one cell; sizes to tallest */
-.bnr{grid-area:1/1;display:grid;grid-template-columns:1.05fr .95fr;gap:36px;align-items:center;
-  padding:40px 4px;opacity:0;visibility:hidden;animation:bnrCycle 9s infinite;will-change:opacity;}
-.bnr-1{animation-delay:0s;} .bnr-2{animation-delay:3s;} .bnr-3{animation-delay:6s;}
-@keyframes bnrCycle{
-  0%{opacity:0;visibility:hidden;transform:translateY(10px);}
-  2%{visibility:visible;}
-  6%{opacity:1;transform:none;}
-  30%{opacity:1;visibility:visible;transform:none;}
-  35%{opacity:0;transform:translateY(-8px);}
-  36%{visibility:hidden;}
-  100%{opacity:0;visibility:hidden;}
-}
-.bnr-media{aspect-ratio:16/10;border-radius:16px;overflow:hidden;background:#e9e0cd;border:2px dashed #cbbb93;
-  display:flex;align-items:center;justify-content:center;}
-.bnr-media img{width:100%;height:100%;object-fit:cover;display:block;}
-.bnr-ph{color:#a08f66;font-family:var(--mono);font-size:.85rem;letter-spacing:.05em;}
-.bnr-tag{font-family:var(--mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:#b0851b;}
-.bnr-copy h2{font-family:var(--display);font-size:clamp(2.2rem,4.2vw,3.1rem);color:#14233f;margin:8px 0 12px;letter-spacing:-.02em;}
-.bnr-copy p{color:#41506d;font-size:1.12rem;max-width:40ch;margin-bottom:22px;}
-.banner-dots{display:flex;gap:8px;justify-content:center;padding-bottom:20px;}
-.banner-dots span{width:26px;height:4px;border-radius:99px;background:#d8cba6;animation:bnrDot 9s infinite;}
-.banner-dots span:nth-child(1){animation-delay:0s;}
-.banner-dots span:nth-child(2){animation-delay:3s;}
-.banner-dots span:nth-child(3){animation-delay:6s;}
-@keyframes bnrDot{0%{background:#d8cba6;}3%{background:var(--gold-line);}31%{background:var(--gold-line);}35%{background:#d8cba6;}100%{background:#d8cba6;}}
-@media (max-width:760px){
-  .bnr{grid-template-columns:1fr;gap:20px;padding:28px 4px;}
-  .bnr-media{aspect-ratio:16/9;}
+/* ---------- top banner: one big word (TOEFL/IELTS/SAT) on white, arrows to switch ---------- */
+.banner{background:#ffffff;border-bottom:1px solid #e6e0d2;}
+.banner-inner{position:relative;display:flex;align-items:center;justify-content:center;}
+.bnr-stage{display:grid;place-items:center;min-height:190px;width:100%;padding:44px 70px;}
+.bnr-word{grid-area:1/1;display:none;justify-content:center;font-family:var(--display);font-weight:700;
+  color:#14294f;font-size:clamp(2.8rem,10vw,7rem);letter-spacing:.02em;line-height:1;text-align:center;}
+.bnr-word.is-active{display:flex;}
+.bnr-word span{display:inline-block;opacity:0;animation:bnrLetter .55s cubic-bezier(.2,.9,.2,1) forwards;}
+.bnr-word span:nth-child(1){animation-delay:.03s;}
+.bnr-word span:nth-child(2){animation-delay:.10s;}
+.bnr-word span:nth-child(3){animation-delay:.17s;}
+.bnr-word span:nth-child(4){animation-delay:.24s;}
+.bnr-word span:nth-child(5){animation-delay:.31s;}
+@keyframes bnrLetter{0%{opacity:0;transform:translateY(30px) rotate(-8deg);}60%{opacity:1;}100%{opacity:1;transform:none;}}
+
+/* navy arrows to switch the banner by hand */
+.bnr-arrow{position:absolute;top:50%;transform:translateY(-50%);width:52px;height:52px;border-radius:50%;
+  border:2px solid #14294f;color:#14294f;background:transparent;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:background .15s,color .15s;}
+.bnr-arrow:hover{background:#14294f;color:#fff;}
+.bnr-arrow svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}
+.bnr-prev{left:8px;} .bnr-next{right:8px;}
+
+.banner-dots{display:flex;gap:8px;justify-content:center;padding-bottom:22px;}
+.banner-dots button{width:26px;height:4px;border-radius:99px;background:#cdd6e6;border:none;cursor:pointer;padding:0;transition:background .15s;}
+.banner-dots button.on{background:#14294f;}
+
+@media (max-width:620px){
+  .bnr-stage{padding:34px 58px;min-height:150px;}
+  .bnr-arrow{width:44px;height:44px;}
 }
 
 /* ---------- animated exam showcase (the standout, CSS-driven, always moving) ---------- */
@@ -184,6 +183,13 @@ section{padding:58px 0;}
 .sc-art{width:180px;height:106px;}
 .sc-card h3{font-size:1.55rem;margin:6px 0 6px;}
 .sc-card p{color:var(--ink-2);font-size:.98rem;margin-bottom:16px;flex:1;}
+
+/* photo area at the top of each exam card (drop an <img> inside .sc-photo) */
+.sc-photo{aspect-ratio:16/10;border-radius:14px;margin-bottom:18px;overflow:hidden;
+  background:var(--bg-2);border:2px dashed var(--border-strong);
+  display:flex;align-items:center;justify-content:center;}
+.sc-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+.sc-ph{color:var(--muted);font-family:var(--mono);font-size:.8rem;letter-spacing:.04em;}
 
 /* TOEFL — bouncing equalizer bars (Listening) */
 .sc-art rect{fill:var(--gold);transform-box:fill-box;transform-origin:center bottom;
