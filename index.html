@@ -33,6 +33,44 @@
 
 <main id="top">
 
+  <!-- Auto-rotating banner (TOEFL / IELTS / SAT), switches every 3s. Pure CSS.
+       Drop your image into each .bnr-media, replacing the <span class="bnr-ph"> line, e.g.:
+       <img src="assets/banner/toefl.jpg" alt="TOEFL"> -->
+  <section class="banner" aria-label="TOEFL, IELTS and SAT">
+    <div class="wrap">
+      <div class="banner-viewport">
+        <article class="bnr bnr-1">
+          <div class="bnr-media"><span class="bnr-ph">add TOEFL image</span></div>
+          <div class="bnr-copy">
+            <span class="bnr-tag">01 / 03</span>
+            <h2>TOEFL</h2>
+            <p>Adaptive Reading &amp; Listening — the new 2026 format, marked the second you answer.</p>
+            <a href="toefl.html" class="btn btn-gold">Open TOEFL</a>
+          </div>
+        </article>
+        <article class="bnr bnr-2">
+          <div class="bnr-media"><span class="bnr-ph">add IELTS image</span></div>
+          <div class="bnr-copy">
+            <span class="bnr-tag">02 / 03</span>
+            <h2>IELTS</h2>
+            <p>Real Academic &amp; General section formats, one question type at a time — checked instantly.</p>
+            <a href="ielts.html" class="btn btn-gold">Open IELTS</a>
+          </div>
+        </article>
+        <article class="bnr bnr-3">
+          <div class="bnr-media"><span class="bnr-ph">add SAT image</span></div>
+          <div class="bnr-copy">
+            <span class="bnr-tag">03 / 03</span>
+            <h2>SAT</h2>
+            <p>Drill Math and Reading &amp; Writing by topic, or sit a full Digital-SAT-style test.</p>
+            <a href="sat.html" class="btn btn-gold">Open SAT</a>
+          </div>
+        </article>
+      </div>
+      <div class="banner-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+    </div>
+  </section>
+
   <section class="hero">
     <div class="wrap hero-grid">
       <div class="hero-copy">
@@ -41,7 +79,7 @@
         <p class="hero-sub">A study workspace for the TOEFL, IELTS and SAT. You answer real questions, they're marked the second you commit, and nothing you've solved comes back until you've cleared the set. <b>Reading and Listening are free</b> — no card, no trial clock.</p>
         <div class="hero-ctas">
           <a href="toefl.html" class="btn btn-gold btn-lg">Start practicing</a>
-          <a href="#exams" class="link-quiet link-arrow">see the three exams &#8595;</a>
+          <a href="#webinars" class="link-quiet link-arrow">see this week’s webinars &#8595;</a>
         </div>
         <p class="hand-note">no sign-up to try a few &#8599;</p>
       </div>
@@ -136,58 +174,6 @@
     </div>
   </section>
 
-  <section class="exams" id="exams">
-    <div class="wrap">
-      <div class="section-head-left">
-        <span class="mono-label">// your destinations</span>
-        <h2 class="section-title">Three exams, <span class="mark-underline">one chart<svg viewBox="0 0 300 20" aria-hidden="true"><path class="u-ghost" pathLength="100" d="M8 15 C 72 10, 122 18, 172 13 C 222 9, 256 17, 292 13"/><path class="u-main" pathLength="100" d="M6 12 C 62 6, 112 16, 166 10 C 212 5, 250 15, 294 9"/></svg></span>.</h2>
-      </div>
-      <div class="showcase">
-        <article class="sc-card">
-          <div class="sc-art-wrap" aria-hidden="true">
-            <svg class="sc-art line-boil" viewBox="0 0 170 100">
-              <rect x="16" y="30" width="15" height="45" rx="7"/>
-              <rect x="43" y="30" width="15" height="45" rx="7"/>
-              <rect x="70" y="30" width="15" height="45" rx="7"/>
-              <rect x="97" y="30" width="15" height="45" rx="7"/>
-              <rect x="124" y="30" width="15" height="45" rx="7"/>
-              <rect x="151" y="30" width="11" height="45" rx="5"/>
-            </svg>
-          </div>
-          <span class="mono-label">rebuilt for the Jan 2026 redesign</span>
-          <h3>TOEFL</h3>
-          <p>Adaptive Reading &amp; Listening, marked the second you answer.</p>
-          <a href="toefl.html" class="link-arrow">Open TOEFL &#8594;</a>
-        </article>
-        <article class="sc-card">
-          <div class="sc-art-wrap" aria-hidden="true">
-            <svg class="sc-art line-boil" viewBox="0 0 170 100">
-              <circle class="sc-ring" cx="85" cy="50" r="34"/>
-              <path class="sc-check" d="M62 52 l16 18 l34 -40"/>
-            </svg>
-          </div>
-          <span class="mono-label">academic &amp; general</span>
-          <h3>IELTS</h3>
-          <p>Real section formats, one question type at a time — checked instantly.</p>
-          <a href="ielts.html" class="link-arrow">Open IELTS &#8594;</a>
-        </article>
-        <article class="sc-card">
-          <div class="sc-art-wrap" aria-hidden="true">
-            <svg class="sc-art line-boil" viewBox="0 0 170 100">
-              <path class="sc-gauge-track" d="M30 86 A 55 55 0 0 1 140 86"/>
-              <path class="sc-gauge-fill" d="M30 86 A 55 55 0 0 1 140 86"/>
-              <line class="sc-needle" x1="85" y1="86" x2="85" y2="40"/>
-              <circle class="sc-hub" cx="85" cy="86" r="6"/>
-            </svg>
-          </div>
-          <span class="mono-label">practice + full test</span>
-          <h3>SAT</h3>
-          <p>Drill Math &amp; Reading/Writing by topic, or sit a full Digital-SAT-style test.</p>
-          <a href="sat.html" class="link-arrow">Open SAT &#8594;</a>
-        </article>
-      </div>
-    </div>
-  </section>
 
   <section class="logbook">
     <div class="wrap">

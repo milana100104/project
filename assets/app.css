@@ -140,6 +140,39 @@ section{padding:58px 0;}
 .stop h3{font-size:1.6rem;margin:12px 0 8px;}
 .stop p{color:var(--ink-2);font-size:1rem;margin-bottom:16px;}
 
+/* ---------- top auto-rotating banner (TOEFL / IELTS / SAT, every 3s, pure CSS) ---------- */
+.banner{background:#f3ede0;border-bottom:3px solid var(--gold-line);}
+.banner-viewport{display:grid;}                 /* stacks slides in one cell; sizes to tallest */
+.bnr{grid-area:1/1;display:grid;grid-template-columns:1.05fr .95fr;gap:36px;align-items:center;
+  padding:40px 4px;opacity:0;visibility:hidden;animation:bnrCycle 9s infinite;will-change:opacity;}
+.bnr-1{animation-delay:0s;} .bnr-2{animation-delay:3s;} .bnr-3{animation-delay:6s;}
+@keyframes bnrCycle{
+  0%{opacity:0;visibility:hidden;transform:translateY(10px);}
+  2%{visibility:visible;}
+  6%{opacity:1;transform:none;}
+  30%{opacity:1;visibility:visible;transform:none;}
+  35%{opacity:0;transform:translateY(-8px);}
+  36%{visibility:hidden;}
+  100%{opacity:0;visibility:hidden;}
+}
+.bnr-media{aspect-ratio:16/10;border-radius:16px;overflow:hidden;background:#e9e0cd;border:2px dashed #cbbb93;
+  display:flex;align-items:center;justify-content:center;}
+.bnr-media img{width:100%;height:100%;object-fit:cover;display:block;}
+.bnr-ph{color:#a08f66;font-family:var(--mono);font-size:.85rem;letter-spacing:.05em;}
+.bnr-tag{font-family:var(--mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:#b0851b;}
+.bnr-copy h2{font-family:var(--display);font-size:clamp(2.2rem,4.2vw,3.1rem);color:#14233f;margin:8px 0 12px;letter-spacing:-.02em;}
+.bnr-copy p{color:#41506d;font-size:1.12rem;max-width:40ch;margin-bottom:22px;}
+.banner-dots{display:flex;gap:8px;justify-content:center;padding-bottom:20px;}
+.banner-dots span{width:26px;height:4px;border-radius:99px;background:#d8cba6;animation:bnrDot 9s infinite;}
+.banner-dots span:nth-child(1){animation-delay:0s;}
+.banner-dots span:nth-child(2){animation-delay:3s;}
+.banner-dots span:nth-child(3){animation-delay:6s;}
+@keyframes bnrDot{0%{background:#d8cba6;}3%{background:var(--gold-line);}31%{background:var(--gold-line);}35%{background:#d8cba6;}100%{background:#d8cba6;}}
+@media (max-width:760px){
+  .bnr{grid-template-columns:1fr;gap:20px;padding:28px 4px;}
+  .bnr-media{aspect-ratio:16/9;}
+}
+
 /* ---------- animated exam showcase (the standout, CSS-driven, always moving) ---------- */
 .showcase{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;padding-top:6px;}
 .sc-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;
