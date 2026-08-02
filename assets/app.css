@@ -4,6 +4,10 @@
    grotesk for body (Hanken), a mono for the "instrument" numbers (IBM Plex Mono),
    and a quick hand for accents (Caveat). Kept in sync with workspace.css tokens. */
 
+/* Vintage letterpress display + a quick hand — the "made by a person" signal.
+   Body/mono come from the per-page <link> tags. */
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Caveat:wght@600;700&display=swap');
+
 :root{
   --bg:#0b1a38; --bg-2:#0e2144; --surface:#132a52; --surface-2:#183259;
   --border:#26406e; --border-strong:#33517f;
@@ -13,7 +17,8 @@
   --good:#43c48a; --good-bg:rgba(67,196,138,.13); --good-line:rgba(67,196,138,.45);
   --bad:#e97575; --bad-bg:rgba(233,117,117,.13); --bad-line:rgba(233,117,117,.45);
   --font:'Hanken Grotesk',system-ui,-apple-system,sans-serif;
-  --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  --serif:'IM Fell English','Fraunces',Georgia,'Times New Roman',serif;
+  --serif-sc:'IM Fell English SC','IM Fell English',Georgia,serif;
   --mono:'IBM Plex Mono',ui-monospace,monospace;
   --hand:'Caveat',ui-rounded,cursive;
   --wrap:1120px;
@@ -25,9 +30,8 @@ html{scroll-behavior:smooth;}
 body{
   background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.65;
   -webkit-font-smoothing:antialiased;overflow-x:hidden;
-  background-image:
-    radial-gradient(1100px 620px at 82% -8%, rgba(212,167,44,.10), transparent 60%),
-    radial-gradient(900px 700px at -6% 10%, rgba(38,64,110,.55), transparent 55%);
+  /* flat inked base with a faint lamp-glow, not a glossy gradient */
+  background-image:radial-gradient(1300px 760px at 80% -14%, rgba(212,167,44,.06), transparent 62%);
   background-attachment:fixed;
 }
 a{color:inherit;text-decoration:none;}
@@ -39,9 +43,9 @@ img{max-width:100%;display:block;}
 .wrap{max-width:var(--wrap);margin:0 auto;padding:0 26px;}
 
 /* --- paper grain: a faint hand-made texture, not a gradient blob --- */
-.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");}
-body>*:not(.grain){position:relative;z-index:2;}
+.grain,#beacon-grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.13;mix-blend-mode:soft-light;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");background-size:160px 160px;}
+body>*:not(.grain):not(#beacon-grain):not(#beacon-sketch-defs){position:relative;z-index:2;}
 
 /* ---------- logo mark (placeholder until beacon-logo-icon.jpg is dropped in) ---------- */
 .logo-mark{width:34px;height:34px;border-radius:9px;flex-shrink:0;
@@ -262,6 +266,31 @@ section{padding:56px 0;}
   content:"";position:absolute;left:6px;right:-5px;top:8px;bottom:-6px;z-index:-2;
   border:1.5px solid rgba(212,167,44,.22);border-radius:16px;filter:url(#bwobble2);pointer-events:none;}
 .stop:hover::before{border-color:var(--gold);}
+
+/* vintage letterpress: IM Fell has only a 400 weight — let the ink do the work,
+   and lean on italics for accents rather than faux-bold */
+.hero-title,.section-title,.stop h3,.card h1,.webinar-body h4,.page-head h1,.brand-name{font-weight:400;}
+.hero-title{font-size:clamp(2.8rem,5.6vw,4.4rem);line-height:1.02;}
+.brand-name{font-size:1.28rem;letter-spacing:.01em;}
+.mark-underline{font-style:italic;}
+
+/* asymmetry: nudge the three exam "stops" off a rigid grid */
+.route .stop:nth-child(1){transform:rotate(-.7deg);}
+.route .stop:nth-child(2){transform:translateY(12px) rotate(.6deg);}
+.route .stop:nth-child(3){transform:rotate(-.3deg);}
+.route .stop:hover{transform:translateY(-5px) rotate(0deg);}
+
+/* "HUMAN-MADE" ink stamp */
+.stamp{display:inline-block;font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;
+  color:var(--gold);border:2px solid var(--gold-line);border-radius:8px;padding:7px 11px;
+  transform:rotate(-7deg);filter:url(#bwobble2);text-transform:uppercase;line-height:1.3;text-align:center;}
+.stamp b{display:block;font-size:.86rem;letter-spacing:.14em;}
+
+/* handwritten margin notes, tilted like a scribble in the margin */
+.margin-note{font-family:var(--hand);color:var(--gold);font-size:1.5rem;line-height:1.05;
+  display:inline-block;transform:rotate(-3deg);opacity:.92;}
+.margin-note.r{transform:rotate(3deg);}
+.margin-note svg{display:block;}
 
 /* webinar thumbnail keeps its own crisp clip inside the wobbly frame */
 .webinar-card{overflow:visible;}

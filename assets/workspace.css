@@ -1,5 +1,6 @@
 /* Beacon — workspace + practice. Dark brand theme (navy + gold + cream), calm & focused,
    consistent with the marketing site so there is no jarring dark->light jump. */
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Caveat:wght@600;700&display=swap');
 :root{
   --bg:#0b1a38; --bg-2:#0e2144; --surface:#132a52; --surface-2:#183259;
   --border:#26406e; --border-strong:#33517f;
@@ -8,9 +9,19 @@
   --good:#43c48a; --good-bg:rgba(67,196,138,.13); --good-line:rgba(67,196,138,.45);
   --bad:#e97575; --bad-bg:rgba(233,117,117,.13); --bad-line:rgba(233,117,117,.45);
   --font:'Hanken Grotesk',system-ui,-apple-system,sans-serif;
+  --serif:'IM Fell English',Georgia,'Times New Roman',serif;
+  --hand:'Caveat',ui-rounded,cursive;
   --mono:'IBM Plex Mono',ui-monospace,monospace;
   --wrap:940px;
 }
+/* grain overlay (auth.js injects #beacon-grain on pages without a .grain div) */
+#beacon-grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.13;mix-blend-mode:soft-light;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");background-size:160px 160px;}
+/* vintage letterpress display on the working pages too */
+.ws-h1,.acc-title,.pr-prompt,.pr-finished h2,.pr-score .pct,.saved-main b{font-family:var(--serif);letter-spacing:.01em;}
+.ws-h1{font-weight:400;font-size:2.3rem;}
+.acc-title{font-weight:400;font-size:1.28rem;}
+.pr-score .pct{font-weight:400;}
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
 body{background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.6;-webkit-font-smoothing:antialiased;}

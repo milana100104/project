@@ -746,8 +746,9 @@
       return { big: b.toFixed(1), sub: 'Estimated IELTS ' + label + ' band (max 9.0) · ' + correct + ' / ' + total + ' correct', pass: b >= 6 };
     }
     if (exam === 'toefl') {
-      var s = Math.round(pct / 100 * 30);
-      return { big: s + ' / 30', sub: 'Estimated TOEFL ' + label + ' section — the full exam scores 0–120 across four sections · ' + correct + ' / ' + total + ' correct', pass: s >= 20 };
+      var s120 = Math.round(pct / 100 * 120);         // familiar 0–120 scale
+      var s6 = Math.round((1 + pct / 100 * 5) * 10) / 10; // new 2026 scale, 1.0–6.0
+      return { big: String(s120), sub: '(' + s6.toFixed(1) + ' / 6.0 on the new 1–6 scale) · estimated TOEFL score from your ' + label + ' · ' + correct + ' / ' + total + ' correct', pass: s120 >= 84 };
     }
     return { big: pct + '%', sub: correct + ' / ' + total + ' correct', pass: pct >= 60 };
   }

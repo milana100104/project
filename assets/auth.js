@@ -142,15 +142,25 @@
     svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;';
     svg.innerHTML =
       '<defs>' +
-      '<filter id="bwobble"><feTurbulence type="fractalNoise" baseFrequency="0.013" numOctaves="2" seed="7" result="n"/>' +
-      '<feDisplacementMap in="SourceGraphic" in2="n" scale="4.5"/></filter>' +
-      '<filter id="bwobble2"><feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="2" seed="4" result="n"/>' +
-      '<feDisplacementMap in="SourceGraphic" in2="n" scale="2.5"/></filter>' +
+      '<filter id="bwobble"><feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="2" seed="7" result="n"/>' +
+      '<feDisplacementMap in="SourceGraphic" in2="n" scale="7"/></filter>' +
+      '<filter id="bwobble2"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="4" result="n"/>' +
+      '<feDisplacementMap in="SourceGraphic" in2="n" scale="4"/></filter>' +
+      '<filter id="binky"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="3" result="n"/>' +
+      '<feDisplacementMap in="SourceGraphic" in2="n" scale="1.4"/></filter>' +
       '</defs>';
     document.body.appendChild(svg);
   }
 
-  function boot() { paintHeader(); injectSketchDefs(); }
+  // Grain overlay for pages that don't already have a .grain element.
+  function injectGrain() {
+    if (document.querySelector('.grain') || document.getElementById('beacon-grain')) return;
+    var g = document.createElement('div');
+    g.id = 'beacon-grain';
+    document.body.appendChild(g);
+  }
+
+  function boot() { paintHeader(); injectSketchDefs(); injectGrain(); }
   window.BeaconAuth = Auth;
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
