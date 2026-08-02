@@ -133,22 +133,18 @@
   // ---- hand-drawn "inky chart" filters: displace borders so card frames look
   //      drawn by hand rather than machine-perfect. Referenced from CSS as
   //      filter:url(#bwobble). Injected once, on every page. ----
-  function injectSketchDefs() {
+  function boilFilter(id, seed) {
+    return '<filter id="' + id + '"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="' + seed + '" result="n"/>' +
+      '<feDisplacementMap in="SourceGraphic" in2="n" scale="2.6"/></filter>';
+  }
+  function injectFilters() {
     if (document.getElementById('beacon-sketch-defs')) return;
     var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('id', 'beacon-sketch-defs');
     svg.setAttribute('aria-hidden', 'true');
     svg.setAttribute('width', '0'); svg.setAttribute('height', '0');
     svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;';
-    svg.innerHTML =
-      '<defs>' +
-      '<filter id="bwobble"><feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="2" seed="7" result="n"/>' +
-      '<feDisplacementMap in="SourceGraphic" in2="n" scale="7"/></filter>' +
-      '<filter id="bwobble2"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="4" result="n"/>' +
-      '<feDisplacementMap in="SourceGraphic" in2="n" scale="4"/></filter>' +
-      '<filter id="binky"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="3" result="n"/>' +
-      '<feDisplacementMap in="SourceGraphic" in2="n" scale="1.4"/></filter>' +
-      '</defs>';
+    svg.innerHTML = '<defs>' + boilFilter('boilA', 1) + boilFilter('boilB', 5) + boilFilter('boilC', 11) + '</defs>';
     document.body.appendChild(svg);
   }
 
@@ -160,7 +156,21 @@
     document.body.appendChild(g);
   }
 
-  function boot() { paintHeader(); injectSketchDefs(); injectGrain(); }
+  // Frame-by-frame "boiling line": swap the displacement filter a few times a
+  // second so hand-drawn strokes shimmer the way a person's animated line does.
+  function startLineBoil() {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var els = document.querySelectorAll('.line-boil');
+    if (!els.length) return;
+    var frames = ['url(#boilA)', 'url(#boilB)', 'url(#boilC)'], i = 0;
+    els.forEach(function (e) { e.style.filter = frames[0]; });
+    setInterval(function () {
+      i = (i + 1) % frames.length;
+      els.forEach(function (e) { e.style.filter = frames[i]; });
+    }, 150);
+  }
+
+  function boot() { paintHeader(); injectFilters(); injectGrain(); startLineBoil(); }
   window.BeaconAuth = Auth;
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
