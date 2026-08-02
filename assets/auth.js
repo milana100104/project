@@ -130,8 +130,29 @@
     });
   }
 
+  // ---- hand-drawn "inky chart" filters: displace borders so card frames look
+  //      drawn by hand rather than machine-perfect. Referenced from CSS as
+  //      filter:url(#bwobble). Injected once, on every page. ----
+  function injectSketchDefs() {
+    if (document.getElementById('beacon-sketch-defs')) return;
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('id', 'beacon-sketch-defs');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('width', '0'); svg.setAttribute('height', '0');
+    svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;';
+    svg.innerHTML =
+      '<defs>' +
+      '<filter id="bwobble"><feTurbulence type="fractalNoise" baseFrequency="0.013" numOctaves="2" seed="7" result="n"/>' +
+      '<feDisplacementMap in="SourceGraphic" in2="n" scale="4.5"/></filter>' +
+      '<filter id="bwobble2"><feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="2" seed="4" result="n"/>' +
+      '<feDisplacementMap in="SourceGraphic" in2="n" scale="2.5"/></filter>' +
+      '</defs>';
+    document.body.appendChild(svg);
+  }
+
+  function boot() { paintHeader(); injectSketchDefs(); }
   window.BeaconAuth = Auth;
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', paintHeader);
-  } else { paintHeader(); }
+    document.addEventListener('DOMContentLoaded', boot);
+  } else { boot(); }
 })();

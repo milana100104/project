@@ -244,6 +244,47 @@ section{padding:56px 0;}
 .footer-bottom{border-top:1px solid var(--border);padding-top:22px;display:flex;justify-content:space-between;
   flex-wrap:wrap;gap:10px;color:var(--muted);font-size:.86rem;}
 
+/* ============================================================
+   HAND-DRAWN "INKY CHART" LAYER
+   Card frames are drawn by a wobbly SVG-displaced pseudo-border so nothing
+   reads as machine-perfect. Text sits on top, crisp and unfiltered.
+   ============================================================ */
+.stop,.card,.webinar-card,.logbook .logbook-inner,.data-row,.empty-state{
+  background:transparent!important;border-color:transparent!important;box-shadow:none!important;
+  position:relative;isolation:isolate;}
+.stop::before,.card::before,.webinar-card::before,.logbook .logbook-inner::before,
+.data-row::before,.empty-state::before{
+  content:"";position:absolute;inset:0;z-index:-1;
+  background:var(--surface);border:2.5px solid var(--gold-line);border-radius:16px;
+  filter:url(#bwobble);}
+/* a faint offset "ink shadow" doubled line, hand-inked look */
+.stop::after,.card::after,.logbook .logbook-inner::after{
+  content:"";position:absolute;left:6px;right:-5px;top:8px;bottom:-6px;z-index:-2;
+  border:1.5px solid rgba(212,167,44,.22);border-radius:16px;filter:url(#bwobble2);pointer-events:none;}
+.stop:hover::before{border-color:var(--gold);}
+
+/* webinar thumbnail keeps its own crisp clip inside the wobbly frame */
+.webinar-card{overflow:visible;}
+.webinar-thumb{border-radius:13px 13px 0 0;overflow:hidden;margin:2px 2px 0;}
+
+/* hand-drawn section rule + eyebrow gets the quick-hand look */
+.mono-label{position:relative;}
+.section-head-left .mono-label::after,.page-head .mono-label::after{
+  content:"";display:block;width:54px;height:7px;margin-top:7px;
+  background:no-repeat left center/contain
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='8'%3E%3Cpath d='M2 5 C 14 1, 24 8, 36 4 S 54 2, 58 5' fill='none' stroke='%23d4a72c' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");}
+
+/* buttons: gold fill with a hand-inked navy outline that wobbles slightly */
+.btn-gold{position:relative;box-shadow:2px 2px 0 rgba(10,20,45,.55);}
+.btn-gold::after{content:"";position:absolute;inset:-3px;border:1.6px solid rgba(10,20,45,.35);
+  border-radius:13px;filter:url(#bwobble2);pointer-events:none;}
+.btn-lg{box-shadow:3px 3px 0 rgba(10,20,45,.6);}
+
+/* logbook ticks feel drawn, not iconic — already hand-strokes; nudge weight */
+.tick svg{stroke-width:2.6;}
+
+/* the "you are here / new format" hero notes already use Caveat via .anno */
+
 /* ---------- responsive ---------- */
 @media (max-width:880px){
   .hero-grid{grid-template-columns:1fr;gap:20px;}

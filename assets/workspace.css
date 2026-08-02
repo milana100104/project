@@ -232,6 +232,37 @@ a.ws-item-full:hover{border-color:var(--gold);}
 .ws-footer-inner a{color:var(--ink-2);}
 .ws-footer-inner a:hover{color:var(--gold);}
 
+/* ============================================================
+   HAND-DRAWN "INKY CHART" LAYER (working pages + practice)
+   ============================================================ */
+.saved-card,.acc,.ws-fulltest,.pr-card,.pr-rev{
+  background:transparent!important;border-color:transparent!important;box-shadow:none!important;
+  position:relative;isolation:isolate;}
+.saved-card::before,.acc::before,.ws-fulltest::before,.pr-card::before,.pr-rev::before{
+  content:"";position:absolute;inset:0;z-index:-1;
+  background:var(--surface);border:2.5px solid var(--gold-line);border-radius:14px;
+  filter:url(#bwobble);}
+.pr-rev::before{border-width:2px;border-radius:12px;filter:url(#bwobble2);}
+/* accordions must not clip the wobbly frame */
+.acc{overflow:visible;}
+.acc-head{border-radius:14px 14px 0 0;}
+/* keep the coloured left-edge cue on test-review rows, drawn over the frame */
+.pr-rev.ok::after,.pr-rev.no::after{content:"";position:absolute;left:2px;top:8px;bottom:8px;width:3px;
+  border-radius:3px;filter:url(#bwobble2);}
+.pr-rev.ok::after{background:var(--good);}
+.pr-rev.no::after{background:var(--bad);}
+
+/* the full-test call-to-action reads as a stamped, inked panel */
+.ws-item-full{position:relative;isolation:isolate;}
+.ws-item-full::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--gold-soft);
+  border:2px solid var(--gold-line);border-radius:12px;filter:url(#bwobble2);}
+
+/* buttons get a hand-inked look consistent with the marketing side */
+.ws-btn-primary,.btn-gold{position:relative;box-shadow:2px 2px 0 rgba(6,14,34,.55);}
+.pr-choice{position:relative;}
+
+/* accordion chevron + open state unaffected; frame wobble does the work */
+
 @media (max-width:720px){
   .ws-nav a{padding:8px 9px;font-size:.9rem;}
   .ws-brand span{display:none;}
