@@ -147,7 +147,9 @@ section{padding:58px 0;}
 .bnr-word{grid-area:1/1;display:none;justify-content:center;font-family:var(--display);font-weight:700;
   color:#14294f;font-size:clamp(2.8rem,10vw,7rem);letter-spacing:.02em;line-height:1;text-align:center;}
 .bnr-word.is-active{display:flex;}
-.bnr-word span{display:inline-block;opacity:0;animation:bnrLetter .55s cubic-bezier(.2,.9,.2,1) forwards;}
+/* base state is VISIBLE so the word always shows (even if animations are off,
+   e.g. reduced-motion); the entrance animation only plays as an enhancement */
+.bnr-word span{display:inline-block;opacity:1;animation:bnrLetter .55s cubic-bezier(.2,.9,.2,1) both;}
 .bnr-word span:nth-child(1){animation-delay:.03s;}
 .bnr-word span:nth-child(2){animation-delay:.10s;}
 .bnr-word span:nth-child(3){animation-delay:.17s;}

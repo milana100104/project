@@ -56,7 +56,8 @@
     </div>
     <script>
     (function(){
-      var b=document.currentScript.closest('.banner');
+      var b=(document.currentScript&&document.currentScript.closest('.banner'))||document.querySelector('.banner');
+      if(!b)return;
       var words=[].slice.call(b.querySelectorAll('.bnr-word'));
       var dots=[].slice.call(b.querySelectorAll('[data-dot]'));
       var i=0,timer;
