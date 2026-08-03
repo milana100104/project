@@ -11,7 +11,10 @@
 
   var USERS_KEY = 'beacon:users';
   var AUTH_KEY = 'beacon:auth';
-  var ADMIN = { name: 'Admin', login: 'admin', pass: 'Adminspeaknest' };
+  // NOTE: client-side only — this password lives in the JS and is NOT secure.
+  // Fine for a demo; a real deployment must check credentials on a server.
+  var ADMIN = { name: 'Milana', login: 'milana', pass: 'Milanaadmin' };
+  var DEMO_STUDENT = { name: 'Demo Student', email: 'student@beacon.local', pass: 'student123' };
 
   function read(key, fallback) {
     try { var v = JSON.parse(localStorage.getItem(key)); return v == null ? fallback : v; }
@@ -67,7 +70,7 @@
       id = (id || '').trim();
       // admin path
       if (id.toLowerCase() === ADMIN.login && pass === ADMIN.pass) {
-        write(AUTH_KEY, { name: ADMIN.name, email: 'admin@beacon.local', role: 'admin' });
+        write(AUTH_KEY, { name: ADMIN.name, email: 'milana@beacon.local', role: 'admin' });
         return { ok: true, admin: true };
       }
       var email = id.toLowerCase();
@@ -170,7 +173,18 @@
     }, 150);
   }
 
+  // Seed a ready-to-use demo student so you can log in without registering.
+  function seedDemoStudent() {
+    var users = read(USERS_KEY, {});
+    var e = DEMO_STUDENT.email;
+    if (!users[e]) {
+      users[e] = { name: DEMO_STUDENT.name, email: e, pass: obscure(DEMO_STUDENT.pass), verified: true, role: 'student' };
+      write(USERS_KEY, users);
+    }
+  }
+
   function boot() { paintHeader(); injectFilters(); injectGrain(); startLineBoil(); }
+  seedDemoStudent();        // ensure the demo student exists as soon as auth.js loads
   window.BeaconAuth = Auth;
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
