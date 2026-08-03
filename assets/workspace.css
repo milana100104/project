@@ -273,6 +273,18 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 .ws-white .saved-card .star{color:#e0c24a;}
 .ws-white .saved-card.is-empty .star{color:#b8c1d4;}
 
+/* one big white container around the whole workspace (eyebrow stays above it);
+   the cards inside become light sub-panels so they read as tidy separate blocks */
+.ws-white .ws-panel{background:#ffffff;border:1px solid #e3e7f0;border-radius:22px;
+  padding:26px 30px 32px;box-shadow:0 16px 44px rgba(0,0,0,.28);margin-top:14px;}
+.ws-white .ws-panel .ws-h1{color:#14233f;margin-top:0;}
+.ws-white .ws-panel .ws-sub{color:#4a5875;}
+.ws-white .ws-panel .saved-card,
+.ws-white .ws-panel .acc,
+.ws-white .ws-panel .ws-fulltest{background:#f6f8fc;border-color:#e4e9f2;box-shadow:none;}
+.ws-white .ws-panel .acc-head:hover,
+.ws-white .ws-panel a.ws-item:hover{background:#eef2f9;}
+
 @media (max-width:720px){
   body{font-size:16px;}
   .ws-nav a{padding:8px 9px;font-size:.9rem;}
