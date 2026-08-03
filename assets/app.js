@@ -249,13 +249,14 @@
       return out;
     },
 
-    /** Load shared questions from Supabase once. Always resolves — the seed is the fallback. */
+    /** Load shared questions AND the signed-in student's progress once.
+     *  Always resolves — the local seed / localStorage is the fallback. */
     ready: function () {
       if (this._ready) return this._ready;
       var self = this;
       var sb = window.sb;
       if (!sb) { this._ready = Promise.resolve(); return this._ready; }
-      this._ready = sb.from('questions').select('data').then(function (res) {
+      var qP = sb.from('questions').select('data').then(function (res) {
         if (res && !res.error && res.data) {
           res.data.forEach(function (row) {
             var q = row && row.data;
@@ -263,7 +264,46 @@
           });
         }
       }).catch(function () { /* table missing / offline: fall back to the seed */ });
+      this._ready = Promise.all([qP, this._loadProgress()]).then(function () {});
       return this._ready;
+    },
+
+    // ---- per-student progress sync (favorites + solved) --------------
+    _userId: null,      // Supabase user id when a student is signed in; null for guests/admin
+    _syncTimer: null,
+    /** Pull this student's saved list + solved progress from Supabase (once, at load). */
+    _loadProgress: function () {
+      var self = this, sb = window.sb;
+      if (!sb) return Promise.resolve();
+      return sb.auth.getSession().then(function (res) {
+        var u = res && res.data && res.data.session && res.data.session.user;
+        if (!u) return; // guest or client-side admin → this browser only
+        self._userId = u.id;
+        return sb.from('progress').select('favorites, solved').eq('user_id', u.id).maybeSingle()
+          .then(function (r) {
+            var d = self._load();
+            if (r && !r.error && r.data) {
+              if (Array.isArray(r.data.favorites)) d.favorites = r.data.favorites;
+              if (r.data.solved && typeof r.data.solved === 'object') d.solved = r.data.solved;
+              self._save();
+            } else {
+              self._syncUp(); // no row yet → seed the account from this device
+            }
+          });
+      }).catch(function () {});
+    },
+    /** Push the current student's progress up to Supabase (debounced, fire-and-forget). */
+    _syncUp: function () {
+      var self = this, sb = window.sb;
+      if (!sb || !this._userId) return; // nothing to sync for guests/admin
+      if (this._syncTimer) clearTimeout(this._syncTimer);
+      this._syncTimer = setTimeout(function () {
+        var d = self._load();
+        sb.from('progress').upsert(
+          { user_id: self._userId, favorites: d.favorites, solved: d.solved, updated_at: new Date().toISOString() },
+          { onConflict: 'user_id' }
+        ).then(function () {}, function () {});
+      }, 400);
     },
 
     _load: function () {
@@ -318,19 +358,19 @@
       var bucket = exam + '/' + skill + '/' + (type || 'all');
       if (!d.solved[bucket]) d.solved[bucket] = [];
       if (d.solved[bucket].indexOf(id) === -1) d.solved[bucket].push(id);
-      this._save();
+      this._save(); this._syncUp();
     },
     resetBucket: function (exam, skill, type) {
       var d = this._load();
       var bucket = exam + '/' + skill + '/' + (type || 'all');
-      d.solved[bucket] = []; this._save();
+      d.solved[bucket] = []; this._save(); this._syncUp();
     },
 
     isFav: function (id) { return this._load().favorites.indexOf(id) !== -1; },
     toggleFav: function (id) {
       var d = this._load(); var i = d.favorites.indexOf(id);
       if (i === -1) d.favorites.push(id); else d.favorites.splice(i, 1);
-      this._save(); return this.isFav(id);
+      this._save(); this._syncUp(); return this.isFav(id);
     },
     favoriteQuestions: function () {
       var d = this._load(); var bank = this._bank();
