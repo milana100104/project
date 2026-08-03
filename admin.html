@@ -8,9 +8,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=18">
-<script src="assets/app.js?v=18" defer></script>
-<script src="assets/auth.js?v=18" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=19">
+<script src="assets/app.js?v=19" defer></script>
+<script src="assets/config.js?v=19" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+<script src="assets/auth.js?v=19" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -39,7 +41,7 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  var user = BeaconAuth.requireAuth();
+  BeaconAuth.requireAuth().then(function (user) {
   if (!user) return;
   if (user.role !== "admin") { document.getElementById("panel").innerHTML = '<div class="empty-state">Admin only. Log in as the admin account.</div>'; return; }
 
@@ -172,6 +174,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function opt(v){ var o=document.createElement("option"); o.value=v; o.textContent=v.replace(/-/g," "); return o; }
   function fail(m,t){ m.className="form-msg show bad"; m.textContent=t; }
   function shorten(s){ s=String(s||""); return s.length>72 ? s.slice(0,72)+"…" : s; }
+  });
 });
 </script>
 </body>

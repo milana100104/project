@@ -8,8 +8,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=18">
-<script src="assets/auth.js?v=18" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=19">
+<script src="assets/config.js?v=19" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+<script src="assets/auth.js?v=19" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -35,38 +37,44 @@
 </main>
 
 <script>
-(function () {
+document.addEventListener("DOMContentLoaded", function () {
   var card = document.getElementById("auth-card");
   function qs(n){var m=new RegExp("[?&]"+n+"=([^&]*)").exec(location.search);return m?decodeURIComponent(m[1].replace(/\+/g," ")):null;}
   var view = qs("view") || "login";
-  var pendingEmail = qs("email") || "";
   var next = qs("next") || "";
 
-  function go(v, extra){ location.href = "auth.html?view=" + v + (extra || ""); }
   function msg(node, ok, text){ node.className = "form-msg show " + (ok?"good":"bad"); node.textContent = text; }
   function afterLogin(){ location.href = next ? next : "index.html"; }
+  function val(id){ var e=document.getElementById(id); return e?e.value:""; }
+  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+  function busy(btn,on){ btn.disabled=on; btn.textContent = on ? "…" : (btn.dataset.label||"Go"); }
 
   function render() {
+    if (!window.BeaconAuth) { card.innerHTML = '<h1>Just a moment…</h1><p class="sub">Loading the sign-in service. If this stays, refresh the page.</p>'; setTimeout(render, 300); return; }
     if (view === "register") return renderRegister();
-    if (view === "verify") return renderVerify();
     if (view === "forgot") return renderForgot();
+    if (view === "reset") return renderReset();
     return renderLogin();
   }
 
   function renderLogin() {
     card.innerHTML =
       '<h1>Welcome back</h1><p class="sub">Log in to keep your saved questions and progress.</p>' +
+      (qs("confirmed") ? '<div class="form-msg good show">Email confirmed — you can log in now.</div>' : '') +
       '<div class="field"><label>Email or admin login</label><input id="id" type="text" autocomplete="username" placeholder="you@example.com"></div>' +
       '<div class="field"><label>Password</label><input id="pw" type="password" autocomplete="current-password" placeholder="••••••••"></div>' +
       '<button class="btn btn-gold full" id="go">Log in</button>' +
       '<div class="form-msg" id="m"></div>' +
       '<p class="form-switch"><a href="auth.html?view=forgot">Forgot password?</a></p>' +
       '<p class="form-switch">New here? <a href="auth.html?view=register">Create an account</a></p>';
-    document.getElementById("go").onclick = function () {
-      var r = BeaconAuth.login(val("id"), val("pw"));
-      if (r.ok) return afterLogin();
-      if (r.needVerify) return go("verify", "&email=" + encodeURIComponent(val("id")));
-      msg(document.getElementById("m"), false, r.error);
+    var go=document.getElementById("go"); go.dataset.label="Log in";
+    go.onclick = function () {
+      var m=document.getElementById("m"); busy(go,true);
+      BeaconAuth.login(val("id"), val("pw")).then(function(r){
+        busy(go,false);
+        if (r.ok) return afterLogin();
+        msg(m, false, r.error);
+      });
     };
   }
 
@@ -79,72 +87,54 @@
       '<button class="btn btn-gold full" id="go">Create account</button>' +
       '<div class="form-msg" id="m"></div>' +
       '<p class="form-switch">Already have an account? <a href="auth.html?view=login">Log in</a></p>';
-    document.getElementById("go").onclick = function () {
-      var r = BeaconAuth.register(val("nm"), val("em"), val("pw"));
-      if (!r.ok) return msg(document.getElementById("m"), false, r.error);
-      go("verify", "&email=" + encodeURIComponent(val("em")) + "&code=" + r.code);
-    };
-  }
-
-  function renderVerify() {
-    var shownCode = qs("code");
-    card.innerHTML =
-      '<h1>Confirm your email</h1>' +
-      '<p class="sub">We’d normally email a 6-digit code to <b>' + escapeHtml(pendingEmail) + '</b>. This is a demo, so it’s shown below.</p>' +
-      (shownCode ? '<div class="form-msg good show">Your verification code: <b style="font-family:var(--mono)">' + escapeHtml(shownCode) + '</b></div>' : '') +
-      '<div class="field" style="margin-top:16px"><label>Verification code</label><input id="code" inputmode="numeric" placeholder="6-digit code"></div>' +
-      '<button class="btn btn-gold full" id="go">Verify &amp; continue</button>' +
-      '<div class="form-msg" id="m"></div>' +
-      '<p class="form-switch"><a href="#" id="resend">Resend code</a></p>';
-    document.getElementById("go").onclick = function () {
-      var r = BeaconAuth.verify(pendingEmail, val("code"));
-      if (r.ok) return afterLogin();
-      msg(document.getElementById("m"), false, r.error);
-    };
-    document.getElementById("resend").onclick = function (e) {
-      e.preventDefault();
-      var r = BeaconAuth.resend(pendingEmail);
-      if (r.ok) go("verify", "&email=" + encodeURIComponent(pendingEmail) + "&code=" + r.code);
-      else msg(document.getElementById("m"), false, r.error);
+    var go=document.getElementById("go"); go.dataset.label="Create account";
+    go.onclick = function () {
+      var m=document.getElementById("m"); busy(go,true);
+      BeaconAuth.register(val("nm"), val("em"), val("pw")).then(function(r){
+        busy(go,false);
+        if (!r.ok) return msg(m, false, r.error);
+        card.innerHTML = '<h1>Check your email</h1><p class="sub">We sent a confirmation link to <b>' + esc(val("em")) + '</b>. Open it to activate your account, then come back and log in.</p><a class="btn btn-gold full" href="auth.html?view=login">Back to log in</a>';
+      });
     };
   }
 
   function renderForgot() {
-    var stage = qs("stage");
-    if (stage === "reset") {
-      var shownCode = qs("code");
-      card.innerHTML =
-        '<h1>Set a new password</h1>' +
-        '<p class="sub">Enter the code for <b>' + escapeHtml(pendingEmail) + '</b> and choose a new password.</p>' +
-        (shownCode ? '<div class="form-msg good show">Your reset code: <b style="font-family:var(--mono)">' + escapeHtml(shownCode) + '</b></div>' : '') +
-        '<div class="field" style="margin-top:16px"><label>Reset code</label><input id="code" inputmode="numeric" placeholder="6-digit code"></div>' +
-        '<div class="field"><label>New password</label><input id="pw" type="password" placeholder="At least 6 characters"></div>' +
-        '<button class="btn btn-gold full" id="go">Update password</button>' +
-        '<div class="form-msg" id="m"></div>';
-      document.getElementById("go").onclick = function () {
-        var r = BeaconAuth.finishReset(pendingEmail, val("code"), val("pw"));
-        if (r.ok) { msg(document.getElementById("m"), true, "Password updated. Redirecting to login…"); setTimeout(function(){ go("login"); }, 1200); }
-        else msg(document.getElementById("m"), false, r.error);
-      };
-    } else {
-      card.innerHTML =
-        '<h1>Reset your password</h1><p class="sub">We’ll send a code to your verified email.</p>' +
-        '<div class="field"><label>Email</label><input id="em" type="email" placeholder="you@example.com"></div>' +
-        '<button class="btn btn-gold full" id="go">Send reset code</button>' +
-        '<div class="form-msg" id="m"></div>' +
-        '<p class="form-switch"><a href="auth.html?view=login">Back to login</a></p>';
-      document.getElementById("go").onclick = function () {
-        var r = BeaconAuth.startReset(val("em"));
-        if (r.ok) go("forgot", "&stage=reset&email=" + encodeURIComponent(val("em")) + "&code=" + r.code);
-        else msg(document.getElementById("m"), false, r.error);
-      };
-    }
+    card.innerHTML =
+      '<h1>Reset your password</h1><p class="sub">We’ll email you a link to set a new password.</p>' +
+      '<div class="field"><label>Email</label><input id="em" type="email" placeholder="you@example.com"></div>' +
+      '<button class="btn btn-gold full" id="go">Send reset link</button>' +
+      '<div class="form-msg" id="m"></div>' +
+      '<p class="form-switch"><a href="auth.html?view=login">Back to login</a></p>';
+    var go=document.getElementById("go"); go.dataset.label="Send reset link";
+    go.onclick = function () {
+      var m=document.getElementById("m"); busy(go,true);
+      BeaconAuth.resetRequest(val("em")).then(function(r){
+        busy(go,false);
+        if (r.ok) msg(m, true, "Done — check your inbox for the reset link.");
+        else msg(m, false, r.error);
+      });
+    };
   }
 
-  function val(id){ var e=document.getElementById(id); return e?e.value:""; }
-  function escapeHtml(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+  function renderReset() {
+    card.innerHTML =
+      '<h1>Set a new password</h1><p class="sub">Choose a new password for your account.</p>' +
+      '<div class="field"><label>New password</label><input id="pw" type="password" autocomplete="new-password" placeholder="At least 6 characters"></div>' +
+      '<button class="btn btn-gold full" id="go">Update password</button>' +
+      '<div class="form-msg" id="m"></div>';
+    var go=document.getElementById("go"); go.dataset.label="Update password";
+    go.onclick = function () {
+      var m=document.getElementById("m"); busy(go,true);
+      BeaconAuth.setNewPassword(val("pw")).then(function(r){
+        busy(go,false);
+        if (r.ok){ msg(m, true, "Password updated — taking you to log in…"); setTimeout(function(){ location.href="auth.html?view=login"; }, 1200); }
+        else msg(m, false, r.error);
+      });
+    };
+  }
+
   render();
-})();
+});
 </script>
 </body>
 </html>

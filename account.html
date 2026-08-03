@@ -8,9 +8,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=18">
-<script src="assets/app.js?v=18" defer></script>
-<script src="assets/auth.js?v=18" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=19">
+<script src="assets/app.js?v=19" defer></script>
+<script src="assets/config.js?v=19" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+<script src="assets/auth.js?v=19" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -40,7 +42,7 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  var user = BeaconAuth.requireAuth();
+  BeaconAuth.requireAuth().then(function (user) {
   if (!user) return;
   function qs(n){var m=new RegExp("[?&]"+n+"=([^&]*)").exec(location.search);return m?decodeURIComponent(m[1]):null;}
   function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
@@ -115,6 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function shorten(s){ s=String(s||""); return s.length>78 ? s.slice(0,78)+"…" : s; }
+  });
 });
 </script>
 </body>

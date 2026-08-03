@@ -1,141 +1,123 @@
-/* Beacon — client-side auth (demo, no backend).
+/* Beacon — authentication via Supabase (real accounts + real confirmation emails).
  *
- * IMPORTANT: this is a front-end-only stand-in so the flows work on a static
- * site. "Passwords" are lightly obscured, not hashed securely, and the email
- * verification code is shown on screen instead of emailed. Swap for a real
- * backend before anything ships. Roles: guest, student, admin.
- * Admin account is fixed: login "Admin" / password "Adminspeaknest".
+ * Requires (loaded before this file):
+ *   assets/config.js      -> window.BEACON_SUPABASE = { url, key }
+ *   @supabase/supabase-js -> window.supabase
+ *
+ * Admin (Milana) stays a fixed client-side login for the content panel; students
+ * are real Supabase users. If Supabase can't load, auth calls fail gracefully
+ * and the rest of the site still works.
  */
 (function () {
   'use strict';
 
-  var USERS_KEY = 'beacon:users';
-  var AUTH_KEY = 'beacon:auth';
-  // NOTE: client-side only — this password lives in the JS and is NOT secure.
-  // Fine for a demo; a real deployment must check credentials on a server.
+  var cfg = window.BEACON_SUPABASE || {};
+  var sb = null;
+  try { if (window.supabase && cfg.url && cfg.key) sb = window.supabase.createClient(cfg.url, cfg.key); }
+  catch (e) { sb = null; }
+  window.sb = sb;
+
   var ADMIN = { name: 'Milana', login: 'milana', pass: 'Milanaadmin' };
-  var DEMO_STUDENT = { name: 'Demo Student', email: 'student@beacon.local', pass: 'student123' };
+  var ADMIN_KEY = 'beacon:admin';
 
-  function read(key, fallback) {
-    try { var v = JSON.parse(localStorage.getItem(key)); return v == null ? fallback : v; }
-    catch (e) { return fallback; }
-  }
-  function write(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
-
-  // Deliberately weak obfuscation — a placeholder, not real security.
-  function obscure(s) { try { return btoa(unescape(encodeURIComponent('bcn:' + s))); } catch (e) { return s; } }
-  function code6() { return String(Math.floor(100000 + Math.random() * 900000)); }
+  function siteBase() { return location.origin + location.pathname.replace(/[^/]*$/, ''); }
+  function readAdmin() { try { return JSON.parse(localStorage.getItem(ADMIN_KEY)); } catch (e) { return null; } }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 
   var Auth = {
-    current: function () { return read(AUTH_KEY, null); },
-    isLoggedIn: function () { return !!this.current(); },
-    isAdmin: function () { var u = this.current(); return !!u && u.role === 'admin'; },
+    /** async → {id,name,email,role} or null */
+    getUser: function () {
+      var a = readAdmin();
+      if (a) return Promise.resolve(a);
+      if (!sb) return Promise.resolve(null);
+      return sb.auth.getSession().then(function (res) {
+        var u = res && res.data && res.data.session && res.data.session.user;
+        if (!u) return null;
+        return { id: u.id, email: u.email, name: (u.user_metadata && u.user_metadata.name) || (u.email || '').split('@')[0], role: 'student' };
+      }).catch(function () { return null; });
+    },
+    isAdmin: function () { var a = readAdmin(); return !!a && a.role === 'admin'; },
 
-    /** Register a pending (unverified) student. Returns {ok, code} or {ok:false, error}. */
     register: function (name, email, pass) {
-      name = (name || '').trim(); email = (email || '').trim().toLowerCase();
-      if (!name || !email || !pass) return { ok: false, error: 'Please fill in every field.' };
-      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { ok: false, error: 'That email doesn’t look right.' };
-      if (pass.length < 6) return { ok: false, error: 'Use at least 6 characters for the password.' };
-      var users = read(USERS_KEY, {});
-      if (users[email] && users[email].verified) return { ok: false, error: 'That email is already registered.' };
-      var code = code6();
-      users[email] = { name: name, email: email, pass: obscure(pass), verified: false, code: code, role: 'student' };
-      write(USERS_KEY, users);
-      return { ok: true, code: code };
+      name = (name || '').trim(); email = (email || '').trim();
+      if (!name || !email || !pass) return Promise.resolve({ ok: false, error: 'Please fill in every field.' });
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return Promise.resolve({ ok: false, error: 'That email doesn’t look right.' });
+      if (pass.length < 6) return Promise.resolve({ ok: false, error: 'Use at least 6 characters for the password.' });
+      if (!sb) return Promise.resolve({ ok: false, error: 'Sign-up service isn’t reachable right now.' });
+      return sb.auth.signUp({
+        email: email, password: pass,
+        options: { data: { name: name }, emailRedirectTo: siteBase() + 'auth.html?view=login&confirmed=1' }
+      }).then(function (res) {
+        if (res.error) return { ok: false, error: res.error.message };
+        return { ok: true };
+      });
     },
 
-    /** Verify an email with its code. Logs the user in on success. */
-    verify: function (email, code) {
-      email = (email || '').trim().toLowerCase();
-      var users = read(USERS_KEY, {});
-      var u = users[email];
-      if (!u) return { ok: false, error: 'No pending registration for that email.' };
-      if (String(code).trim() !== String(u.code)) return { ok: false, error: 'That code doesn’t match. Check and try again.' };
-      u.verified = true; delete u.code; write(USERS_KEY, users);
-      write(AUTH_KEY, { name: u.name, email: u.email, role: u.role });
-      return { ok: true };
-    },
-
-    resend: function (email) {
-      email = (email || '').trim().toLowerCase();
-      var users = read(USERS_KEY, {}); var u = users[email];
-      if (!u) return { ok: false, error: 'No pending registration for that email.' };
-      u.code = code6(); write(USERS_KEY, users);
-      return { ok: true, code: u.code };
-    },
-
-    /** Log in with email/pass (or the admin login). */
     login: function (id, pass) {
       id = (id || '').trim();
-      // admin path
       if (id.toLowerCase() === ADMIN.login && pass === ADMIN.pass) {
-        write(AUTH_KEY, { name: ADMIN.name, email: 'milana@beacon.local', role: 'admin' });
-        return { ok: true, admin: true };
+        localStorage.setItem(ADMIN_KEY, JSON.stringify({ name: ADMIN.name, email: 'admin@beacon', role: 'admin' }));
+        return Promise.resolve({ ok: true, admin: true });
       }
-      var email = id.toLowerCase();
-      var users = read(USERS_KEY, {}); var u = users[email];
-      if (!u || u.pass !== obscure(pass)) return { ok: false, error: 'Wrong email or password.' };
-      if (!u.verified) return { ok: false, error: 'Verify your email before logging in.', needVerify: true };
-      write(AUTH_KEY, { name: u.name, email: u.email, role: u.role });
-      return { ok: true };
+      if (!sb) return Promise.resolve({ ok: false, error: 'Login service isn’t reachable right now.' });
+      return sb.auth.signInWithPassword({ email: id, password: pass }).then(function (res) {
+        if (res.error) {
+          var m = res.error.message || 'Wrong email or password.';
+          if (/confirm/i.test(m)) return { ok: false, needVerify: true, error: 'Confirm your email first — check your inbox for the link.' };
+          return { ok: false, error: m };
+        }
+        return { ok: true };
+      });
     },
 
-    /** Password reset (demo): re-issues a code, then lets caller set a new pass. */
-    startReset: function (email) {
-      email = (email || '').trim().toLowerCase();
-      var users = read(USERS_KEY, {}); var u = users[email];
-      if (!u || !u.verified) return { ok: false, error: 'No verified account for that email.' };
-      u.code = code6(); write(USERS_KEY, users);
-      return { ok: true, code: u.code };
-    },
-    finishReset: function (email, code, pass) {
-      email = (email || '').trim().toLowerCase();
-      var users = read(USERS_KEY, {}); var u = users[email];
-      if (!u) return { ok: false, error: 'No account for that email.' };
-      if (String(code).trim() !== String(u.code)) return { ok: false, error: 'That code doesn’t match.' };
-      if (!pass || pass.length < 6) return { ok: false, error: 'Use at least 6 characters.' };
-      u.pass = obscure(pass); delete u.code; write(USERS_KEY, users);
-      return { ok: true };
+    logout: function () {
+      localStorage.removeItem(ADMIN_KEY);
+      var p = sb ? sb.auth.signOut() : Promise.resolve();
+      var done = function () { location.href = 'index.html'; };
+      return p.then(done, done);
     },
 
-    logout: function () { localStorage.removeItem(AUTH_KEY); location.href = 'index.html'; },
+    resetRequest: function (email) {
+      email = (email || '').trim();
+      if (!sb) return Promise.resolve({ ok: false, error: 'Service isn’t reachable right now.' });
+      return sb.auth.resetPasswordForEmail(email, { redirectTo: siteBase() + 'auth.html?view=reset' })
+        .then(function (res) { return res.error ? { ok: false, error: res.error.message } : { ok: true }; });
+    },
+    setNewPassword: function (pass) {
+      if (!pass || pass.length < 6) return Promise.resolve({ ok: false, error: 'Use at least 6 characters.' });
+      if (!sb) return Promise.resolve({ ok: false, error: 'Service isn’t reachable right now.' });
+      return sb.auth.updateUser({ password: pass }).then(function (res) { return res.error ? { ok: false, error: res.error.message } : { ok: true }; });
+    },
 
-    /** Redirect to login if not authenticated. Returns the user or null. */
+    /** async guard: redirects to login if signed out; resolves to the user otherwise */
     requireAuth: function () {
-      var u = this.current();
-      if (!u) { location.href = 'auth.html?view=login&next=' + encodeURIComponent(location.pathname.split('/').pop() + location.search); }
-      return u;
+      return this.getUser().then(function (u) {
+        if (!u) { location.href = 'auth.html?view=login&next=' + encodeURIComponent(location.pathname.split('/').pop() + location.search); return null; }
+        return u;
+      });
     }
   };
+  window.BeaconAuth = Auth;
 
-  // ---- header injection: reflect auth state in .header-actions on every page ----
+  // ---- header state (async) ----
   function paintHeader() {
     var slots = document.querySelectorAll('.header-actions');
     if (!slots.length) return;
-    var u = Auth.current();
-    slots.forEach(function (slot) {
-      if (!u) return; // leave the default "Log in / Start free" markup for guests
-      var admin = u.role === 'admin'
-        ? '<a href="admin.html" class="link-quiet">Admin</a>' : '';
-      var first = (u.name || 'You').split(' ')[0];
-      slot.innerHTML =
-        admin +
-        '<a href="account.html" class="acct-chip">' + escapeHtml(first) + '</a>' +
-        '<button type="button" class="link-quiet" data-logout>Log out</button>';
-      var lo = slot.querySelector('[data-logout]');
-      if (lo) lo.addEventListener('click', function () { Auth.logout(); });
-    });
-  }
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    Auth.getUser().then(function (u) {
+      if (!u) return;
+      slots.forEach(function (slot) {
+        var admin = u.role === 'admin' ? '<a href="admin.html" class="link-quiet">Admin</a>' : '';
+        var first = (u.name || 'You').split(' ')[0];
+        slot.innerHTML = admin +
+          '<a href="account.html" class="acct-chip">' + esc(first) + '</a>' +
+          '<button type="button" class="link-quiet" data-logout>Log out</button>';
+        var lo = slot.querySelector('[data-logout]');
+        if (lo) lo.addEventListener('click', function () { Auth.logout(); });
+      });
     });
   }
 
-  // ---- hand-drawn "inky chart" filters: displace borders so card frames look
-  //      drawn by hand rather than machine-perfect. Referenced from CSS as
-  //      filter:url(#bwobble). Injected once, on every page. ----
+  // ---- hand-drawn "boiling line" filters + grain (visual, every page) ----
   function boilFilter(id, seed) {
     return '<filter id="' + id + '"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="' + seed + '" result="n"/>' +
       '<feDisplacementMap in="SourceGraphic" in2="n" scale="2.6"/></filter>';
@@ -143,50 +125,25 @@
   function injectFilters() {
     if (document.getElementById('beacon-sketch-defs')) return;
     var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('id', 'beacon-sketch-defs');
-    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('id', 'beacon-sketch-defs'); svg.setAttribute('aria-hidden', 'true');
     svg.setAttribute('width', '0'); svg.setAttribute('height', '0');
     svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;';
     svg.innerHTML = '<defs>' + boilFilter('boilA', 1) + boilFilter('boilB', 5) + boilFilter('boilC', 11) + '</defs>';
     document.body.appendChild(svg);
   }
-
-  // Grain overlay for pages that don't already have a .grain element.
   function injectGrain() {
     if (document.querySelector('.grain') || document.getElementById('beacon-grain')) return;
-    var g = document.createElement('div');
-    g.id = 'beacon-grain';
-    document.body.appendChild(g);
+    var g = document.createElement('div'); g.id = 'beacon-grain'; document.body.appendChild(g);
   }
-
-  // Frame-by-frame "boiling line": swap the displacement filter a few times a
-  // second so hand-drawn strokes shimmer the way a person's animated line does.
   function startLineBoil() {
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     var els = document.querySelectorAll('.line-boil');
     if (!els.length) return;
     var frames = ['url(#boilA)', 'url(#boilB)', 'url(#boilC)'], i = 0;
     els.forEach(function (e) { e.style.filter = frames[0]; });
-    setInterval(function () {
-      i = (i + 1) % frames.length;
-      els.forEach(function (e) { e.style.filter = frames[i]; });
-    }, 150);
-  }
-
-  // Seed a ready-to-use demo student so you can log in without registering.
-  function seedDemoStudent() {
-    var users = read(USERS_KEY, {});
-    var e = DEMO_STUDENT.email;
-    if (!users[e]) {
-      users[e] = { name: DEMO_STUDENT.name, email: e, pass: obscure(DEMO_STUDENT.pass), verified: true, role: 'student' };
-      write(USERS_KEY, users);
-    }
+    setInterval(function () { i = (i + 1) % frames.length; els.forEach(function (e) { e.style.filter = frames[i]; }); }, 150);
   }
 
   function boot() { paintHeader(); injectFilters(); injectGrain(); startLineBoil(); }
-  seedDemoStudent();        // ensure the demo student exists as soon as auth.js loads
-  window.BeaconAuth = Auth;
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
-  } else { boot(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
