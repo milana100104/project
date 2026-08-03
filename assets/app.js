@@ -244,6 +244,8 @@
         raw = { questions: {}, favorites: [], solved: {}, webinars: defaultWebinars() };
         CONTENT.forEach(function (q) { raw.questions[q.id] = q; });
       }
+      // refresh webinars for older stores that predate the dated list
+      if (!raw.webinars || !raw.webinars.length || !raw.webinars[0].iso) raw.webinars = defaultWebinars();
       this._data = raw; return raw;
     },
     _save: function () { localStorage.setItem(nowKey(), JSON.stringify(this._data)); },
@@ -312,19 +314,28 @@
     addQuestion: function (q) { var d = this._load(); d.questions[q.id] = q; this._save(); },
     removeQuestion: function (id) { var d = this._load(); delete d.questions[id]; this._save(); },
     allQuestions: function () { var d = this._load(); return Object.keys(d.questions).map(function (k) { return d.questions[k]; }); },
-    webinars: function () { return this._load().webinars.slice(); },
+    webinars: function () {
+      function k(w) { return w.iso || '9999-12-31'; } // newest first; undated go on top
+      return this._load().webinars.slice().sort(function (a, b) { return k(b).localeCompare(k(a)); });
+    },
     addWebinar: function (w) { var d = this._load(); d.webinars.unshift(w); this._save(); },
     removeWebinar: function (id) { var d = this._load(); d.webinars = d.webinars.filter(function (w) { return w.id !== id; }); this._save(); }
   };
 
   function defaultWebinars() {
     return [
-      { id:'w1', date:'Aug 02 · 6:00 PM', title:'The new TOEFL Speaking, decoded',
+      { id:'w1', iso:'2026-08-02T18:00', date:'Aug 02 · 6:00 PM', title:'The new TOEFL Speaking, decoded',
         desc:'What Listen-and-Repeat and the interview task actually reward — and how to rehearse for them.', url:'#', cover:'' },
-      { id:'w2', date:'Aug 09 · 6:00 PM', title:'An IELTS Task 2 that actually scores',
+      { id:'w2', iso:'2026-08-09T18:00', date:'Aug 09 · 6:00 PM', title:'An IELTS Task 2 that actually scores',
         desc:'A structure examiners recognize, and the mistakes that quietly cost you a band.', url:'#', cover:'' },
-      { id:'w3', date:'Aug 16 · 6:00 PM', title:'Digital SAT Math: pacing the two modules',
-        desc:'How the adaptive second module works, and where students lose easy points.', url:'#', cover:'' }
+      { id:'w3', iso:'2026-08-16T18:00', date:'Aug 16 · 6:00 PM', title:'Digital SAT Math: pacing the two modules',
+        desc:'How the adaptive second module works, and where students lose easy points.', url:'#', cover:'' },
+      { id:'w4', iso:'2026-08-23T18:00', date:'Aug 23 · 6:00 PM', title:'TOEFL Reading: beating the clock',
+        desc:'A repeatable way to read academic passages fast without losing the details the questions test.', url:'#', cover:'' },
+      { id:'w5', iso:'2026-08-30T18:00', date:'Aug 30 · 6:00 PM', title:'IELTS Listening: the traps in Section 3',
+        desc:'Multi-speaker discussions, distractors, and how to keep your place on the answer sheet.', url:'#', cover:'' },
+      { id:'w6', iso:'2026-09-06T18:00', date:'Sep 06 · 6:00 PM', title:'SAT Reading & Writing: grammar that pays off',
+        desc:'The handful of Standard English Conventions questions you can get right every single time.', url:'#', cover:'' }
     ];
   }
 
@@ -428,8 +439,8 @@
     var exam = qs('exam'), skill = qs('skill'), type = qs('type');
     var pool, crumb, bucket = null, reveal = true;
 
-    // white frames on TOEFL & IELTS practice (matches those workspace pages)
-    if (exam === 'toefl' || exam === 'ielts') document.body.classList.add('ws-white');
+    // white task surfaces on every practice page (matches the workspace pages)
+    document.body.classList.add('ws-white');
 
     if (favMode) {
       pool = BeaconStore.favoriteQuestions();
@@ -514,7 +525,7 @@
       // transcript for listening (shown after answering — practice only, not during a test)
       var transcriptEls = null;
       if (q.transcript && reveal) {
-        var tbtn = el('button', 'btn btn-ghost pr-transcript-btn', 'Show transcript');
+        var tbtn = el('button', 'btn btn-navy pr-transcript-btn', 'Show transcript');
         tbtn.type = 'button'; tbtn.style.display = 'none';
         var tp = el('div', 'pr-transcript', '<span class="tlabel">Transcript</span>' + esc(q.transcript));
         tbtn.addEventListener('click', function () { tp.classList.toggle('show'); });
@@ -532,18 +543,18 @@
         if (bucket && !testMode) BeaconStore.markSolved(bucket.exam, bucket.skill, bucket.type, q.id);
         if (transcriptEls) transcriptEls.style.display = '';
         var next = root.querySelector('[data-next]');
-        if (next) { next.classList.remove('btn-ghost'); next.classList.add('btn-gold'); next.removeAttribute('disabled'); }
+        if (next) next.removeAttribute('disabled');
       }
     }
 
     function nav() {
       var n = el('div', 'pr-nav');
-      var exit = el('a', 'pr-exit', '← Exit');
+      var exit = el('a', 'btn btn-wire pr-exit', '← Exit');
       exit.href = favMode ? 'account.html?tab=favorites' : (exam + '.html');
       exit.addEventListener('click', function () { if (timerId) { clearInterval(timerId); timerId = null; } });
       var btns = el('div', 'pr-navbtns');
       var last = idx === pool.length - 1;
-      var nextBtn = el('button', 'btn btn-ghost', last ? (testMode ? 'Submit test' : 'Finish') : 'Next →');
+      var nextBtn = el('button', 'btn btn-white', last ? (testMode ? 'Submit test' : 'Finish') : 'Next →');
       nextBtn.type = 'button'; nextBtn.setAttribute('data-next', '1'); nextBtn.setAttribute('disabled', '');
       nextBtn.addEventListener('click', function () {
         if (!answered) return;
@@ -568,7 +579,7 @@
         (favMode
           ? '<a class="btn btn-white" href="account.html?tab=favorites">Back to saved</a>'
           : '<a class="btn btn-white" href="' + exam + '.html">Back to ' + exam.toUpperCase() + '</a>' +
-            '<a class="btn btn-ghost" href="practice.html' + location.search + '">Keep going</a>') +
+            '<a class="btn btn-wire" href="practice.html' + location.search + '">Keep going</a>') +
         '</div>';
       root.appendChild(f);
     }
@@ -593,7 +604,7 @@
         '<div class="pr-review">' + rows + '</div>' +
         '<div class="fin-actions">' +
         '<a class="btn btn-white" href="' + exam + '.html">Back to ' + exam.toUpperCase() + '</a>' +
-        '<a class="btn btn-ghost" href="practice.html' + location.search + '">Retake test</a>' +
+        '<a class="btn btn-wire" href="practice.html' + location.search + '">Retake test</a>' +
         '</div></div></div>';
     }
 
@@ -657,7 +668,7 @@
     });
     wrap.appendChild(text);
     var actions = el('div', 'cloze-actions');
-    var check = el('button', 'btn btn-gold', 'Check');
+    var check = el('button', 'btn btn-navy', 'Check');
     check.type = 'button';
     check.addEventListener('click', function () {
       if (wrap.dataset.done) return;
@@ -686,7 +697,7 @@
     var row = el('div', 'pr-textrow');
     var inp = document.createElement('input');
     inp.className = 'pr-textin'; inp.type = 'text'; inp.placeholder = 'Type your answer';
-    var check = el('button', 'btn btn-gold', 'Check'); check.type = 'button';
+    var check = el('button', 'btn btn-navy', 'Check'); check.type = 'button';
     row.appendChild(inp); row.appendChild(check);
     wrap.appendChild(row);
     var accept = [q.answer].concat(q.accept || []).map(function (s) { return String(s).trim().toLowerCase(); });
@@ -717,8 +728,8 @@
       '<h2>You’ve cleared this set</h2>' +
       '<p>You’ve solved every question here. New questions are added over time — or reset to run through them again.</p>' +
       '<div class="fin-actions">' +
-      '<button class="btn btn-white" data-reset>Reset & redo</button>' +
-      '<a class="btn btn-ghost" href="' + b.exam + '.html">Back to ' + b.exam.toUpperCase() + '</a>' +
+      '<button class="btn btn-white" data-reset>Reset and redo</button>' +
+      '<a class="btn btn-wire" href="' + b.exam + '.html">Back to ' + b.exam.toUpperCase() + '</a>' +
       '</div></div>';
   }
   function wireCleared(root, b) {

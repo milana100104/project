@@ -127,7 +127,8 @@ document.addEventListener("DOMContentLoaded", function () {
   function renderWebinars() {
     panel.innerHTML =
       '<div class="card" style="margin-bottom:24px"><h1 style="font-size:1.3rem">Add a webinar</h1>' +
-      '<div class="field"><label>Date / time</label><input id="w-date" placeholder="Aug 23 · 6:00 PM"></div>' +
+      '<div class="field"><label>Date <span class="hint">(sets the order — newest on top)</span></label><input id="w-when" type="date"></div>' +
+      '<div class="field"><label>Shown date / time <span class="hint">(optional; auto-filled from the date)</span></label><input id="w-date" placeholder="Aug 23 · 6:00 PM"></div>' +
       '<div class="field"><label>Title</label><input id="w-title"></div>' +
       '<div class="field"><label>Description</label><textarea id="w-desc"></textarea></div>' +
       '<div class="field"><label>Link</label><input id="w-url" placeholder="https://…"></div>' +
@@ -139,15 +140,22 @@ document.addEventListener("DOMContentLoaded", function () {
       var wm = document.getElementById("wm");
       var title = document.getElementById("w-title").value.trim();
       if (!title) { wm.className="form-msg show bad"; wm.textContent="Add a title."; return; }
+      var when = document.getElementById("w-when").value; // yyyy-mm-dd
+      var iso = when ? when + "T18:00" : new Date().toISOString().slice(0,16);
+      var shown = document.getElementById("w-date").value.trim();
+      if (!shown && when) {
+        var d = new Date(when + "T18:00");
+        shown = d.toLocaleDateString("en-US",{month:"short",day:"2-digit"}) + " · 6:00 PM";
+      }
       BeaconStore.addWebinar({
         id: "w-" + Date.now().toString(36),
-        date: document.getElementById("w-date").value.trim(),
+        iso: iso, date: shown,
         title: title, desc: document.getElementById("w-desc").value.trim(),
         url: document.getElementById("w-url").value.trim() || "#",
         cover: document.getElementById("w-cover").value.trim()
       });
       wm.className="form-msg show good"; wm.textContent="Added.";
-      ["w-date","w-title","w-desc","w-url","w-cover"].forEach(function (id){ document.getElementById(id).value=""; });
+      ["w-when","w-date","w-title","w-desc","w-url","w-cover"].forEach(function (id){ document.getElementById(id).value=""; });
       listWebinars();
     };
     listWebinars();
