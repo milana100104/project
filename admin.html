@@ -8,11 +8,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=19">
-<script src="assets/app.js?v=19" defer></script>
-<script src="assets/config.js?v=19" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=20">
+<script src="assets/app.js?v=20" defer></script>
+<script src="assets/config.js?v=20" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=19" defer></script>
+<script src="assets/auth.js?v=20" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -57,7 +57,8 @@ document.addEventListener("DOMContentLoaded", function () {
     sat:   { math: ["algebra","advanced-math","problem-solving-data-analysis","geometry-trig"], english: ["information-ideas","craft-structure","expression-ideas","standard-conventions"] }
   };
 
-  if (tab === "webinars") renderWebinars(); else renderQuestions();
+  if (tab === "webinars") renderWebinars();
+  else BeaconStore.ready().then(renderQuestions);
 
   /* ---------------- questions ---------------- */
   function renderQuestions() {
@@ -68,6 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
       '<div class="field"><label>Skill</label><select id="f-skill"></select></div>' +
       '<div class="field"><label>Type</label><select id="f-type"></select></div>' +
       '<div class="field"><label>Difficulty</label><select id="f-diff"><option>easy</option><option selected>medium</option><option>hard</option></select></div>' +
+      '<div class="field"><label>Image <span class="hint">(optional — for a photo/diagram question, e.g. SAT graphs)</span></label><input id="f-image" type="file" accept="image/*"></div>' +
       '<div class="field"><label>Passage / context <span class="hint">(optional)</span></label><textarea id="f-passage" placeholder="Reading passage or spoken context…"></textarea></div>' +
       '<div class="field"><label><input type="checkbox" id="f-audio"> Listening item (show audio placeholder)</label></div>' +
       '<div class="field"><label>Transcript <span class="hint">(optional, for listening)</span></label><textarea id="f-transcript"></textarea></div>' +
@@ -87,6 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById("add").onclick = function () {
       var m = document.getElementById("m");
+      var btn = document.getElementById("add");
       var choices = document.getElementById("f-choices").value.split("\n").map(function (s){return s.trim();}).filter(Boolean);
       var ans = parseInt(document.getElementById("f-answer").value, 10) - 1;
       var prompt = document.getElementById("f-prompt").value.trim();
@@ -103,12 +106,35 @@ document.addEventListener("DOMContentLoaded", function () {
       var passage = document.getElementById("f-passage").value.trim(); if (passage) q.passage = passage;
       if (document.getElementById("f-audio").checked) q.audio = true;
       var tr = document.getElementById("f-transcript").value.trim(); if (tr) q.transcript = tr;
-      BeaconStore.addQuestion(q);
-      m.className = "form-msg show good"; m.textContent = "Added. It’s live in that section now.";
-      document.getElementById("f-prompt").value = ""; document.getElementById("f-choices").value = "";
-      document.getElementById("f-answer").value = ""; document.getElementById("f-exp").value = "";
-      document.getElementById("f-passage").value = ""; document.getElementById("f-transcript").value = "";
-      listQuestions();
+
+      var fileInput = document.getElementById("f-image");
+      var file = fileInput && fileInput.files && fileInput.files[0];
+
+      btn.disabled = true;
+      m.className = "form-msg show"; m.textContent = file ? "Uploading image…" : "Saving…";
+
+      var prep = file
+        ? BeaconStore.uploadImage(file).then(function (r) {
+            if (!r.ok) throw new Error("Image upload failed: " + r.error);
+            q.image = r.url;
+          })
+        : Promise.resolve();
+
+      prep.then(function () { return BeaconStore.addQuestion(q); })
+        .then(function (r) {
+          btn.disabled = false;
+          if (!r.ok) return fail(m, r.error || "Could not save the question.");
+          m.className = "form-msg show good";
+          m.textContent = r.local
+            ? "Added on this device only (couldn’t reach the database)."
+            : "Added to the database — every student sees it now.";
+          document.getElementById("f-prompt").value = ""; document.getElementById("f-choices").value = "";
+          document.getElementById("f-answer").value = ""; document.getElementById("f-exp").value = "";
+          document.getElementById("f-passage").value = ""; document.getElementById("f-transcript").value = "";
+          if (fileInput) fileInput.value = "";
+          listQuestions();
+        })
+        .catch(function (e) { btn.disabled = false; fail(m, e.message || "Something went wrong."); });
     };
 
     listQuestions();
@@ -121,7 +147,7 @@ document.addEventListener("DOMContentLoaded", function () {
           (q.difficulty ? '<span class="pill-diff">' + esc(q.difficulty) + '</span>' : '') +
           '<button class="icon-btn" data-id="' + esc(q.id) + '">Delete</button></div>';
       }).join("") || '<div class="empty-state">No questions yet.</div>';
-      list.querySelectorAll(".icon-btn").forEach(function (b){ b.onclick = function (){ BeaconStore.removeQuestion(b.dataset.id); listQuestions(); }; });
+      list.querySelectorAll(".icon-btn").forEach(function (b){ b.onclick = function (){ b.disabled = true; Promise.resolve(BeaconStore.removeQuestion(b.dataset.id)).then(listQuestions); }; });
     }
   }
 

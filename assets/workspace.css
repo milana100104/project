@@ -149,6 +149,8 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 .pr-audio audio{width:100%;display:block;}
 .pr-audio .ph{color:var(--muted);font-size:.92rem;display:flex;align-items:center;gap:10px;}
 .pr-audio .ph .ico{font-size:1.25rem;color:var(--gold);}
+.pr-image{margin-bottom:22px;}
+.pr-image img{max-width:100%;height:auto;display:block;border:1px solid var(--border);border-radius:12px;}
 
 .pr-prompt{font-family:var(--display);font-size:1.3rem;font-weight:600;line-height:1.4;margin-bottom:22px;letter-spacing:-.01em;}
 .pr-choices{display:flex;flex-direction:column;gap:11px;}
@@ -269,6 +271,7 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 .ws-white .pr-passage{border-left-color:#e0c24a;}
 .ws-white .pr-audio{background:#f7f9fc;border-color:#e3e7f0;}
 .ws-white .pr-audio .ph{color:#7c88a3;}
+.ws-white .pr-image img{border-color:#e3e7f0;}
 .ws-white .pr-transcript{background:#f7f9fc;border-color:#e3e7f0;color:#4a5875;}
 
 /* save button + badges on white */

@@ -236,6 +236,36 @@
   function nowKey() { return STORE_KEY; }
   var BeaconStore = {
     _data: null,
+    _remote: {},   // questions loaded from Supabase (shared across everyone). Not persisted locally.
+    _ready: null,
+
+    /** Merge: built-in seed + admin's locally-added + Supabase-shared questions. */
+    _bank: function () {
+      var d = this._load();
+      var out = {};
+      Object.keys(d.questions).forEach(function (k) { out[k] = d.questions[k]; });
+      var r = this._remote;
+      Object.keys(r).forEach(function (k) { out[k] = r[k]; });
+      return out;
+    },
+
+    /** Load shared questions from Supabase once. Always resolves — the seed is the fallback. */
+    ready: function () {
+      if (this._ready) return this._ready;
+      var self = this;
+      var sb = window.sb;
+      if (!sb) { this._ready = Promise.resolve(); return this._ready; }
+      this._ready = sb.from('questions').select('data').then(function (res) {
+        if (res && !res.error && res.data) {
+          res.data.forEach(function (row) {
+            var q = row && row.data;
+            if (q && q.id) self._remote[q.id] = q;
+          });
+        }
+      }).catch(function () { /* table missing / offline: fall back to the seed */ });
+      return this._ready;
+    },
+
     _load: function () {
       if (this._data) return this._data;
       var raw;
@@ -260,8 +290,8 @@
     },
 
     questionsFor: function (exam, skill, type) {
-      var d = this._load();
-      return Object.keys(d.questions).map(function (k) { return d.questions[k]; })
+      var bank = this._bank();
+      return Object.keys(bank).map(function (k) { return bank[k]; })
         .filter(function (q) {
           if (q.exam !== exam || q.skill !== skill) return false;
           if (!type || type === 'all' || type === 'random') return true;
@@ -303,17 +333,57 @@
       this._save(); return this.isFav(id);
     },
     favoriteQuestions: function () {
-      var d = this._load();
-      return d.favorites.map(function (id) { return d.questions[id]; }).filter(Boolean);
+      var d = this._load(); var bank = this._bank();
+      return d.favorites.map(function (id) { return bank[id]; }).filter(Boolean);
     },
     favCount: function () { return this._load().favorites.length; },
 
-    getById: function (id) { return this._load().questions[id]; },
+    getById: function (id) { return this._bank()[id]; },
 
-    // admin
-    addQuestion: function (q) { var d = this._load(); d.questions[q.id] = q; this._save(); },
-    removeQuestion: function (id) { var d = this._load(); delete d.questions[id]; this._save(); },
-    allQuestions: function () { var d = this._load(); return Object.keys(d.questions).map(function (k) { return d.questions[k]; }); },
+    // admin ------------------------------------------------------------
+    _adminPw: function () {
+      try { var a = JSON.parse(localStorage.getItem('beacon:admin')); return a && a.pw; }
+      catch (e) { return null; }
+    },
+    /** Add a question. Writes to Supabase (shared with every student) when possible,
+     *  otherwise keeps it in this browser only. Returns a Promise → {ok,error?,local?}. */
+    addQuestion: function (q) {
+      var self = this, sb = window.sb, pw = this._adminPw();
+      if (sb && pw) {
+        return sb.rpc('beacon_add_question', { pass: pw, q: q }).then(function (res) {
+          if (res.error) return { ok: false, error: res.error.message };
+          self._remote[q.id] = q;
+          return { ok: true };
+        });
+      }
+      var d = this._load(); d.questions[q.id] = q; this._save();
+      return Promise.resolve({ ok: true, local: true });
+    },
+    removeQuestion: function (id) {
+      var self = this, sb = window.sb, pw = this._adminPw();
+      if (sb && pw && this._remote[id]) {
+        return sb.rpc('beacon_delete_question', { pass: pw, qid: id }).then(function (res) {
+          if (res.error) return { ok: false, error: res.error.message };
+          delete self._remote[id];
+          return { ok: true };
+        });
+      }
+      var d = this._load(); delete d.questions[id]; this._save();
+      return Promise.resolve({ ok: true, local: true });
+    },
+    /** Upload a question image to Supabase Storage. Returns a Promise → {ok,url?,error?}. */
+    uploadImage: function (file) {
+      var sb = window.sb;
+      if (!sb) return Promise.resolve({ ok: false, error: 'Image storage isn’t reachable right now.' });
+      var ext = (String(file.name).split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '') || 'png';
+      var path = 'q-' + Date.now().toString(36) + '-' + Math.floor(Math.random() * 1e4).toString(36) + '.' + ext;
+      return sb.storage.from('question-images').upload(path, file, { upsert: false }).then(function (res) {
+        if (res.error) return { ok: false, error: res.error.message };
+        var pub = sb.storage.from('question-images').getPublicUrl(path);
+        return { ok: true, url: pub.data.publicUrl };
+      });
+    },
+    allQuestions: function () { var bank = this._bank(); return Object.keys(bank).map(function (k) { return bank[k]; }); },
     webinars: function () {
       function k(w) { return w.iso || '9999-12-31'; } // newest first; undated go on top
       return this._load().webinars.slice().sort(function (a, b) { return k(b).localeCompare(k(a)); });
@@ -349,6 +419,9 @@
   function renderWorkspace(sel, config) {
     var root = document.querySelector(sel);
     if (!root) return;
+    BeaconStore.ready().then(function () { _renderWorkspace(root, config); });
+  }
+  function _renderWorkspace(root, config) {
     root.innerHTML = '';
     var exam = config.examId;
 
@@ -433,7 +506,9 @@
   function renderPractice(rootSel) {
     var root = document.querySelector(rootSel);
     if (!root) return;
-
+    BeaconStore.ready().then(function () { _renderPractice(root); });
+  }
+  function _renderPractice(root) {
     var favMode = qs('fav') === '1';
     var testMode = qs('mode') === 'test';
     var exam = qs('exam'), skill = qs('skill'), type = qs('type');
@@ -500,6 +575,11 @@
       card.appendChild(head);
 
       if (q.passage) card.appendChild(el('div', 'pr-passage', esc(q.passage)));
+      if (q.image) {
+        var fig = el('div', 'pr-image');
+        fig.innerHTML = '<img src="' + esc(q.image) + '" alt="Question image" loading="lazy">';
+        card.appendChild(fig);
+      }
       if (q.audio) {
         var au = el('div', 'pr-audio');
         au.innerHTML = q.audioSrc

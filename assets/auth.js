@@ -56,7 +56,7 @@
     login: function (id, pass) {
       id = (id || '').trim();
       if (id.toLowerCase() === ADMIN.login && pass === ADMIN.pass) {
-        localStorage.setItem(ADMIN_KEY, JSON.stringify({ name: ADMIN.name, email: 'admin@beacon', role: 'admin' }));
+        localStorage.setItem(ADMIN_KEY, JSON.stringify({ name: ADMIN.name, email: 'admin@beacon', role: 'admin', pw: pass }));
         return Promise.resolve({ ok: true, admin: true });
       }
       if (!sb) return Promise.resolve({ ok: false, error: 'Login service isn’t reachable right now.' });
