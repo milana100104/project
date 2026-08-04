@@ -77,6 +77,11 @@ h1,h2,h3,h4,h5{font-family:var(--display);font-weight:600;letter-spacing:-.02em;
 .btn-ghost{border-color:var(--border-strong);color:var(--ink);}
 .btn-ghost:hover{border-color:var(--gold);color:var(--gold);}
 .btn-lg{padding:15px 28px;font-size:1.05rem;border-radius:13px;}
+.btn-google{background:#fff;color:#1f1f1f;border:1px solid #dadce0;box-shadow:0 1px 2px rgba(0,0,0,.2);}
+.btn-google:hover{background:#f5f6f8;}
+.btn-google svg{flex-shrink:0;}
+.auth-or{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--muted);font-size:.82rem;}
+.auth-or::before,.auth-or::after{content:"";flex:1;height:1px;background:var(--border);}
 .btn-disabled,.btn[disabled]{opacity:.4;cursor:not-allowed;pointer-events:none;background:var(--surface-2);color:var(--muted);box-shadow:none;}
 .link-quiet{color:var(--ink-2);font-weight:500;font-size:.96rem;cursor:pointer;}
 .link-quiet:hover{color:var(--gold);}

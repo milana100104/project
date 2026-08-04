@@ -8,10 +8,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=22">
-<script src="assets/config.js?v=22" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=23">
+<script src="assets/config.js?v=23" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=22" defer></script>
+<script src="assets/auth.js?v=23" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -49,6 +49,22 @@ document.addEventListener("DOMContentLoaded", function () {
   function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
   function busy(btn,on){ btn.disabled=on; btn.textContent = on ? "…" : (btn.dataset.label||"Go"); }
 
+  var GOOGLE_G = '<svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.47.9 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>';
+  function googleBlock(label){
+    return '<button type="button" class="btn btn-google full" id="goog">' + GOOGLE_G + '<span>' + label + '</span></button>' +
+           '<div class="auth-or"><span>or</span></div>';
+  }
+  function wireGoogle(){
+    var g = document.getElementById("goog"); if (!g) return;
+    g.onclick = function(){
+      g.disabled = true;
+      BeaconAuth.oauth("google").then(function(r){
+        if (!r.ok){ g.disabled = false; var m=document.getElementById("m"); if (m) msg(m, false, r.error); }
+        // on success the browser redirects to Google, nothing else to do here
+      });
+    };
+  }
+
   function render() {
     if (!window.BeaconAuth) { card.innerHTML = '<h1>Just a moment…</h1><p class="sub">Loading the sign-in service. If this stays, refresh the page.</p>'; setTimeout(render, 300); return; }
     if (view === "register") return renderRegister();
@@ -61,6 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
     card.innerHTML =
       '<h1>Welcome back</h1><p class="sub">Log in to keep your saved questions and progress.</p>' +
       (qs("confirmed") ? '<div class="form-msg good show">Email confirmed — you can log in now.</div>' : '') +
+      googleBlock("Continue with Google") +
       '<div class="field"><label>Email or admin login</label><input id="id" type="text" autocomplete="username" placeholder="you@example.com"></div>' +
       '<div class="field"><label>Password</label><input id="pw" type="password" autocomplete="current-password" placeholder="••••••••"></div>' +
       '<button class="btn btn-gold full" id="go">Log in</button>' +
@@ -76,11 +93,13 @@ document.addEventListener("DOMContentLoaded", function () {
         msg(m, false, r.error);
       });
     };
+    wireGoogle();
   }
 
   function renderRegister() {
     card.innerHTML =
       '<h1>Create your account</h1><p class="sub">Free to start — Reading and Listening, no card.</p>' +
+      googleBlock("Sign up with Google") +
       '<div class="field"><label>Name</label><input id="nm" type="text" autocomplete="name" placeholder="Your name"></div>' +
       '<div class="field"><label>Email</label><input id="em" type="email" autocomplete="email" placeholder="you@example.com"></div>' +
       '<div class="field"><label>Password</label><input id="pw" type="password" autocomplete="new-password" placeholder="At least 6 characters"><span class="hint">Minimum 6 characters.</span></div>' +
@@ -96,6 +115,7 @@ document.addEventListener("DOMContentLoaded", function () {
         card.innerHTML = '<h1>Check your email</h1><p class="sub">We sent a confirmation link to <b>' + esc(val("em")) + '</b>. Open it to activate your account, then come back and log in.</p><a class="btn btn-gold full" href="auth.html?view=login">Back to log in</a>';
       });
     };
+    wireGoogle();
   }
 
   function renderForgot() {

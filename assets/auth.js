@@ -70,6 +70,15 @@
       });
     },
 
+    /** Sign in / sign up with a social provider (e.g. 'google'). Redirects away. */
+    oauth: function (provider) {
+      if (!sb) return Promise.resolve({ ok: false, error: 'Sign-in service isn’t reachable right now.' });
+      return sb.auth.signInWithOAuth({
+        provider: provider,
+        options: { redirectTo: siteBase() + 'account.html' }
+      }).then(function (res) { return res.error ? { ok: false, error: res.error.message } : { ok: true }; });
+    },
+
     logout: function () {
       localStorage.removeItem(ADMIN_KEY);
       var p = sb ? sb.auth.signOut() : Promise.resolve();
