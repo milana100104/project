@@ -8,11 +8,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/workspace.css?v=23">
-<script src="assets/config.js?v=23" defer></script>
+<link rel="stylesheet" href="assets/workspace.css?v=24">
+<script src="assets/config.js?v=24" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=23" defer></script>
-<script src="assets/app.js?v=23" defer></script>
+<script src="assets/auth.js?v=24" defer></script>
+<script src="assets/app.js?v=24" defer></script>
 </head>
 <body class="ws-white">
 <header class="ws-topbar">
@@ -62,7 +62,8 @@ document.addEventListener("DOMContentLoaded", function () {
     ],
     fullTest: {
       title: "Full adaptive SAT test",
-      desc: "Two Reading & Writing modules and two Math modules under real timing, with a second module that adapts to your first — scored on the 400–1600 scale. It opens once the question pool is deep enough."
+      desc: "Reading & Writing first, then Math — each in two modules, just like the real Digital SAT. Your second module turns harder or easier based on how you do in the first, and you're scored on the 400–1600 scale. Built from the questions in the bank.",
+      href: "practice.html?mode=adaptive&exam=sat"
     }
   });
 });

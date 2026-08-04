@@ -87,8 +87,9 @@ h1,h2,h3,h4,h5{font-family:var(--display);font-weight:600;letter-spacing:-.02em;
 .link-quiet:hover{color:var(--gold);}
 .link-arrow{color:var(--gold);font-weight:600;font-family:var(--display);display:inline-flex;align-items:center;gap:6px;}
 .link-arrow:hover{gap:9px;}
-.acct-chip{font-family:var(--mono);font-size:.8rem;color:var(--gold);background:var(--gold-soft);
+.acct-chip{font-family:var(--font);font-weight:700;font-size:.96rem;color:var(--gold);background:var(--gold-soft);
   border:1px solid var(--gold-line);padding:6px 13px;border-radius:999px;white-space:nowrap;}
+.acct-chip:hover{background:rgba(212,167,44,.2);}
 
 /* small accents */
 .mono-label{font-family:var(--mono);font-size:.75rem;letter-spacing:.09em;text-transform:uppercase;color:var(--gold);display:block;}

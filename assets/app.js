@@ -533,11 +533,13 @@
 
     // full test panel
     if (config.fullTest) {
-      var ft = el('div', 'ws-fulltest');
+      var ready = !!config.fullTest.href;
+      var ft = el('div', 'ws-fulltest' + (ready ? ' is-ready' : ''));
       ft.innerHTML =
-        '<span class="ws-badge dev">In development</span>' +
+        '<span class="ws-badge ' + (ready ? 'free' : 'dev') + '">' + (ready ? 'New · live' : 'In development') + '</span>' +
         '<h2>' + esc(config.fullTest.title) + '</h2>' +
-        '<p>' + esc(config.fullTest.desc) + '</p>';
+        '<p>' + esc(config.fullTest.desc) + '</p>' +
+        (ready ? '<a class="btn-white ws-fulltest-cta" href="' + esc(config.fullTest.href) + '">Start the adaptive test →</a>' : '');
       root.appendChild(ft);
     }
   }
@@ -549,13 +551,15 @@
     BeaconStore.ready().then(function () { _renderPractice(root); });
   }
   function _renderPractice(root) {
+    // white task surfaces on every practice page (matches the workspace pages)
+    document.body.classList.add('ws-white');
+
+    if (qs('mode') === 'adaptive') { renderAdaptiveSAT(root); return; }
+
     var favMode = qs('fav') === '1';
     var testMode = qs('mode') === 'test';
     var exam = qs('exam'), skill = qs('skill'), type = qs('type');
     var pool, crumb, bucket = null, reveal = true;
-
-    // white task surfaces on every practice page (matches the workspace pages)
-    document.body.classList.add('ws-white');
 
     if (favMode) {
       pool = BeaconStore.favoriteQuestions();
@@ -729,6 +733,218 @@
     }
 
     draw();
+  }
+
+  /* ===================== SAT full adaptive test =====================
+   * Mirrors the real Digital SAT: two sections (Reading & Writing, then Math),
+   * each split into two modules. Module 1 is a mix; Module 2 turns harder or
+   * easier depending on how you did in Module 1 (module-level adaptivity).
+   * Scored on the 400–1600 scale (200–800 per section). Built from whatever
+   * SAT questions are in the bank — module sizes shrink to fit a small pool. */
+  function renderAdaptiveSAT(root) {
+    document.body.classList.add('ws-white');
+
+    var SECTIONS = [
+      { key: 'english', name: 'Reading & Writing', size: 27, minutes: 32 },
+      { key: 'math',    name: 'Math',              size: 22, minutes: 35 }
+    ];
+    // keep only sections that actually have questions
+    SECTIONS = SECTIONS.filter(function (s) { return BeaconStore.questionsFor('sat', s.key, null).length > 0; });
+    if (!SECTIONS.length) {
+      root.innerHTML = errorCard('The adaptive test isn’t ready yet.', 'Add some SAT questions in the admin panel, then this test builds itself from them.');
+      return;
+    }
+
+    var results = [];      // { name, correct, total, path, scaled }
+    var si = 0;            // section index
+
+    intro();
+
+    function intro() {
+      root.innerHTML = '';
+      var c = el('div', 'pr-stage');
+      var card = el('div', 'pr-card');
+      card.innerHTML =
+        '<span class="pr-kicker">SAT · full adaptive test</span>' +
+        '<h2 class="pr-prompt" style="margin-top:8px">Full adaptive SAT</h2>' +
+        '<div class="pr-passage" style="border:0;padding-left:0">' +
+          'Just like the real Digital SAT: <b>Reading &amp; Writing</b> first, then <b>Math</b>, each in <b>two modules</b>. ' +
+          'Module&nbsp;2 gets <b>harder or easier</b> depending on how you do in Module&nbsp;1. No feedback until the end — ' +
+          'you’re scored on the <b>400–1600</b> scale.' +
+          '<br><br>The official test is 98 questions (54 R&amp;W + 44 Math) in 2h14m. This one is built from the ' +
+          'questions currently in the bank, so it may be shorter — the structure and scoring work the same.' +
+        '</div>' +
+        '<div class="pr-nav"><a class="btn btn-wire pr-exit" href="sat.html">← Back</a>' +
+        '<div class="pr-navbtns"><button type="button" class="btn btn-white" id="ad-start">Start the test →</button></div></div>';
+      c.appendChild(card); root.appendChild(c);
+      document.getElementById('ad-start').onclick = function () { si = 0; runSection(); };
+    }
+
+    // ---- run one section (two adaptive modules) ----
+    function runSection() {
+      var sec = SECTIONS[si];
+      var full = shuffle(BeaconStore.questionsFor('sat', sec.key, null).slice());
+      var half = Math.max(1, Math.min(sec.size, Math.ceil(full.length / 2)));
+
+      var mod1 = full.slice(0, half);
+      var rest = full.slice(half);
+      var secState = { correct: 0, total: 0, answers: {} };
+
+      runModule(sec, 1, mod1, secState, function (pct1) {
+        var path = pct1 >= 0.6 ? 'hard' : 'easy';
+        // Module 2: prefer the target difficulty, then fill from the rest.
+        var pref = rest.filter(function (q) { return (q.difficulty || 'medium') === (path === 'hard' ? 'hard' : 'easy'); });
+        var others = rest.filter(function (q) { return pref.indexOf(q) === -1; });
+        var mod2 = pref.concat(others).slice(0, Math.min(sec.size, rest.length));
+        if (!mod2.length) { mod2 = rest.slice(0, Math.min(sec.size, rest.length)); }
+
+        var afterM2 = function () {
+          var scaled = scaleSection(secState.correct, secState.total, path);
+          results.push({ name: sec.name, correct: secState.correct, total: secState.total, path: path, scaled: scaled });
+          si++;
+          if (si < SECTIONS.length) sectionBreak(); else finishAll();
+        };
+
+        if (!mod2.length) { afterM2(); return; }
+        transition('Module 1 complete', 'Starting Module&nbsp;2 — it has adapted to your Module&nbsp;1 answers. No going back now.', function () {
+          runModule(sec, 2, mod2, secState, function () { afterM2(); });
+        });
+      });
+    }
+
+    // ---- run one module: one question at a time, exam-style, on a timer ----
+    function runModule(sec, moduleNo, qs_, secState, onModuleDone) {
+      if (!qs_.length) { onModuleDone(0); return; }
+      var idx = 0, answered = false;
+      var moduleCorrect = 0, moduleTotal = qs_.length;
+      var remaining = Math.round(sec.minutes * 60 * (qs_.length / sec.size));
+      if (remaining < 30) remaining = qs_.length * 40;
+      var timerId = setInterval(function () {
+        remaining--;
+        var t = root.querySelector('.pr-timer'); if (t) t.textContent = '⏱ ' + fmtTime(remaining);
+        if (remaining <= 0) { clearInterval(timerId); timerId = null; endModule(); }
+      }, 1000);
+
+      draw();
+
+      function draw() {
+        answered = false;
+        var q = qs_[idx];
+        root.innerHTML = '';
+        root.appendChild(bar(idx, qs_.length, 'SAT · ' + sec.name + ' · Module ' + moduleNo, remaining));
+
+        var stage = el('div', 'pr-stage');
+        var card = el('div', 'pr-card');
+        card.innerHTML = '<span class="pr-kicker">SAT · ' + esc(sec.name) + ' · Module ' + moduleNo + '</span>';
+        if (q.passage) card.appendChild(el('div', 'pr-passage', esc(q.passage)));
+        if (q.image) { var fig = el('div', 'pr-image'); fig.innerHTML = '<img src="' + esc(q.image) + '" alt="Question image" loading="lazy">'; card.appendChild(fig); }
+        card.appendChild(el('div', 'pr-prompt', esc(q.prompt)));
+        var feedback = el('div', 'pr-feedback');
+        var fmt = q.format || q.type;
+        if (fmt === 'complete-the-words' || fmt === 'cloze') card.appendChild(clozeBlock(q, feedback, onResolved, false));
+        else if (fmt === 'text') card.appendChild(textBlock(q, feedback, onResolved, false));
+        else card.appendChild(choiceBlock(q, feedback, onResolved, false));
+        card.appendChild(feedback);
+        stage.appendChild(card);
+        root.appendChild(stage);
+        root.appendChild(nav());
+
+        function onResolved(correct) {
+          answered = true;
+          secState.answers[q.id] = { ok: !!correct, q: q };
+          if (correct) { moduleCorrect++; }
+          var next = root.querySelector('[data-next]'); if (next) next.removeAttribute('disabled');
+        }
+      }
+
+      function nav() {
+        var n = el('div', 'pr-nav');
+        var exit = el('a', 'btn btn-wire pr-exit', '← Exit');
+        exit.href = 'sat.html';
+        exit.addEventListener('click', function () { if (timerId) { clearInterval(timerId); timerId = null; } });
+        var btns = el('div', 'pr-navbtns');
+        var last = idx === qs_.length - 1;
+        var nextBtn = el('button', 'btn btn-white', last ? 'Finish module' : 'Next →');
+        nextBtn.type = 'button'; nextBtn.setAttribute('data-next', '1'); nextBtn.setAttribute('disabled', '');
+        nextBtn.addEventListener('click', function () {
+          if (!answered) return;
+          if (last) { endModule(); } else { idx++; draw(); }
+        });
+        btns.appendChild(nextBtn);
+        n.appendChild(exit); n.appendChild(btns);
+        return n;
+      }
+
+      function endModule() {
+        if (timerId) { clearInterval(timerId); timerId = null; }
+        secState.correct += moduleCorrect;
+        secState.total += moduleTotal;
+        onModuleDone(moduleTotal ? moduleCorrect / moduleTotal : 0);
+      }
+    }
+
+    // ---- a plain "continue" screen between modules / sections ----
+    function transition(title, body, go) {
+      root.innerHTML = '';
+      var c = el('div', 'pr-stage');
+      var card = el('div', 'pr-card');
+      card.innerHTML =
+        '<span class="pr-kicker">SAT · adaptive</span>' +
+        '<h2 class="pr-prompt" style="margin-top:8px">' + esc(title) + '</h2>' +
+        '<div class="pr-passage" style="border:0;padding-left:0">' + body + '</div>' +
+        '<div class="pr-nav"><span></span><div class="pr-navbtns"><button type="button" class="btn btn-white" id="ad-go">Continue →</button></div></div>';
+      c.appendChild(card); root.appendChild(c);
+      document.getElementById('ad-go').onclick = go;
+    }
+
+    function sectionBreak() {
+      var next = SECTIONS[si];
+      transition('Section complete', 'Take a breath — on the real SAT there’s a 10-minute break here. Next up: <b>' + esc(next.name) + '</b>.', function () { runSection(); });
+    }
+
+    // ---- scoring ----
+    function scaleSection(correct, total, path) {
+      var frac = total ? correct / total : 0;
+      // hard path can reach 800; easy path (easier Module 2) caps lower, like the real test
+      var scaled = path === 'easy' ? 200 + frac * 400 : 200 + frac * 600;
+      scaled = Math.round(scaled / 10) * 10;
+      return Math.max(200, Math.min(800, scaled));
+    }
+
+    function finishAll() {
+      var totalScore = 0, allCorrect = 0, allTotal = 0, reviews = [];
+      results.forEach(function (r) {
+        totalScore += r.scaled; allCorrect += r.correct; allTotal += r.total;
+      });
+      var secRows = results.map(function (r) {
+        return '<div class="pr-rev ok"><span class="pr-rev-n">' + esc(r.name.split(' ')[0]) + '</span>' +
+          '<div class="pr-rev-main"><div class="pr-rev-q">' + esc(r.name) + '</div>' +
+          '<div class="pr-rev-a"><b>' + r.scaled + '</b> / 800 · ' + r.correct + '/' + r.total + ' correct · ' +
+          (r.path === 'hard' ? 'harder' : 'easier') + ' Module 2</div></div>' +
+          '<span class="pr-rev-mark">' + r.scaled + '</span></div>';
+      }).join('');
+
+      var note = results.length < 2
+        ? '<div class="pr-passage" style="border:0;padding-left:0">Only the <b>' + esc(results[0].name) + '</b> section had questions, so this is a section score out of 800. Add ' +
+          (results[0].name.indexOf('Math') === -1 ? 'Math' : 'Reading &amp; Writing') + ' questions to get the full 400–1600.</div>'
+        : '';
+
+      var big = results.length < 2 ? results[0].scaled : totalScore;
+      var sub = results.length < 2 ? (results[0].name + ' · out of 800') : ('Digital SAT · 400–1600 scale · ' + allCorrect + ' / ' + allTotal + ' correct');
+      var pass = results.length < 2 ? results[0].scaled >= 500 : totalScore >= 1000;
+
+      root.innerHTML =
+        '<div class="pr-stage"><div class="pr-result">' +
+        '<div class="pr-score ' + (pass ? 'pass' : 'fail') + '"><span class="pct">' + big + '</span>' +
+        '<span class="frac">' + esc(sub) + '</span></div>' +
+        note +
+        '<div class="pr-review">' + secRows + '</div>' +
+        '<div class="pr-passage" style="border:0;padding-left:0;font-size:.9rem;color:#7c88a3">This score is an estimate from your answers and which Module 2 you unlocked — a study guide, not an official SAT score.</div>' +
+        '<div class="fin-actions">' +
+        '<a class="btn btn-white" href="sat.html">Back to SAT</a>' +
+        '<a class="btn btn-wire" href="practice.html?mode=adaptive&exam=sat">Retake test</a>' +
+        '</div></div></div>';
+    }
   }
 
   function bar(idx, total, crumb, remaining) {

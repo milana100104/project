@@ -65,7 +65,8 @@ h1,h2,h3,h4{font-family:var(--display);letter-spacing:-.02em;}
 .ws-btn[disabled],.ws-btn.is-disabled,.btn[disabled]{opacity:.4;cursor:not-allowed;pointer-events:none;box-shadow:none;}
 .link-quiet{color:var(--ink-2);font-weight:500;font-size:.92rem;cursor:pointer;}
 .link-quiet:hover{color:var(--gold);}
-.acct-chip{font-family:var(--mono);font-size:.8rem;color:var(--gold);background:var(--gold-soft);border:1px solid var(--gold-line);padding:5px 12px;border-radius:999px;white-space:nowrap;}
+.acct-chip{font-family:var(--font);font-weight:700;font-size:.92rem;color:var(--gold);background:var(--gold-soft);border:1px solid var(--gold-line);padding:5px 12px;border-radius:999px;white-space:nowrap;}
+.acct-chip:hover{background:rgba(212,167,44,.2);}
 
 /* ---- badges ---- */
 .ws-badge{font-family:var(--mono);font-size:.64rem;letter-spacing:.05em;text-transform:uppercase;padding:4px 9px;border-radius:999px;white-space:nowrap;font-weight:500;}
@@ -124,6 +125,10 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 .ws-fulltest .ws-badge{margin-bottom:12px;display:inline-block;}
 .ws-fulltest h2{font-family:var(--display);font-size:1.35rem;font-weight:600;margin-bottom:8px;}
 .ws-fulltest p{color:var(--ink-2);max-width:66ch;}
+.ws-fulltest.is-ready{border-style:solid;border-color:var(--gold-line);}
+.ws-fulltest-cta{display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:12px 22px;border-radius:11px;
+  font-family:var(--display);font-weight:600;font-size:.96rem;}
+.ws-white .ws-panel .ws-fulltest.is-ready{background:#fff6e0;border:1.5px solid #e6c65a;box-shadow:0 8px 24px rgba(180,140,20,.15);}
 
 /* ================= PRACTICE ================= */
 .pr-bar{position:sticky;top:0;z-index:40;background:rgba(11,26,56,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);}
@@ -258,6 +263,11 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 
 .ws-white .acc-head:hover,
 .ws-white a.ws-item:hover{background:#f2f5fa;}
+
+/* the Saved card gets a warm gold tint so it stands out from the white task cards */
+.ws-white .saved-card{background:#fff6e0;border:1.5px solid #e6c65a;box-shadow:0 8px 24px rgba(180,140,20,.18);}
+.ws-white a.saved-card:hover{background:#fdefc8;border-color:#d9b03a;}
+.ws-white .saved-card .star{color:#d4a72c;}
 .ws-white .ws-progress-track{background:#e6ebf4;}
 
 /* answer choices + inputs on white */
