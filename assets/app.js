@@ -234,6 +234,12 @@
 
   /* ============================ store ============================ */
   function nowKey() { return STORE_KEY; }
+  function normPrefs(p) {
+    p = p && typeof p === 'object' ? p : {};
+    if (!p.goals || typeof p.goals !== 'object') p.goals = {};
+    if (!p.scores || typeof p.scores !== 'object') p.scores = {};
+    return p;
+  }
   var BeaconStore = {
     _data: null,
     _remote: {},   // questions loaded from Supabase (shared across everyone). Not persisted locally.
@@ -279,16 +285,22 @@
         var u = res && res.data && res.data.session && res.data.session.user;
         if (!u) return; // guest or client-side admin → this browser only
         self._userId = u.id;
-        return sb.from('progress').select('favorites, solved').eq('user_id', u.id).maybeSingle()
+        return sb.from('progress').select('*').eq('user_id', u.id).maybeSingle()
           .then(function (r) {
             var d = self._load();
+            var changed = false;
             if (r && !r.error && r.data) {
               if (Array.isArray(r.data.favorites)) d.favorites = r.data.favorites;
               if (r.data.solved && typeof r.data.solved === 'object') d.solved = r.data.solved;
-              self._save();
+              if (r.data.prefs && typeof r.data.prefs === 'object') d.prefs = normPrefs(r.data.prefs);
             } else {
-              self._syncUp(); // no row yet → seed the account from this device
+              changed = true; // no row yet → seed the account from this device
             }
+            // seed exam goals chosen at registration (stored on the auth user) if we have none yet
+            var gm = u.user_metadata && u.user_metadata.goals;
+            if (gm && typeof gm === 'object' && !Object.keys(d.prefs.goals).length) { d.prefs.goals = gm; changed = true; }
+            self._save();
+            if (changed) self._syncUp();
           });
       }).catch(function () {});
     },
@@ -300,10 +312,29 @@
       this._syncTimer = setTimeout(function () {
         var d = self._load();
         sb.from('progress').upsert(
-          { user_id: self._userId, favorites: d.favorites, solved: d.solved, updated_at: new Date().toISOString() },
+          { user_id: self._userId, favorites: d.favorites, solved: d.solved, prefs: d.prefs, updated_at: new Date().toISOString() },
           { onConflict: 'user_id' }
         ).then(function () {}, function () {});
       }, 400);
+    },
+
+    // ---- exam goals + mock-test scores (shown in the profile) --------
+    getGoals: function () { return this._load().prefs.goals || {}; },
+    setGoals: function (goals) { var d = this._load(); d.prefs.goals = goals || {}; this._save(); this._syncUp(); },
+    /** record a full-test score for an exam (keeps the last 20) */
+    recordScore: function (exam, score) {
+      var d = this._load();
+      if (!d.prefs.scores[exam]) d.prefs.scores[exam] = [];
+      d.prefs.scores[exam].push({ score: score, at: Date.now() });
+      if (d.prefs.scores[exam].length > 20) d.prefs.scores[exam] = d.prefs.scores[exam].slice(-20);
+      this._save(); this._syncUp();
+    },
+    /** average of recorded scores for an exam → { avg, count } or null */
+    avgScore: function (exam) {
+      var arr = (this._load().prefs.scores || {})[exam] || [];
+      if (!arr.length) return null;
+      var sum = 0; arr.forEach(function (s) { sum += (typeof s === 'object' ? s.score : s); });
+      return { avg: sum / arr.length, count: arr.length };
     },
 
     _load: function () {
@@ -316,6 +347,7 @@
       }
       // refresh webinars for older stores that predate the dated list
       if (!raw.webinars || !raw.webinars.length || !raw.webinars[0].iso) raw.webinars = defaultWebinars();
+      raw.prefs = normPrefs(raw.prefs);
       this._data = raw; return raw;
     },
     _save: function () { localStorage.setItem(nowKey(), JSON.stringify(this._data)); },
@@ -555,6 +587,10 @@
     document.body.classList.add('ws-white');
 
     if (qs('mode') === 'adaptive') { renderAdaptiveSAT(root); return; }
+    if (qs('mode') === 'full') {
+      var fx = qs('exam');
+      if (fx === 'toefl' || fx === 'ielts') { renderFullExam(root, fx); return; }
+    }
 
     var oneId = qs('one');
     var favMode = qs('fav') === '1';
@@ -1194,6 +1230,241 @@
       return { big: s6.toFixed(1), sub: 'TOEFL ' + label + ' · out of 6 · ' + correct + ' / ' + total + ' correct', pass: s6 >= 4 };
     }
     return { big: pct + '%', sub: correct + ' / ' + total + ' correct', pass: pct >= 60 };
+  }
+
+  /* ===================== reusable exam block (timed section) =====================
+   * One timed section: a countdown, free Back/Next navigation, a jump palette,
+   * and a selection you can change until you submit. Used by the full
+   * TOEFL / IELTS Reading + Listening exams. */
+  function runExamBlock(root, cfg) {
+    var qs_ = cfg.questions, picked = {}, idx = 0;
+    var remaining = cfg.minutes * 60;
+    var timerId = setInterval(function () {
+      remaining--;
+      var t = root.querySelector('.pr-timer');
+      if (t) { t.textContent = '⏱ ' + fmtTime(remaining); if (remaining <= 60) t.classList.add('low'); }
+      if (remaining <= 0) { clearInterval(timerId); timerId = null; submit(); }
+    }, 1000);
+    draw();
+
+    function draw() {
+      var q = qs_[idx];
+      root.innerHTML = '';
+      var last0 = idx === qs_.length - 1;
+      var top = el('div', 'pr-exam-top');
+      top.innerHTML =
+        '<a class="pr-exit-x" href="' + esc(cfg.exitHref) + '" title="Leave the test">Exit ✕</a>' +
+        '<span class="pr-exam-sec">' + esc(cfg.label) + '</span>' +
+        '<span class="pr-timer' + (remaining <= 60 ? ' low' : '') + '">⏱ ' + fmtTime(remaining) + '</span>' +
+        '<span class="pr-exam-jump">' +
+          '<button type="button" class="pr-arrow" data-prev' + (idx === 0 ? ' disabled' : '') + '>◀</button>' +
+          '<span class="pr-exam-qn">' + (idx + 1) + ' / ' + qs_.length + '</span>' +
+          '<button type="button" class="pr-arrow" data-next>' + (last0 ? '✔' : '▶') + '</button>' +
+        '</span>';
+      top.querySelector('.pr-exit-x').addEventListener('click', stop);
+      var pv = top.querySelector('[data-prev]'); if (pv) pv.addEventListener('click', function () { if (idx > 0) { idx--; draw(); } });
+      var nx = top.querySelector('[data-next]'); if (nx) nx.addEventListener('click', function () { if (last0) { review(); } else { idx++; draw(); } });
+      root.appendChild(top);
+
+      var stage = el('div', 'pr-stage');
+      var card = el('div', 'pr-card');
+      card.innerHTML = '<span class="pr-kicker">Question ' + (idx + 1) + ' of ' + qs_.length + '</span>';
+      if (q.passage) card.appendChild(el('div', 'pr-passage', esc(q.passage)));
+      if (q.image) { var fig = el('div', 'pr-image'); fig.innerHTML = '<img src="' + esc(q.image) + '" alt="Question image" loading="lazy">'; card.appendChild(fig); }
+      if (q.audio) {
+        var au = el('div', 'pr-audio');
+        au.innerHTML = q.audioSrc ? '<audio controls src="' + esc(q.audioSrc) + '"></audio>'
+          : '<div class="ph"><span class="ico">▶</span> Audio placeholder — use the transcript below.</div>' +
+            (q.transcript ? '<div class="pr-transcript"><span class="tlabel">Transcript</span>' + esc(q.transcript) + '</div>' : '');
+        card.appendChild(au);
+      }
+      card.appendChild(el('div', 'pr-prompt', esc(q.prompt)));
+
+      var wrap = el('div', 'pr-choices');
+      (q.choices || []).forEach(function (choice, i) {
+        var btn = el('button', 'pr-choice' + (picked[q.id] === i ? ' picked' : ''));
+        btn.type = 'button';
+        btn.innerHTML = '<span class="mark">' + String.fromCharCode(65 + i) + '</span><span>' + esc(choice) + '</span>';
+        btn.addEventListener('click', function () {
+          picked[q.id] = i;
+          wrap.querySelectorAll('.pr-choice').forEach(function (k) { k.classList.remove('picked'); });
+          btn.classList.add('picked');
+        });
+        wrap.appendChild(btn);
+      });
+      card.appendChild(wrap);
+      stage.appendChild(card); root.appendChild(stage);
+
+      var n = el('div', 'pr-nav');
+      var back = el('button', 'btn btn-wire', '← Back'); back.type = 'button';
+      if (idx === 0) back.setAttribute('disabled', '');
+      back.addEventListener('click', function () { if (idx > 0) { idx--; draw(); } });
+      var btns = el('div', 'pr-navbtns');
+      var nextBtn = el('button', 'btn btn-white', last0 ? 'Review & submit' : 'Next →'); nextBtn.type = 'button';
+      nextBtn.addEventListener('click', function () { if (last0) { review(); } else { idx++; draw(); } });
+      btns.appendChild(nextBtn);
+      n.appendChild(back); n.appendChild(btns);
+      root.appendChild(n);
+      root.appendChild(palette(false));
+    }
+
+    function palette(inReview) {
+      var p = el('div', 'pr-palette');
+      var answered = qs_.filter(function (q) { return picked[q.id] != null; }).length;
+      p.appendChild(el('div', 'pr-palette-label', 'Answered ' + answered + ' / ' + qs_.length + ' · tap a number to jump'));
+      var grid = el('div', 'pr-palette-grid');
+      qs_.forEach(function (q, i) {
+        var b = el('button', 'pr-dot' + (!inReview && i === idx ? ' current' : '') + (picked[q.id] != null ? ' done' : ''));
+        b.type = 'button'; b.textContent = i + 1;
+        b.addEventListener('click', function () { idx = i; draw(); });
+        grid.appendChild(b);
+      });
+      p.appendChild(grid);
+      return p;
+    }
+
+    function review() {
+      var un = qs_.filter(function (q) { return picked[q.id] == null; }).length;
+      root.innerHTML = '';
+      var top = el('div', 'pr-exam-top');
+      top.innerHTML =
+        '<span class="pr-exam-sec">' + esc(cfg.label) + ' — review</span>' +
+        '<span class="pr-timer">⏱ ' + fmtTime(remaining) + '</span><span></span>';
+      root.appendChild(top);
+      var stage = el('div', 'pr-stage'); var card = el('div', 'pr-card');
+      card.innerHTML =
+        '<span class="pr-kicker">Before you submit</span>' +
+        '<h2 class="pr-prompt" style="margin-top:8px">Review</h2>' +
+        '<div class="pr-passage" style="border:0;padding-left:0">You answered <b>' + (qs_.length - un) + '</b> of <b>' + qs_.length + '</b>. ' +
+        (un ? 'Still unanswered: <b>' + un + '</b> — tap a number below to go back.' : 'All answered. You can still change any answer before submitting.') +
+        ' ' + esc(cfg.submitNote || 'Once you submit, this section locks.') + '</div>';
+      card.appendChild(palette(true));
+      stage.appendChild(card); root.appendChild(stage);
+      var n = el('div', 'pr-nav');
+      var backBtn = el('button', 'btn btn-wire', '← Keep working'); backBtn.type = 'button';
+      backBtn.addEventListener('click', function () { draw(); });
+      var btns = el('div', 'pr-navbtns');
+      var sb = el('button', 'btn btn-white', 'Submit →'); sb.type = 'button';
+      sb.addEventListener('click', submit);
+      btns.appendChild(sb);
+      n.appendChild(backBtn); n.appendChild(btns);
+      root.appendChild(n);
+    }
+
+    function stop() { if (timerId) { clearInterval(timerId); timerId = null; } }
+    function submit() {
+      stop();
+      var mc = 0;
+      qs_.forEach(function (q) { if (picked[q.id] === q.answer) mc++; });
+      cfg.onDone(mc, qs_.length);
+    }
+  }
+
+  /* ===================== full TOEFL / IELTS test (Reading + Listening) =====================
+   * A complete, timed exam: Reading first, then Listening, each on its own
+   * clock, scored on the real scale (TOEFL /120 estimate, IELTS overall band). */
+  function renderFullExam(root, examId) {
+    document.body.classList.add('ws-white');
+    var NAME = examId === 'toefl' ? 'TOEFL' : 'IELTS';
+    var home = examId + '.html';
+    var SECTIONS = examId === 'toefl'
+      ? [{ key: 'reading', name: 'Reading', minutes: 35 }, { key: 'listening', name: 'Listening', minutes: 36 }]
+      : [{ key: 'reading', name: 'Reading', minutes: 60 }, { key: 'listening', name: 'Listening', minutes: 30 }];
+    SECTIONS = SECTIONS.filter(function (s) { return BeaconStore.questionsFor(examId, s.key, null).length > 0; });
+    if (!SECTIONS.length) {
+      root.innerHTML = errorCard('This test isn’t ready yet.', 'Add ' + NAME + ' Reading or Listening questions in the admin panel first.');
+      return;
+    }
+
+    var results = [], si = 0;
+    intro();
+
+    function intro() {
+      var struct = examId === 'toefl'
+        ? 'The official TOEFL Reading is 20 questions in 35 min; Listening is 28 in about 36 min.'
+        : 'Official IELTS Reading and Listening are 40 questions each (60 min and about 30 min).';
+      root.innerHTML = '';
+      var c = el('div', 'pr-stage'); var card = el('div', 'pr-card');
+      card.innerHTML =
+        '<span class="pr-kicker">' + NAME + ' · full test</span>' +
+        '<h2 class="pr-prompt" style="margin-top:8px">Full ' + NAME + ' — Reading &amp; Listening</h2>' +
+        '<div class="pr-passage" style="border:0;padding-left:0">A complete, timed exam: <b>Reading</b> first, then <b>Listening</b>, each on its own clock. ' +
+        'No feedback until the end. ' + struct + ' This one is built from the questions in the bank, so it may be shorter — timing and scoring work the same way.</div>' +
+        '<div class="pr-nav"><a class="btn btn-wire pr-exit" href="' + home + '">← Back</a>' +
+        '<div class="pr-navbtns"><button type="button" class="btn btn-white" id="fx-start">Start the test →</button></div></div>';
+      c.appendChild(card); root.appendChild(c);
+      document.getElementById('fx-start').onclick = function () { si = 0; runSec(); };
+    }
+
+    function runSec() {
+      var sec = SECTIONS[si];
+      var pool = shuffle(BeaconStore.questionsFor(examId, sec.key, null).slice());
+      runExamBlock(root, {
+        label: NAME + ' · ' + sec.name,
+        questions: pool,
+        minutes: sec.minutes,
+        exitHref: home,
+        submitNote: 'Once you submit, this section locks and you move on.',
+        onDone: function (mc, total) {
+          results.push({ name: sec.name, correct: mc, total: total });
+          si++;
+          if (si < SECTIONS.length) {
+            var nx = SECTIONS[si];
+            transition(sec.name + ' complete', 'Next up: <b>' + nx.name + '</b> — ' + nx.minutes + ' minutes on its own clock. Take a second, then continue.', runSec);
+          } else finish();
+        }
+      });
+    }
+
+    function transition(title, body, go) {
+      root.innerHTML = '';
+      var c = el('div', 'pr-stage'); var card = el('div', 'pr-card');
+      card.innerHTML =
+        '<span class="pr-kicker">' + NAME + ' · full test</span>' +
+        '<h2 class="pr-prompt" style="margin-top:8px">' + esc(title) + '</h2>' +
+        '<div class="pr-passage" style="border:0;padding-left:0">' + body + '</div>' +
+        '<div class="pr-nav"><span></span><div class="pr-navbtns"><button type="button" class="btn btn-white" id="fx-go">Continue →</button></div></div>';
+      c.appendChild(card); root.appendChild(c);
+      document.getElementById('fx-go').onclick = go;
+    }
+
+    function finish() {
+      var allC = 0, allT = 0;
+      results.forEach(function (r) { allC += r.correct; allT += r.total; });
+      var overallPct = allT ? allC / allT * 100 : 0;
+
+      var rows = results.map(function (r) {
+        var pct = r.total ? Math.round(r.correct / r.total * 100) : 0;
+        var mark = examId === 'toefl' ? Math.round(pct / 100 * 30) : ieltsBand(pct).toFixed(1);
+        var unit = examId === 'toefl' ? ' / 30' : ' band';
+        return '<div class="pr-rev ok"><span class="pr-rev-n">' + esc(r.name.slice(0, 1)) + '</span>' +
+          '<div class="pr-rev-main"><div class="pr-rev-q">' + esc(r.name) + '</div>' +
+          '<div class="pr-rev-a"><b>' + mark + unit + '</b> · ' + r.correct + '/' + r.total + ' correct</div></div>' +
+          '<span class="pr-rev-mark">' + mark + '</span></div>';
+      }).join('');
+
+      var recorded, big, sub, pass;
+      if (examId === 'toefl') {
+        recorded = Math.round(overallPct / 100 * 120);
+        big = String(recorded); sub = 'TOEFL · estimated Reading + Listening · /120'; pass = recorded >= 80;
+      } else {
+        var bands = results.map(function (r) { return ieltsBand(r.total ? Math.round(r.correct / r.total * 100) : 0); });
+        var avg = bands.reduce(function (a, b) { return a + b; }, 0) / bands.length;
+        recorded = Math.round(avg * 2) / 2;
+        big = recorded.toFixed(1); sub = 'IELTS · overall band (Reading + Listening) · 0–9'; pass = recorded >= 6;
+      }
+      if (window.BeaconStore && BeaconStore.recordScore) BeaconStore.recordScore(examId, recorded);
+
+      root.innerHTML =
+        '<div class="pr-stage"><div class="pr-result">' +
+        '<div class="pr-score ' + (pass ? 'pass' : 'fail') + '"><span class="pct">' + big + '</span><span class="frac">' + esc(sub) + '</span></div>' +
+        '<div class="pr-review">' + rows + '</div>' +
+        '<div class="pr-passage" style="border:0;padding-left:0;font-size:.9rem;color:#7c88a3">An estimate from your Reading + Listening answers — a study guide, not an official score. Saved to your profile average.</div>' +
+        '<div class="fin-actions">' +
+        '<a class="btn btn-white" href="' + home + '">Back to ' + NAME + '</a>' +
+        '<a class="btn btn-wire" href="practice.html?mode=full&exam=' + examId + '">Retake test</a>' +
+        '</div></div></div>';
+    }
   }
 
   /* ============================ exports + autorun ============================ */

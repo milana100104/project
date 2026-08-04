@@ -8,11 +8,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=26">
-<script src="assets/app.js?v=26" defer></script>
-<script src="assets/config.js?v=26" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=27">
+<script src="assets/app.js?v=27" defer></script>
+<script src="assets/config.js?v=27" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=26" defer></script>
+<script src="assets/auth.js?v=27" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -55,7 +55,29 @@ document.addEventListener("DOMContentLoaded", function () {
     else renderProfile();
   });
 
+  var EX = { toefl:{name:"TOEFL", scale:"/120", ph:"target /120, e.g. 100"},
+             ielts:{name:"IELTS", scale:"band", ph:"target band, e.g. 7.0"},
+             sat:{name:"SAT", scale:"/1600", ph:"target /1600, e.g. 1400"} };
+  function fmtScore(exam, v){ if (v==null) return "—"; return exam==="ielts" ? Number(v).toFixed(1) : String(Math.round(v)); }
+
   function renderProfile() {
+    var goals = BeaconStore.getGoals ? BeaconStore.getGoals() : {};
+    var order = ["toefl","ielts","sat"];
+    var goalRows = order.filter(function(e){return goals[e];}).map(function(e){
+      var t = goals[e] && goals[e].target;
+      var a = BeaconStore.avgScore ? BeaconStore.avgScore(e) : null;
+      var avgTxt = a ? (fmtScore(e,a.avg)+" "+EX[e].scale+" · avg of "+a.count+" test"+(a.count>1?"s":"")) : "no full tests yet";
+      return '<div class="data-row"><div class="rl-main"><b>'+EX[e].name+'</b><span>'+
+        (t!=null ? "target "+fmtScore(e,t)+" "+EX[e].scale : "no target set")+'</span></div>'+
+        '<span class="rl-num" style="font-size:.95rem;font-weight:600">'+esc(avgTxt)+'</span></div>';
+    }).join("");
+
+    var goalsCard = (user.role === "admin") ? "" :
+      '<div class="card" style="margin-top:16px"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px">' +
+      '<h2 style="font-size:1.1rem">Your exams &amp; goals</h2><button class="icon-btn go" id="edit-goals">Edit</button></div>' +
+      (goalRows || '<p class="sub">No exams chosen yet — tap Edit to pick what you’re preparing for and set a target.</p>') +
+      '<div id="goals-editor"></div></div>';
+
     panel.innerHTML =
       '<div class="card">' +
       '<h1 style="color:var(--gold)">' + esc(user.name) + '</h1>' +
@@ -64,8 +86,32 @@ document.addEventListener("DOMContentLoaded", function () {
         '<span class="rl-num">' + BeaconStore.favCount() + '</span></div>' +
       (user.role === "admin" ? '<a href="admin.html" class="btn btn-ghost full" style="margin-top:16px">Open admin panel</a>' : '') +
       '<button class="btn btn-gold full" id="lo" style="margin-top:12px">Log out</button>' +
-      '</div>';
+      '</div>' + goalsCard;
+
     document.getElementById("lo").onclick = function () { BeaconAuth.logout(); };
+    var eg = document.getElementById("edit-goals");
+    if (eg) eg.onclick = function(){ editGoals(goals); };
+  }
+
+  function editGoals(goals) {
+    var box = document.getElementById("goals-editor");
+    if (!box) return;
+    var order = ["toefl","ielts","sat"];
+    box.innerHTML =
+      '<div style="border-top:1px solid var(--border);margin-top:12px;padding-top:14px">' +
+      order.map(function(e){
+        var on = !!goals[e]; var t = goals[e] && goals[e].target;
+        return '<div class="goal-row"><label class="goal-check"><input type="checkbox" id="g-'+e+'"'+(on?" checked":"")+'> '+EX[e].name+'</label>'+
+          '<input class="goal-target" id="gt-'+e+'" inputmode="decimal" placeholder="'+EX[e].ph+'" value="'+(t!=null?esc(t):"")+'"></div>';
+      }).join("") +
+      '<button class="btn btn-gold full" id="save-goals" style="margin-top:10px">Save goals</button></div>';
+    document.getElementById("save-goals").onclick = function(){
+      var out={}; order.forEach(function(e){
+        if (document.getElementById("g-"+e).checked){ var v=parseFloat(document.getElementById("gt-"+e).value); out[e]=isNaN(v)?{}:{target:v}; }
+      });
+      BeaconStore.setGoals(out);
+      renderProfile();
+    };
   }
 
   function renderFavorites() {

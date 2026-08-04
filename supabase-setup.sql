@@ -97,8 +97,11 @@ create table if not exists public.progress (
   user_id     uuid primary key references auth.users(id) on delete cascade,
   favorites   jsonb default '[]'::jsonb,   -- ids of saved questions
   solved      jsonb default '{}'::jsonb,   -- { "exam/skill/type": [ids…] }
+  prefs       jsonb default '{}'::jsonb,   -- { goals:{exam:{target}}, scores:{exam:[…]} }
   updated_at  timestamptz default now()
 );
+-- add prefs to an existing progress table (safe if it already exists)
+alter table public.progress add column if not exists prefs jsonb default '{}'::jsonb;
 
 alter table public.progress enable row level security;
 

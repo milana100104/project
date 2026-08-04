@@ -8,11 +8,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/workspace.css?v=26">
-<script src="assets/config.js?v=26" defer></script>
+<link rel="stylesheet" href="assets/workspace.css?v=27">
+<script src="assets/config.js?v=27" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=26" defer></script>
-<script src="assets/app.js?v=26" defer></script>
+<script src="assets/auth.js?v=27" defer></script>
+<script src="assets/app.js?v=27" defer></script>
 </head>
 <body class="ws-white">
 <header class="ws-topbar">
@@ -71,7 +71,12 @@ document.addEventListener("DOMContentLoaded", function () {
         { id: "part-2", name: "Part 2 — cue card", desc: "A two-minute talk from a task card." },
         { id: "part-3", name: "Part 3 — discussion", desc: "A two-way discussion on broader ideas." }
       ]}
-    ]
+    ],
+    fullTest: {
+      title: "Full IELTS test — Reading & Listening",
+      desc: "A complete, timed Reading + Listening exam: Reading (60 min) then Listening (30 min), scored as an overall band (0–9). Writing and Speaking join once they're ready.",
+      href: "practice.html?mode=full&exam=ielts"
+    }
   });
 });
 </script>

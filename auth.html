@@ -8,10 +8,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=26">
-<script src="assets/config.js?v=26" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=27">
+<script src="assets/config.js?v=27" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=26" defer></script>
+<script src="assets/auth.js?v=27" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -53,6 +53,17 @@ document.addEventListener("DOMContentLoaded", function () {
   function googleBlock(label){
     return '<button type="button" class="btn btn-google full" id="goog">' + GOOGLE_G + '<span>' + label + '</span></button>' +
            '<div class="auth-or"><span>or</span></div>';
+  }
+  function goalRow(id,name,hint){
+    return '<div class="goal-row"><label class="goal-check"><input type="checkbox" id="g-'+id+'"> '+name+'</label>' +
+      '<input class="goal-target" id="gt-'+id+'" inputmode="decimal" placeholder="'+hint+'"></div>';
+  }
+  function collectGoals(){
+    var out={}; ["toefl","ielts","sat"].forEach(function(id){
+      var c=document.getElementById("g-"+id);
+      if (c && c.checked){ var t=parseFloat((document.getElementById("gt-"+id)||{}).value); out[id]=isNaN(t)?{}:{target:t}; }
+    });
+    return out;
   }
   function wireGoogle(){
     var g = document.getElementById("goog"); if (!g) return;
@@ -103,13 +114,18 @@ document.addEventListener("DOMContentLoaded", function () {
       '<div class="field"><label>Name</label><input id="nm" type="text" autocomplete="name" placeholder="Your name"></div>' +
       '<div class="field"><label>Email</label><input id="em" type="email" autocomplete="email" placeholder="you@example.com"></div>' +
       '<div class="field"><label>Password</label><input id="pw" type="password" autocomplete="new-password" placeholder="At least 6 characters"><span class="hint">Minimum 6 characters.</span></div>' +
+      '<div class="goal-block"><label class="goal-title">Which exams are you preparing for? <span class="hint">tick any, add a target score</span></label>' +
+        goalRow("toefl","TOEFL","target /120, e.g. 100") +
+        goalRow("ielts","IELTS","target band, e.g. 7.0") +
+        goalRow("sat","SAT","target /1600, e.g. 1400") +
+      '</div>' +
       '<button class="btn btn-gold full" id="go">Create account</button>' +
       '<div class="form-msg" id="m"></div>' +
       '<p class="form-switch">Already have an account? <a href="auth.html?view=login">Log in</a></p>';
     var go=document.getElementById("go"); go.dataset.label="Create account";
     go.onclick = function () {
       var m=document.getElementById("m"); busy(go,true);
-      BeaconAuth.register(val("nm"), val("em"), val("pw")).then(function(r){
+      BeaconAuth.register(val("nm"), val("em"), val("pw"), collectGoals()).then(function(r){
         busy(go,false);
         if (!r.ok) return msg(m, false, r.error);
         card.innerHTML = '<h1>Check your email</h1><p class="sub">We sent a confirmation link to <b>' + esc(val("em")) + '</b>. Open it to activate your account, then come back and log in.</p><a class="btn btn-gold full" href="auth.html?view=login">Back to log in</a>';
