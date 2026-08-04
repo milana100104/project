@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
     panel.innerHTML =
       '<a class="btn btn-gold" href="practice.html?fav=1" style="margin-bottom:16px">Practice saved (' + favs.length + ')</a>' +
       '<div class="row-list">' + rows + '</div>';
-    panel.querySelectorAll(".icon-btn").forEach(function (b) {
+    panel.querySelectorAll("button.icon-btn").forEach(function (b) {
       b.onclick = function () { BeaconStore.toggleFav(b.dataset.id); renderFavorites(); };
     });
   }
