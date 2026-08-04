@@ -882,7 +882,6 @@
         var last0 = idx === qs_.length - 1;
         top.innerHTML =
           '<a class="pr-exit-x" href="sat.html" title="Leave the test">Exit ✕</a>' +
-          '<span class="pr-exam-sec">SAT · ' + esc(sec.name) + ' — Module ' + moduleNo + ' of 2</span>' +
           '<span class="pr-timer' + (remaining <= 60 ? ' low' : '') + '">⏱ ' + fmtTime(remaining) + '</span>' +
           '<span class="pr-exam-jump">' +
             '<button type="button" class="pr-arrow" data-prev' + (idx === 0 ? ' disabled' : '') + '>◀</button>' +
@@ -911,6 +910,7 @@
             picked[q.id] = i;
             wrap.querySelectorAll('.pr-choice').forEach(function (k) { k.classList.remove('picked'); });
             btn.classList.add('picked');
+            syncPalette();
           });
           wrap.appendChild(btn);
         });
@@ -942,7 +942,7 @@
         var grid = el('div', 'pr-palette-grid');
         qs_.forEach(function (q, i) {
           var b = el('button', 'pr-dot' + (!inReview && i === idx ? ' current' : '') + (picked[q.id] != null ? ' done' : ''));
-          b.type = 'button'; b.textContent = i + 1;
+          b.type = 'button'; b.textContent = i + 1; b.setAttribute('data-i', i);
           b.addEventListener('click', function () { idx = i; draw(); });
           grid.appendChild(b);
         });
@@ -950,12 +950,23 @@
         return p;
       }
 
+      function syncPalette() {
+        var answered = 0;
+        qs_.forEach(function (q, i) {
+          var done = picked[q.id] != null; if (done) answered++;
+          var dot = root.querySelector('.pr-dot[data-i="' + i + '"]');
+          if (dot) dot.classList.toggle('done', done);
+        });
+        var lbl = root.querySelector('.pr-palette-label');
+        if (lbl) lbl.textContent = 'Answered ' + answered + ' / ' + qs_.length + ' · tap a number to jump';
+      }
+
       function review() {
         var un = qs_.filter(function (q) { return picked[q.id] == null; }).length;
         root.innerHTML = '';
         var top = el('div', 'pr-exam-top');
         top.innerHTML =
-          '<span class="pr-exam-sec">SAT · ' + esc(sec.name) + ' — Module ' + moduleNo + ' review</span>' +
+          '<span class="pr-exit-x" style="visibility:hidden">Exit ✕</span>' +
           '<span class="pr-timer">⏱ ' + fmtTime(remaining) + '</span><span></span>';
         root.appendChild(top);
         var stage = el('div', 'pr-stage');
@@ -1254,7 +1265,6 @@
       var top = el('div', 'pr-exam-top');
       top.innerHTML =
         '<a class="pr-exit-x" href="' + esc(cfg.exitHref) + '" title="Leave the test">Exit ✕</a>' +
-        '<span class="pr-exam-sec">' + esc(cfg.label) + '</span>' +
         '<span class="pr-timer' + (remaining <= 60 ? ' low' : '') + '">⏱ ' + fmtTime(remaining) + '</span>' +
         '<span class="pr-exam-jump">' +
           '<button type="button" class="pr-arrow" data-prev' + (idx === 0 ? ' disabled' : '') + '>◀</button>' +
@@ -1289,6 +1299,7 @@
           picked[q.id] = i;
           wrap.querySelectorAll('.pr-choice').forEach(function (k) { k.classList.remove('picked'); });
           btn.classList.add('picked');
+          syncPalette();
         });
         wrap.appendChild(btn);
       });
@@ -1315,7 +1326,7 @@
       var grid = el('div', 'pr-palette-grid');
       qs_.forEach(function (q, i) {
         var b = el('button', 'pr-dot' + (!inReview && i === idx ? ' current' : '') + (picked[q.id] != null ? ' done' : ''));
-        b.type = 'button'; b.textContent = i + 1;
+        b.type = 'button'; b.textContent = i + 1; b.setAttribute('data-i', i);
         b.addEventListener('click', function () { idx = i; draw(); });
         grid.appendChild(b);
       });
@@ -1323,12 +1334,24 @@
       return p;
     }
 
+    // mark the just-answered question green in the palette immediately
+    function syncPalette() {
+      var answered = 0;
+      qs_.forEach(function (q, i) {
+        var done = picked[q.id] != null; if (done) answered++;
+        var dot = root.querySelector('.pr-dot[data-i="' + i + '"]');
+        if (dot) dot.classList.toggle('done', done);
+      });
+      var lbl = root.querySelector('.pr-palette-label');
+      if (lbl) lbl.textContent = 'Answered ' + answered + ' / ' + qs_.length + ' · tap a number to jump';
+    }
+
     function review() {
       var un = qs_.filter(function (q) { return picked[q.id] == null; }).length;
       root.innerHTML = '';
       var top = el('div', 'pr-exam-top');
       top.innerHTML =
-        '<span class="pr-exam-sec">' + esc(cfg.label) + ' — review</span>' +
+        '<span class="pr-exit-x" style="visibility:hidden">Exit ✕</span>' +
         '<span class="pr-timer">⏱ ' + fmtTime(remaining) + '</span><span></span>';
       root.appendChild(top);
       var stage = el('div', 'pr-stage'); var card = el('div', 'pr-card');
