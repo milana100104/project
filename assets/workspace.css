@@ -143,13 +143,21 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 
 /* exam-style top bar for the SAT adaptive test */
 .pr-exam-top{position:sticky;top:0;z-index:40;background:rgba(11,26,56,.94);backdrop-filter:blur(10px);
-  border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;
-  max-width:100%;padding:0 22px;height:60px;justify-content:center;}
-.pr-exam-top .pr-exam-sec{font-family:var(--mono);font-size:.8rem;color:var(--ink-2);white-space:nowrap;margin-right:auto;}
+  border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  max-width:100%;padding:10px 22px;justify-content:space-between;}
+.pr-exam-top .pr-exam-sec{font-family:var(--mono);font-size:.8rem;color:var(--ink-2);white-space:nowrap;}
 .pr-exam-top .pr-timer{font-size:1.05rem;font-weight:600;}
-.pr-exit-x{margin-left:auto;font-family:var(--mono);font-size:.76rem;color:var(--muted);border:1px solid var(--border-strong);
+.pr-exit-x{font-family:var(--mono);font-size:.76rem;color:var(--muted);border:1px solid var(--border-strong);
   padding:5px 11px;border-radius:8px;white-space:nowrap;}
 .pr-exit-x:hover{color:#ff8f8f;border-color:#ff8f8f;}
+.pr-exam-jump{display:inline-flex;align-items:center;gap:8px;}
+.pr-arrow{width:36px;height:36px;border-radius:9px;border:1px solid var(--border-strong);background:var(--surface);
+  color:var(--ink);font-size:.95rem;cursor:pointer;line-height:1;transition:border-color .12s,color .12s,background .12s;}
+.pr-arrow:hover:not([disabled]){border-color:var(--gold-line);color:var(--gold);}
+.pr-arrow[disabled]{opacity:.35;cursor:not-allowed;}
+.pr-exam-qn{font-family:var(--mono);font-size:.82rem;color:var(--ink-2);min-width:52px;text-align:center;}
+.brk-clock{text-align:center;margin:18px 0 6px;}
+.brk-clock .brk-time{font-family:var(--mono);font-size:2.4rem;font-weight:600;color:var(--gold);}
 
 /* question palette (jump to any question) */
 .pr-palette{max-width:820px;margin:14px auto 30px;padding:0 20px;}
@@ -307,6 +315,7 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 .ws-white .pr-dot{background:#fff;border-color:#dbe1ec;color:#4a5875;}
 .ws-white .pr-dot.done{background:#fff2cc;border-color:#d9b03a;color:#8a6a12;}
 .ws-white .pr-dot.current{outline-color:#d9b03a;border-color:#d9b03a;color:#14233f;}
+.ws-white .brk-clock .brk-time{color:#b0851b;}
 .ws-white .pr-textin{background:#f7f9fc;border-color:#dbe1ec;color:#14233f;}
 .ws-white .pr-passage{border-left-color:#e0c24a;}
 .ws-white .pr-audio{background:#f7f9fc;border-color:#e3e7f0;}

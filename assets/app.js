@@ -556,12 +556,18 @@
 
     if (qs('mode') === 'adaptive') { renderAdaptiveSAT(root); return; }
 
+    var oneId = qs('one');
     var favMode = qs('fav') === '1';
     var testMode = qs('mode') === 'test';
     var exam = qs('exam'), skill = qs('skill'), type = qs('type');
     var pool, crumb, bucket = null, reveal = true;
 
-    if (favMode) {
+    if (oneId) {
+      var oneQ = BeaconStore.getById(oneId);
+      if (!oneQ) { root.innerHTML = errorCard('Question not found.', 'It may have been removed. Head back to your saved list.'); return; }
+      pool = [oneQ];
+      crumb = 'saved · one question';
+    } else if (favMode) {
       pool = BeaconStore.favoriteQuestions();
       crumb = 'saved · redo pool';
       if (pool.length === 0) { root.innerHTML = errorCard('Nothing saved yet.', 'Tap “Save” on a question during practice to keep it here.'); return; }
@@ -674,7 +680,7 @@
     function nav() {
       var n = el('div', 'pr-nav');
       var exit = el('a', 'btn btn-wire pr-exit', '← Exit');
-      exit.href = favMode ? 'account.html?tab=favorites' : (exam + '.html');
+      exit.href = (favMode || oneId) ? 'account.html?tab=favorites' : (exam + '.html');
       exit.addEventListener('click', function () { if (timerId) { clearInterval(timerId); timerId = null; } });
       var btns = el('div', 'pr-navbtns');
       var last = idx === pool.length - 1;
@@ -694,13 +700,14 @@
       if (testMode) { root.innerHTML = testResult(); return; }
       root.innerHTML = '';
       var f = el('div', 'pr-finished');
+      var savedExit = (favMode || oneId);
       f.innerHTML =
         '<div class="fin-mark">✓</div>' +
-        '<h2>Set complete</h2>' +
+        '<h2>' + (oneId ? 'Done' : 'Set complete') + '</h2>' +
         '<p>You worked through ' + pool.length + ' question' + (pool.length === 1 ? '' : 's') + '.' +
-        (favMode ? '' : ' They’ll stay out of your normal flow until you clear the whole pool.') + '</p>' +
+        (savedExit ? '' : ' They’ll stay out of your normal flow until you clear the whole pool.') + '</p>' +
         '<div class="fin-actions">' +
-        (favMode
+        (savedExit
           ? '<a class="btn btn-white" href="account.html?tab=favorites">Back to saved</a>'
           : '<a class="btn btn-white" href="' + exam + '.html">Back to ' + exam.toUpperCase() + '</a>' +
             '<a class="btn btn-wire" href="practice.html' + location.search + '">Keep going</a>') +
@@ -818,8 +825,9 @@
       if (!qs_.length) { onModuleDone(0); return; }
       var picked = {};            // qid -> chosen choice index (persists, changeable)
       var idx = 0;
-      var remaining = Math.round(sec.minutes * 60 * (qs_.length / sec.size));
-      if (remaining < 30) remaining = qs_.length * 45;
+      // real per-module time, like the actual Digital SAT: 32 min for a Reading
+      // & Writing module, 35 min for a Math module.
+      var remaining = sec.minutes * 60;
       var timerId = setInterval(function () {
         remaining--;
         var t = root.querySelector('.pr-timer');
@@ -833,13 +841,21 @@
         var q = qs_[idx];
         root.innerHTML = '';
 
-        // exam top bar: section + module, timer, exit
+        // exam top bar (sticky): exit · section · timer · quick prev/next jump
         var top = el('div', 'pr-exam-top');
+        var last0 = idx === qs_.length - 1;
         top.innerHTML =
+          '<a class="pr-exit-x" href="sat.html" title="Leave the test">Exit ✕</a>' +
           '<span class="pr-exam-sec">SAT · ' + esc(sec.name) + ' — Module ' + moduleNo + ' of 2</span>' +
-          '<span class="pr-timer">⏱ ' + fmtTime(remaining) + (remaining <= 60 ? '' : '') + '</span>' +
-          '<a class="pr-exit-x" href="sat.html" title="Leave the test">Exit ✕</a>';
+          '<span class="pr-timer' + (remaining <= 60 ? ' low' : '') + '">⏱ ' + fmtTime(remaining) + '</span>' +
+          '<span class="pr-exam-jump">' +
+            '<button type="button" class="pr-arrow" data-prev' + (idx === 0 ? ' disabled' : '') + '>◀</button>' +
+            '<span class="pr-exam-qn">' + (idx + 1) + ' / ' + qs_.length + '</span>' +
+            '<button type="button" class="pr-arrow" data-next>' + (last0 ? '✔' : '▶') + '</button>' +
+          '</span>';
         top.querySelector('.pr-exit-x').addEventListener('click', function () { if (timerId) { clearInterval(timerId); timerId = null; } });
+        var pv = top.querySelector('[data-prev]'); if (pv) pv.addEventListener('click', function () { if (idx > 0) { idx--; draw(); } });
+        var nx = top.querySelector('[data-next]'); if (nx) nx.addEventListener('click', function () { if (last0) { review(); } else { idx++; draw(); } });
         root.appendChild(top);
 
         var stage = el('div', 'pr-stage');
@@ -953,7 +969,31 @@
 
     function sectionBreak() {
       var next = SECTIONS[si];
-      transition('Section complete', 'Take a breath — on the real SAT there’s a 10-minute break here. Next up: <b>' + esc(next.name) + '</b>.', function () { runSection(); });
+      var left = 10 * 60;   // real SAT: a single 10-minute break before Math
+      var tid = null;
+      function go() { if (tid) { clearInterval(tid); tid = null; } runSection(); }
+      render();
+      tid = setInterval(function () {
+        left--;
+        var t = root.querySelector('.brk-time'); if (t) t.textContent = fmtTime(left);
+        if (left <= 0) { clearInterval(tid); tid = null; go(); }
+      }, 1000);
+      function render() {
+        root.innerHTML = '';
+        var c = el('div', 'pr-stage');
+        var card = el('div', 'pr-card');
+        card.innerHTML =
+          '<span class="pr-kicker">Break</span>' +
+          '<h2 class="pr-prompt" style="margin-top:8px">10-minute break</h2>' +
+          '<div class="pr-passage" style="border:0;padding-left:0">Reading &amp; Writing is done. On the real SAT you get a 10-minute break here before Math. ' +
+          'Stretch, breathe — <b>' + esc(next.name) + '</b> starts automatically when the timer reaches zero.</div>' +
+          '<div class="brk-clock"><span class="brk-time">' + fmtTime(left) + '</span></div>' +
+          '<div class="pr-nav"><span></span><div class="pr-navbtns">' +
+          '<button type="button" class="btn btn-white" id="brk-skip">Skip break — start ' + esc(next.name) + ' →</button>' +
+          '</div></div>';
+        c.appendChild(card); root.appendChild(c);
+        document.getElementById('brk-skip').onclick = function () { go(); };
+      }
     }
 
     // ---- scoring ----
