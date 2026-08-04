@@ -812,74 +812,128 @@
       });
     }
 
-    // ---- run one module: one question at a time, exam-style, on a timer ----
+    // ---- run one module, real-exam style: a countdown, free navigation
+    //      (Back / Next / jump to any question), and a selection you can change ----
     function runModule(sec, moduleNo, qs_, secState, onModuleDone) {
       if (!qs_.length) { onModuleDone(0); return; }
-      var idx = 0, answered = false;
-      var moduleCorrect = 0, moduleTotal = qs_.length;
+      var picked = {};            // qid -> chosen choice index (persists, changeable)
+      var idx = 0;
       var remaining = Math.round(sec.minutes * 60 * (qs_.length / sec.size));
-      if (remaining < 30) remaining = qs_.length * 40;
+      if (remaining < 30) remaining = qs_.length * 45;
       var timerId = setInterval(function () {
         remaining--;
-        var t = root.querySelector('.pr-timer'); if (t) t.textContent = '⏱ ' + fmtTime(remaining);
+        var t = root.querySelector('.pr-timer');
+        if (t) { t.textContent = '⏱ ' + fmtTime(remaining); if (remaining <= 60) t.classList.add('low'); }
         if (remaining <= 0) { clearInterval(timerId); timerId = null; endModule(); }
       }, 1000);
 
       draw();
 
       function draw() {
-        answered = false;
         var q = qs_[idx];
         root.innerHTML = '';
-        root.appendChild(bar(idx, qs_.length, 'SAT · ' + sec.name + ' · Module ' + moduleNo, remaining));
+
+        // exam top bar: section + module, timer, exit
+        var top = el('div', 'pr-exam-top');
+        top.innerHTML =
+          '<span class="pr-exam-sec">SAT · ' + esc(sec.name) + ' — Module ' + moduleNo + ' of 2</span>' +
+          '<span class="pr-timer">⏱ ' + fmtTime(remaining) + (remaining <= 60 ? '' : '') + '</span>' +
+          '<a class="pr-exit-x" href="sat.html" title="Leave the test">Exit ✕</a>';
+        top.querySelector('.pr-exit-x').addEventListener('click', function () { if (timerId) { clearInterval(timerId); timerId = null; } });
+        root.appendChild(top);
 
         var stage = el('div', 'pr-stage');
         var card = el('div', 'pr-card');
-        card.innerHTML = '<span class="pr-kicker">SAT · ' + esc(sec.name) + ' · Module ' + moduleNo + '</span>';
+        card.innerHTML = '<span class="pr-kicker">Question ' + (idx + 1) + ' of ' + qs_.length + '</span>';
         if (q.passage) card.appendChild(el('div', 'pr-passage', esc(q.passage)));
         if (q.image) { var fig = el('div', 'pr-image'); fig.innerHTML = '<img src="' + esc(q.image) + '" alt="Question image" loading="lazy">'; card.appendChild(fig); }
         card.appendChild(el('div', 'pr-prompt', esc(q.prompt)));
-        var feedback = el('div', 'pr-feedback');
-        var fmt = q.format || q.type;
-        if (fmt === 'complete-the-words' || fmt === 'cloze') card.appendChild(clozeBlock(q, feedback, onResolved, false));
-        else if (fmt === 'text') card.appendChild(textBlock(q, feedback, onResolved, false));
-        else card.appendChild(choiceBlock(q, feedback, onResolved, false));
-        card.appendChild(feedback);
+
+        // choices: highlight the current pick; clicking (re)selects — no reveal
+        var wrap = el('div', 'pr-choices');
+        (q.choices || []).forEach(function (choice, i) {
+          var btn = el('button', 'pr-choice' + (picked[q.id] === i ? ' picked' : ''));
+          btn.type = 'button';
+          btn.innerHTML = '<span class="mark">' + String.fromCharCode(65 + i) + '</span><span>' + esc(choice) + '</span>';
+          btn.addEventListener('click', function () {
+            picked[q.id] = i;
+            wrap.querySelectorAll('.pr-choice').forEach(function (k) { k.classList.remove('picked'); });
+            btn.classList.add('picked');
+          });
+          wrap.appendChild(btn);
+        });
+        card.appendChild(wrap);
         stage.appendChild(card);
         root.appendChild(stage);
-        root.appendChild(nav());
 
-        function onResolved(correct) {
-          answered = true;
-          secState.answers[q.id] = { ok: !!correct, q: q };
-          if (correct) { moduleCorrect++; }
-          var next = root.querySelector('[data-next]'); if (next) next.removeAttribute('disabled');
-        }
-      }
-
-      function nav() {
+        // nav row: Back | Next / Review
         var n = el('div', 'pr-nav');
-        var exit = el('a', 'btn btn-wire pr-exit', '← Exit');
-        exit.href = 'sat.html';
-        exit.addEventListener('click', function () { if (timerId) { clearInterval(timerId); timerId = null; } });
+        var back = el('button', 'btn btn-wire', '← Back'); back.type = 'button';
+        if (idx === 0) back.setAttribute('disabled', '');
+        back.addEventListener('click', function () { if (idx > 0) { idx--; draw(); } });
         var btns = el('div', 'pr-navbtns');
         var last = idx === qs_.length - 1;
-        var nextBtn = el('button', 'btn btn-white', last ? 'Finish module' : 'Next →');
-        nextBtn.type = 'button'; nextBtn.setAttribute('data-next', '1'); nextBtn.setAttribute('disabled', '');
-        nextBtn.addEventListener('click', function () {
-          if (!answered) return;
-          if (last) { endModule(); } else { idx++; draw(); }
-        });
+        var nextBtn = el('button', 'btn btn-white', last ? 'Review & submit' : 'Next →'); nextBtn.type = 'button';
+        nextBtn.addEventListener('click', function () { if (last) { review(); } else { idx++; draw(); } });
         btns.appendChild(nextBtn);
-        n.appendChild(exit); n.appendChild(btns);
-        return n;
+        n.appendChild(back); n.appendChild(btns);
+        root.appendChild(n);
+
+        // question palette — jump to any question; shows answered vs current
+        root.appendChild(palette(false));
+      }
+
+      function palette(inReview) {
+        var p = el('div', 'pr-palette');
+        var answered = qs_.filter(function (q) { return picked[q.id] != null; }).length;
+        p.appendChild(el('div', 'pr-palette-label', 'Answered ' + answered + ' / ' + qs_.length + ' · tap a number to jump'));
+        var grid = el('div', 'pr-palette-grid');
+        qs_.forEach(function (q, i) {
+          var b = el('button', 'pr-dot' + (!inReview && i === idx ? ' current' : '') + (picked[q.id] != null ? ' done' : ''));
+          b.type = 'button'; b.textContent = i + 1;
+          b.addEventListener('click', function () { idx = i; draw(); });
+          grid.appendChild(b);
+        });
+        p.appendChild(grid);
+        return p;
+      }
+
+      function review() {
+        var un = qs_.filter(function (q) { return picked[q.id] == null; }).length;
+        root.innerHTML = '';
+        var top = el('div', 'pr-exam-top');
+        top.innerHTML =
+          '<span class="pr-exam-sec">SAT · ' + esc(sec.name) + ' — Module ' + moduleNo + ' review</span>' +
+          '<span class="pr-timer">⏱ ' + fmtTime(remaining) + '</span><span></span>';
+        root.appendChild(top);
+        var stage = el('div', 'pr-stage');
+        var card = el('div', 'pr-card');
+        card.innerHTML =
+          '<span class="pr-kicker">Before you submit</span>' +
+          '<h2 class="pr-prompt" style="margin-top:8px">Module ' + moduleNo + ' review</h2>' +
+          '<div class="pr-passage" style="border:0;padding-left:0">You answered <b>' + (qs_.length - un) + '</b> of <b>' + qs_.length + '</b>. ' +
+          (un ? 'Still unanswered: <b>' + un + '</b> — tap a number below to go back.' : 'All answered. You can still change any answer before submitting.') +
+          ' Once you submit, this module locks and Module 2 adapts to it.</div>';
+        card.appendChild(palette(true));
+        stage.appendChild(card); root.appendChild(stage);
+        var n = el('div', 'pr-nav');
+        var backBtn = el('button', 'btn btn-wire', '← Keep working'); backBtn.type = 'button';
+        backBtn.addEventListener('click', function () { draw(); });
+        var btns = el('div', 'pr-navbtns');
+        var submit = el('button', 'btn btn-white', 'Submit module →'); submit.type = 'button';
+        submit.addEventListener('click', function () { endModule(); });
+        btns.appendChild(submit);
+        n.appendChild(backBtn); n.appendChild(btns);
+        root.appendChild(n);
       }
 
       function endModule() {
         if (timerId) { clearInterval(timerId); timerId = null; }
-        secState.correct += moduleCorrect;
-        secState.total += moduleTotal;
-        onModuleDone(moduleTotal ? moduleCorrect / moduleTotal : 0);
+        var mc = 0;
+        qs_.forEach(function (q) { if (picked[q.id] === q.answer) mc++; });
+        secState.correct += mc;
+        secState.total += qs_.length;
+        onModuleDone(qs_.length ? mc / qs_.length : 0);
       }
     }
 
