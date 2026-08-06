@@ -121,5 +121,56 @@ create policy "progress owner update"
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
+-- 5) Community chat: unique nicknames, a public room, and direct messages ---
+create table if not exists public.profiles (
+  user_id    uuid primary key references auth.users(id) on delete cascade,
+  nickname   text unique not null,
+  created_at timestamptz default now()
+);
+alter table public.profiles enable row level security;
+drop policy if exists "profiles read all" on public.profiles;
+create policy "profiles read all" on public.profiles for select using (true);
+drop policy if exists "profiles insert own" on public.profiles;
+create policy "profiles insert own" on public.profiles for insert with check (auth.uid() = user_id);
+drop policy if exists "profiles update own" on public.profiles;
+create policy "profiles update own" on public.profiles for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+create table if not exists public.messages (
+  id         bigint generated always as identity primary key,
+  user_id    uuid references auth.users(id) on delete set null,
+  nickname   text not null,
+  body       text not null check (char_length(body) between 1 and 1000),
+  created_at timestamptz default now()
+);
+alter table public.messages enable row level security;
+drop policy if exists "messages read all" on public.messages;
+create policy "messages read all" on public.messages for select using (true);
+drop policy if exists "messages insert own" on public.messages;
+create policy "messages insert own" on public.messages for insert with check (auth.uid() = user_id);
+
+create table if not exists public.dms (
+  id         bigint generated always as identity primary key,
+  from_user  uuid references auth.users(id) on delete set null,
+  to_user    uuid references auth.users(id) on delete cascade,
+  from_nick  text not null,
+  to_nick    text not null,
+  body       text not null check (char_length(body) between 1 and 1000),
+  created_at timestamptz default now()
+);
+alter table public.dms enable row level security;
+drop policy if exists "dms read own" on public.dms;
+create policy "dms read own" on public.dms for select using (auth.uid() = from_user or auth.uid() = to_user);
+drop policy if exists "dms insert own" on public.dms;
+create policy "dms insert own" on public.dms for insert with check (auth.uid() = from_user);
+
+-- turn on realtime for the chat tables (idempotent)
+do $$ begin
+  if not exists (select 1 from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename='messages')
+    then alter publication supabase_realtime add table public.messages; end if;
+  if not exists (select 1 from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename='dms')
+    then alter publication supabase_realtime add table public.dms; end if;
+end $$;
+
 -- Done. Reload the site; questions you add in the admin panel are now shared,
--- and each student's Saved list + progress follow them to any device.
+-- each student's Saved list + progress follow them to any device, and the
+-- bottom-right chat is live for signed-in students.

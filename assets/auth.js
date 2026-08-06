@@ -38,7 +38,7 @@
     },
     isAdmin: function () { var a = readAdmin(); return !!a && a.role === 'admin'; },
 
-    register: function (name, email, pass, goals) {
+    register: function (name, email, pass, goals, nickname) {
       name = (name || '').trim(); email = (email || '').trim();
       if (!name || !email || !pass) return Promise.resolve({ ok: false, error: 'Please fill in every field.' });
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return Promise.resolve({ ok: false, error: 'That email doesn’t look right.' });
@@ -46,6 +46,7 @@
       if (!sb) return Promise.resolve({ ok: false, error: 'Sign-up service isn’t reachable right now.' });
       var meta = { name: name };
       if (goals && typeof goals === 'object' && Object.keys(goals).length) meta.goals = goals;
+      if (nickname && String(nickname).trim()) meta.nickname = String(nickname).trim();
       return sb.auth.signUp({
         email: email, password: pass,
         options: { data: meta, emailRedirectTo: siteBase() + 'auth.html?view=login&confirmed=1' }

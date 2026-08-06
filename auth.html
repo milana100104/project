@@ -8,10 +8,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=28">
-<script src="assets/config.js?v=28" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=29">
+<script src="assets/config.js?v=29" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=28" defer></script>
+<script src="assets/auth.js?v=29" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -112,6 +112,7 @@ document.addEventListener("DOMContentLoaded", function () {
       '<h1>Create your account</h1><p class="sub">Free to start — Reading and Listening, no card.</p>' +
       googleBlock("Sign up with Google") +
       '<div class="field"><label>Name</label><input id="nm" type="text" autocomplete="name" placeholder="Your name"></div>' +
+      '<div class="field"><label>Nickname <span class="hint">shown in the chat — must be unique</span></label><input id="nick" type="text" autocomplete="off" placeholder="e.g. star_reader" maxlength="20"><span class="hint" id="nickmsg"></span></div>' +
       '<div class="field"><label>Email</label><input id="em" type="email" autocomplete="email" placeholder="you@example.com"></div>' +
       '<div class="field"><label>Password</label><input id="pw" type="password" autocomplete="new-password" placeholder="At least 6 characters"><span class="hint">Minimum 6 characters.</span></div>' +
       '<div class="goal-block"><label class="goal-title">Which exams are you preparing for? <span class="hint">tick any, add a target score</span></label>' +
@@ -123,9 +124,18 @@ document.addEventListener("DOMContentLoaded", function () {
       '<div class="form-msg" id="m"></div>' +
       '<p class="form-switch">Already have an account? <a href="auth.html?view=login">Log in</a></p>';
     var go=document.getElementById("go"); go.dataset.label="Create account";
+    var nickInput=document.getElementById("nick");
+    if (nickInput) nickInput.addEventListener("blur", function(){
+      var v=nickInput.value.trim(), nm=document.getElementById("nickmsg");
+      if (!v){ nm.textContent=""; return; }
+      if (window.sb) sb.from("profiles").select("user_id").eq("nickname", v).maybeSingle().then(function(r){
+        if (r && r.data){ nm.textContent="that nickname is taken — try another"; nm.style.color="#ef7d7d"; }
+        else { nm.textContent="available ✓"; nm.style.color="#4bcf94"; }
+      });
+    });
     go.onclick = function () {
       var m=document.getElementById("m"); busy(go,true);
-      BeaconAuth.register(val("nm"), val("em"), val("pw"), collectGoals()).then(function(r){
+      BeaconAuth.register(val("nm"), val("em"), val("pw"), collectGoals(), val("nick")).then(function(r){
         busy(go,false);
         if (!r.ok) return msg(m, false, r.error);
         card.innerHTML = '<h1>Check your email</h1><p class="sub">We sent a confirmation link to <b>' + esc(val("em")) + '</b>. Open it to activate your account, then come back and log in.</p><a class="btn btn-gold full" href="auth.html?view=login">Back to log in</a>';

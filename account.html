@@ -8,11 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=28">
-<script src="assets/app.js?v=28" defer></script>
-<script src="assets/config.js?v=28" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=29">
+<script src="assets/app.js?v=29" defer></script>
+<script src="assets/config.js?v=29" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=28" defer></script>
+<script src="assets/auth.js?v=29" defer></script>
+<script src="assets/chat.js?v=29" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -84,13 +85,37 @@ document.addEventListener("DOMContentLoaded", function () {
       '<p class="sub">' + esc(user.email) + (user.role === "admin" ? ' · admin' : ' · student') + '</p>' +
       '<div class="data-row"><div class="rl-main"><b>Saved</b><span>Questions you saved to redo.</span></div>' +
         '<span class="rl-num">' + BeaconStore.favCount() + '</span></div>' +
+      (user.role !== "admin" ? '<div class="data-row"><div class="rl-main"><b>Nickname</b><span>Shown in the community chat.</span></div>' +
+        '<span class="rl-num" id="nick-val" style="font-size:.95rem;font-weight:600">…</span>' +
+        '<button class="icon-btn go" id="chg-nick">Change</button></div>' : '') +
       (user.role === "admin" ? '<a href="admin.html" class="btn btn-ghost full" style="margin-top:16px">Open admin panel</a>' : '') +
       '<button class="btn btn-gold full" id="lo" style="margin-top:12px">Log out</button>' +
       '</div>' + goalsCard;
 
     document.getElementById("lo").onclick = function () { BeaconAuth.logout(); };
+    loadNick();
+    var cn = document.getElementById("chg-nick"); if (cn) cn.onclick = changeNick;
     var eg = document.getElementById("edit-goals");
     if (eg) eg.onclick = function(){ editGoals(goals); };
+  }
+
+  function loadNick() {
+    if (user.role === "admin" || !window.sb) return;
+    sb.from("profiles").select("nickname").eq("user_id", user.id).maybeSingle().then(function(r){
+      var el = document.getElementById("nick-val"); if (!el) return;
+      el.textContent = (r && r.data && r.data.nickname) ? "@"+r.data.nickname : "not set";
+    }).catch(function(){});
+  }
+  function changeNick() {
+    if (!window.sb) return;
+    var v = prompt("Pick a nickname (unique, 3–20 characters):"); if (!v) return;
+    v = v.trim();
+    if (v.length < 3) { alert("Nickname needs at least 3 characters."); return; }
+    sb.from("profiles").upsert({ user_id: user.id, nickname: v }, { onConflict: "user_id" }).then(function(r){
+      if (r.error) { alert(/duplicate|unique/i.test(r.error.message) ? "That nickname is taken — try another." : r.error.message); return; }
+      loadNick();
+      if (window.BeaconChat && BeaconChat.setNick) BeaconChat.setNick(v);
+    });
   }
 
   function editGoals(goals) {
