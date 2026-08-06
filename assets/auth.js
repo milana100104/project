@@ -17,7 +17,7 @@
   catch (e) { sb = null; }
   window.sb = sb;
 
-  var ADMIN = { name: 'Milana', login: 'milana', pass: 'Milanaadmin' };
+  var ADMIN = { name: 'Milana', login: 'milana', pass: 'Milanaadmin', email: (window.BEACON_ADMIN_EMAIL || '') };
   var ADMIN_KEY = 'beacon:admin';
 
   function siteBase() { return location.origin + location.pathname.replace(/[^/]*$/, ''); }
@@ -84,6 +84,12 @@
       id = (id || '').trim();
       if (id.toLowerCase() === ADMIN.login && pass === ADMIN.pass) {
         localStorage.setItem(ADMIN_KEY, JSON.stringify({ name: ADMIN.name, email: 'admin@beacon', role: 'admin', pw: pass }));
+        // Also sign into the Supabase admin account (if it exists) so the admin
+        // gets chat too. Admin panel still works even if this sign-in fails.
+        if (sb && ADMIN.email) {
+          return sb.auth.signInWithPassword({ email: ADMIN.email, password: pass })
+            .then(function () { return { ok: true, admin: true }; }, function () { return { ok: true, admin: true }; });
+        }
         return Promise.resolve({ ok: true, admin: true });
       }
       if (!sb) return Promise.resolve({ ok: false, error: 'Login service isn’t reachable right now.' });
