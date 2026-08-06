@@ -102,7 +102,7 @@
       if (!sb) return Promise.resolve({ ok: false, error: 'Sign-in service isn’t reachable right now.' });
       return sb.auth.signInWithOAuth({
         provider: provider,
-        options: { redirectTo: siteBase() + 'account.html' }
+        options: { redirectTo: siteBase() + 'index.html' }
       }).then(function (res) { return res.error ? { ok: false, error: res.error.message } : { ok: true }; });
     },
 

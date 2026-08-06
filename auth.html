@@ -8,10 +8,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=30">
-<script src="assets/config.js?v=30" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=31">
+<script src="assets/config.js?v=31" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=30" defer></script>
+<script src="assets/auth.js?v=31" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -19,7 +19,7 @@
 <header class="site-header">
   <div class="wrap header-inner">
     <a href="index.html" class="brand"><span class="logo-mark" role="img" aria-label="Beacon"></span><span class="brand-name">Beacon</span></a>
-    <nav class="main-nav"><a href="toefl.html">TOEFL</a><a href="ielts.html">IELTS</a><a href="sat.html">SAT</a><a href="webinars.html">Webinars</a></nav>
+    <nav class="main-nav"><a href="index.html">Home</a><a href="toefl.html">TOEFL</a><a href="ielts.html">IELTS</a><a href="sat.html">SAT</a><a href="webinars.html">Webinars</a></nav>
     <div class="header-actions">
       <a href="auth.html?view=login" class="link-quiet">Log in</a>
       <a href="auth.html?view=register" class="btn btn-gold">Start free</a>
@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", function () {
         busy(vgo, false);
         if (!r.ok) return msg(m, false, r.error);
         msg(m, true, "Verified — signing you in…");
-        setTimeout(function () { location.href = "account.html"; }, 800);
+        setTimeout(function () { location.href = "index.html"; }, 800);
       });
     };
     document.getElementById("resend").onclick = function (e) {

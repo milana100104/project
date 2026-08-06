@@ -84,7 +84,7 @@
     var w = document.createElement('div'); w.id = 'bc-root';
     w.innerHTML =
       '<button id="bc-launch" aria-label="Open chat">💬<span id="bc-badge" hidden>0</span></button>' +
-      '<div id="bc-panel" hidden>' +
+      '<div id="bc-panel">' +
         '<div id="bc-head">' +
           '<button class="bc-back" id="bc-back" hidden>←</button>' +
           '<span id="bc-title">Community</span>' +
@@ -97,15 +97,19 @@
       '</div>';
     document.body.appendChild(w);
 
-    document.getElementById('bc-launch').onclick = openPanel;
-    document.getElementById('bc-close').onclick = function () { document.getElementById('bc-panel').hidden = true; };
+    document.getElementById('bc-launch').onclick = function () { if (panelOpen()) closePanel(); else openPanel(); };
+    document.getElementById('bc-close').onclick = closePanel;
     document.getElementById('bc-back').onclick = function () { openTab('dms'); };
     document.querySelectorAll('#bc-tabs button').forEach(function (b) { b.onclick = function () { openTab(b.dataset.tab); }; });
     document.getElementById('bc-form').onsubmit = onSend;
   }
 
+  function setLaunch(ch) { var l = document.getElementById('bc-launch'); if (l && l.childNodes[0]) l.childNodes[0].nodeValue = ch; }
+  function panelOpen() { var p = document.getElementById('bc-panel'); return p && p.classList.contains('open'); }
+  function closePanel() { var p = document.getElementById('bc-panel'); if (p) p.classList.remove('open'); setLaunch('💬'); }
   function openPanel() {
-    document.getElementById('bc-panel').hidden = false;
+    var p = document.getElementById('bc-panel'); if (p) p.classList.add('open');
+    setLaunch('—');
     unread = 0; renderBadge();
     openTab(view === 'thread' ? 'dms' : view);
   }
@@ -133,7 +137,7 @@
     });
     if (!roomChan) {
       roomChan = sb.channel('bc-room').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, function (p) {
-        if (view === 'room' && !document.getElementById('bc-panel').hidden) {
+        if (view === 'room' && panelOpen()) {
           var body2 = document.getElementById('bc-body');
           var em = body2.querySelector('.bc-empty'); if (em) em.remove();
           body2.appendChild(msgEl(p.new)); scrollDown();
@@ -181,7 +185,7 @@
     document.getElementById('bc-title').textContent = '@' + other.nick;
     var form = document.getElementById('bc-form'); form.hidden = false;
     document.getElementById('bc-input').placeholder = 'Message @' + other.nick + '…';
-    document.getElementById('bc-panel').hidden = false;
+    document.getElementById('bc-panel').classList.add('open'); setLaunch('—');
     var body = document.getElementById('bc-body'); body.innerHTML = '<div class="bc-empty">Loading…</div>';
     sb.from('dms').select('*')
       .or('and(from_user.eq.' + me.id + ',to_user.eq.' + other.id + '),and(from_user.eq.' + other.id + ',to_user.eq.' + me.id + ')')
@@ -203,7 +207,7 @@
     dmChan = sb.channel('bc-dm-' + me.id).on('postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'dms', filter: 'to_user=eq.' + me.id }, function (p) {
         var m = p.new;
-        if (view === 'thread' && thread && thread.id === m.from_user && !document.getElementById('bc-panel').hidden) {
+        if (view === 'thread' && thread && thread.id === m.from_user && panelOpen()) {
           var body = document.getElementById('bc-body'); var em = body.querySelector('.bc-empty'); if (em) em.remove();
           body.appendChild(dmEl(m)); scrollDown();
         } else { unread++; renderBadge(); }
@@ -240,11 +244,14 @@
     if (document.getElementById('bc-style')) return;
     var s = document.createElement('style'); s.id = 'bc-style';
     s.textContent =
+      '@keyframes bc-pop{from{opacity:0;transform:scale(.5) translateY(10px);}to{opacity:1;transform:none;}}' +
       '#bc-root{position:fixed;right:20px;bottom:20px;z-index:9000;font-family:"Hanken Grotesk",system-ui,sans-serif;}' +
-      '#bc-launch{width:56px;height:56px;border-radius:50%;border:none;background:#e0bc4f;color:#20180a;font-size:1.5rem;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.35);position:relative;}' +
-      '#bc-launch:hover{background:#f0d372;}' +
+      '#bc-launch{width:56px;height:56px;border-radius:50%;border:none;background:#e0bc4f;color:#20180a;font-size:1.5rem;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.35);position:relative;animation:bc-pop .35s cubic-bezier(.2,.9,.3,1.2) both;transition:background .15s,transform .15s;}' +
+      '#bc-launch:hover{background:#f0d372;transform:scale(1.06);}' +
       '#bc-badge{position:absolute;top:-3px;right:-3px;background:#ef5350;color:#fff;font-size:.7rem;font-weight:700;min-width:20px;height:20px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 5px;}' +
-      '#bc-panel{position:absolute;right:0;bottom:70px;width:340px;max-width:calc(100vw - 40px);height:480px;max-height:calc(100vh - 120px);background:#0e2144;border:1px solid #274069;border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.5);display:flex;flex-direction:column;overflow:hidden;color:#f4efe3;}' +
+      '#bc-panel{position:absolute;right:0;bottom:70px;width:340px;max-width:calc(100vw - 40px);height:480px;max-height:calc(100vh - 120px);background:#0e2144;border:1px solid #274069;border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.5);display:flex;flex-direction:column;overflow:hidden;color:#f4efe3;' +
+        'opacity:0;transform:translateY(16px) scale(.97);transform-origin:bottom right;pointer-events:none;transition:opacity .22s ease,transform .22s ease;}' +
+      '#bc-panel.open{opacity:1;transform:none;pointer-events:auto;}' +
       '#bc-head{display:flex;align-items:center;gap:8px;padding:12px 14px;background:#122a52;border-bottom:1px solid #274069;}' +
       '#bc-title{font-weight:700;font-size:1rem;}' +
       '#bc-me{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:#e7c257;}' +
