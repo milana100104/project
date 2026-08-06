@@ -8,10 +8,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=29">
-<script src="assets/config.js?v=29" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=30">
+<script src="assets/config.js?v=30" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=29" defer></script>
+<script src="assets/auth.js?v=30" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -79,6 +79,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function render() {
     if (!window.BeaconAuth) { card.innerHTML = '<h1>Just a moment…</h1><p class="sub">Loading the sign-in service. If this stays, refresh the page.</p>'; setTimeout(render, 300); return; }
     if (view === "register") return renderRegister();
+    if (view === "verify") return renderVerify(qs("email") || "");
     if (view === "forgot") return renderForgot();
     if (view === "reset") return renderReset();
     return renderLogin();
@@ -101,6 +102,7 @@ document.addEventListener("DOMContentLoaded", function () {
       BeaconAuth.login(val("id"), val("pw")).then(function(r){
         busy(go,false);
         if (r.ok) return afterLogin();
+        if (r.needVerify) { location.href = "auth.html?view=verify&email=" + encodeURIComponent(val("id")); return; }
         msg(m, false, r.error);
       });
     };
@@ -138,10 +140,39 @@ document.addEventListener("DOMContentLoaded", function () {
       BeaconAuth.register(val("nm"), val("em"), val("pw"), collectGoals(), val("nick")).then(function(r){
         busy(go,false);
         if (!r.ok) return msg(m, false, r.error);
-        card.innerHTML = '<h1>Check your email</h1><p class="sub">We sent a confirmation link to <b>' + esc(val("em")) + '</b>. Open it to activate your account, then come back and log in.</p><a class="btn btn-gold full" href="auth.html?view=login">Back to log in</a>';
+        renderVerify(val("em"));
       });
     };
     wireGoogle();
+  }
+
+  function renderVerify(email) {
+    card.innerHTML =
+      '<h1>Enter your code</h1><p class="sub">We emailed a 6-digit code to activate your account. Enter it below. <span class="hint">Check the spam folder if you don’t see it.</span></p>' +
+      '<div class="field"><label>Email</label><input id="vem" type="email" autocomplete="email" placeholder="you@example.com" value="' + esc(email) + '"></div>' +
+      '<div class="field"><label>Code from the email</label><input id="code" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" maxlength="8"></div>' +
+      '<button class="btn btn-gold full" id="vgo">Verify &amp; sign in</button>' +
+      '<div class="form-msg" id="m"></div>' +
+      '<p class="form-switch"><a href="#" id="resend">Didn’t get it? Resend the code</a></p>' +
+      '<p class="form-switch">Already verified? <a href="auth.html?view=login">Log in</a></p>';
+    var vgo = document.getElementById("vgo"); vgo.dataset.label = "Verify & sign in";
+    vgo.onclick = function () {
+      var m = document.getElementById("m"); busy(vgo, true);
+      BeaconAuth.verifyCode(val("vem"), val("code")).then(function (r) {
+        busy(vgo, false);
+        if (!r.ok) return msg(m, false, r.error);
+        msg(m, true, "Verified — signing you in…");
+        setTimeout(function () { location.href = "account.html"; }, 800);
+      });
+    };
+    document.getElementById("resend").onclick = function (e) {
+      e.preventDefault();
+      var m = document.getElementById("m");
+      BeaconAuth.resendCode(val("vem")).then(function (r) {
+        if (r.ok) msg(m, true, "Sent — check your inbox (and spam).");
+        else msg(m, false, r.error);
+      });
+    };
   }
 
   function renderForgot() {

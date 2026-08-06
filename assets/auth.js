@@ -56,6 +56,30 @@
       });
     },
 
+    /** Verify a sign-up with the 6-digit code from the email; logs the user in. */
+    verifyCode: function (email, code) {
+      email = (email || '').trim(); code = (code || '').trim().replace(/\s+/g, '');
+      if (!email || !code) return Promise.resolve({ ok: false, error: 'Enter the email and the code.' });
+      if (!sb) return Promise.resolve({ ok: false, error: 'Service isn’t reachable right now.' });
+      return sb.auth.verifyOtp({ email: email, token: code, type: 'signup' }).then(function (res) {
+        if (res.error) {
+          var m = res.error.message || 'That code didn’t work.';
+          if (/expired/i.test(m)) return { ok: false, error: 'That code has expired — request a new one.' };
+          if (/invalid/i.test(m)) return { ok: false, error: 'Wrong code — check the email and try again.' };
+          return { ok: false, error: m };
+        }
+        return { ok: true };
+      });
+    },
+    /** Re-send the sign-up code to the email. */
+    resendCode: function (email) {
+      email = (email || '').trim();
+      if (!sb) return Promise.resolve({ ok: false, error: 'Service isn’t reachable right now.' });
+      return sb.auth.resend({ type: 'signup', email: email }).then(function (res) {
+        return res.error ? { ok: false, error: res.error.message } : { ok: true };
+      });
+    },
+
     login: function (id, pass) {
       id = (id || '').trim();
       if (id.toLowerCase() === ADMIN.login && pass === ADMIN.pass) {
