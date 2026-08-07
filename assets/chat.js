@@ -33,15 +33,17 @@
     if (!sb) return;
     sb.auth.getSession().then(function (res) {
       var u = res && res.data && res.data.session && res.data.session.user;
-      if (!u) return;          // guests + client-side admin: no chat
-      me = u;
-      return ensureProfile(u).then(function (nick) {
-        if (!nick) return;
-        myNick = nick;
-        injectStyles();
-        buildWidget();
-        subscribeDM();
-      });
+      injectStyles();
+      if (u) {                 // signed-in student: full chat
+        me = u;
+        return ensureProfile(u).then(function (nick) {
+          myNick = nick || '';
+          buildWidget();
+          subscribeDM();
+        });
+      }
+      me = null; myNick = '';   // guest: read-only chat (can read the room, can't post)
+      buildWidget();
     }).catch(function () {});
   }
 
@@ -81,6 +83,14 @@
 
   /* ---- widget shell ---- */
   function buildWidget() {
+    var meChip = me ? ('@' + esc(myNick)) : '<a href="auth.html?view=login" style="color:#e7c257;text-decoration:none">Log in</a>';
+    var tabs = me
+      ? '<button data-tab="room" class="on">Room</button><button data-tab="dms">Messages</button>'
+      : '<button data-tab="room" class="on">Room</button>';
+    var footer = me
+      ? '<form id="bc-form"><input id="bc-input" autocomplete="off" placeholder="Write a message…" maxlength="1000"><button type="submit">Send</button></form>'
+      : '<div id="bc-guest"><a href="auth.html?view=login">Log in</a> or <a href="auth.html?view=register">sign up</a> to write in the chat</div>';
+
     var w = document.createElement('div'); w.id = 'bc-root';
     w.innerHTML =
       '<button id="bc-launch" aria-label="Open chat">💬<span id="bc-badge" hidden>0</span></button>' +
@@ -88,12 +98,12 @@
         '<div id="bc-head">' +
           '<button class="bc-back" id="bc-back" hidden>←</button>' +
           '<span id="bc-title">Community</span>' +
-          '<span id="bc-me" title="your nickname">@' + esc(myNick) + '</span>' +
+          '<span id="bc-me" title="your nickname">' + meChip + '</span>' +
           '<button class="bc-x" id="bc-close" aria-label="Close">✕</button>' +
         '</div>' +
-        '<div id="bc-tabs"><button data-tab="room" class="on">Room</button><button data-tab="dms">Messages</button></div>' +
+        '<div id="bc-tabs">' + tabs + '</div>' +
         '<div id="bc-body"></div>' +
-        '<form id="bc-form"><input id="bc-input" autocomplete="off" placeholder="Write a message…" maxlength="1000"><button type="submit">Send</button></form>' +
+        footer +
       '</div>';
     document.body.appendChild(w);
 
@@ -101,7 +111,7 @@
     document.getElementById('bc-close').onclick = closePanel;
     document.getElementById('bc-back').onclick = function () { openTab('dms'); };
     document.querySelectorAll('#bc-tabs button').forEach(function (b) { b.onclick = function () { openTab(b.dataset.tab); }; });
-    document.getElementById('bc-form').onsubmit = onSend;
+    var form = document.getElementById('bc-form'); if (form) form.onsubmit = onSend;
   }
 
   function setLaunch(ch) { var l = document.getElementById('bc-launch'); if (l && l.childNodes[0]) l.childNodes[0].nodeValue = ch; }
@@ -120,9 +130,9 @@
     document.getElementById('bc-back').hidden = true;
     document.getElementById('bc-tabs').hidden = false;
     document.getElementById('bc-title').textContent = 'Community';
-    var form = document.getElementById('bc-form'); form.hidden = false;
-    if (tab === 'room') { document.getElementById('bc-input').placeholder = 'Write to the room…'; loadRoom(); }
-    else { form.hidden = true; loadThreads(); }
+    var form = document.getElementById('bc-form');
+    if (tab === 'room') { if (form) { form.hidden = false; document.getElementById('bc-input').placeholder = 'Write to the room…'; } loadRoom(); }
+    else { if (form) form.hidden = true; loadThreads(); }
   }
 
   /* ---- ROOM ---- */
@@ -141,18 +151,18 @@
           var body2 = document.getElementById('bc-body');
           var em = body2.querySelector('.bc-empty'); if (em) em.remove();
           body2.appendChild(msgEl(p.new)); scrollDown();
-        } else if (p.new.user_id !== me.id) { unread++; renderBadge(); }
+        } else if (!me || p.new.user_id !== me.id) { unread++; renderBadge(); }
       }).subscribe();
     }
   }
   function msgEl(m) {
-    var mine = m.user_id === me.id;
+    var mine = me && m.user_id === me.id;
     var d = document.createElement('div'); d.className = 'bc-msg' + (mine ? ' mine' : '');
     d.innerHTML = '<div class="bc-meta"><b class="bc-nick" data-uid="' + esc(m.user_id) + '" data-nick="' + esc(m.nickname) + '">' +
       (mine ? 'You' : esc(m.nickname)) + '</b><span>' + timeStr(m.created_at) + '</span></div>' +
       '<div class="bc-text">' + esc(m.body) + '</div>';
     var nk = d.querySelector('.bc-nick');
-    if (!mine) nk.onclick = function () { openThread({ id: m.user_id, nick: m.nickname }); };
+    if (me && !mine) nk.onclick = function () { openThread({ id: m.user_id, nick: m.nickname }); };  // DM only when signed in
     return d;
   }
 
@@ -217,6 +227,7 @@
   /* ---- send ---- */
   function onSend(e) {
     e.preventDefault();
+    if (!me) { location.href = 'auth.html?view=login'; return; }
     var inp = document.getElementById('bc-input'); var body = inp.value.trim();
     if (!body) return; inp.value = '';
     if (view === 'thread' && thread) {
@@ -275,6 +286,8 @@
       '#bc-input{flex:1;background:#0b1a38;border:1px solid #274069;border-radius:10px;padding:9px 12px;color:#f4efe3;font-family:inherit;font-size:.9rem;}' +
       '#bc-input:focus{outline:none;border-color:#e7c257;}' +
       '#bc-form button{background:#e0bc4f;color:#20180a;border:none;border-radius:10px;padding:0 16px;font-weight:700;cursor:pointer;font-family:inherit;}' +
+      '#bc-guest{padding:12px 14px;border-top:1px solid #274069;background:#0e2144;text-align:center;font-size:.85rem;color:#c3cee2;}' +
+      '#bc-guest a{color:#e7c257;text-decoration:none;font-weight:600;}' +
       '@media(max-width:480px){#bc-root{right:12px;bottom:12px;}#bc-panel{width:calc(100vw - 24px);}}';
     document.head.appendChild(s);
   }
