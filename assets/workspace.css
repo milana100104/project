@@ -34,7 +34,7 @@ h1,h2,h3,h4{font-family:var(--display);letter-spacing:-.02em;}
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");background-size:180px 180px;}
 
 /* ---- top bar ---- */
-.ws-topbar{position:sticky;top:0;z-index:50;background:rgba(11,26,56,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);}
+.ws-topbar{position:sticky;top:0;z-index:50;background:rgba(11,26,56,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);}
 .ws-topbar-inner{max-width:1100px;margin:0 auto;height:62px;padding:0 26px;display:flex;align-items:center;gap:24px;}
 .ws-brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:1.12rem;flex-shrink:0;}
 .ws-brand .logo{width:30px;height:30px;border-radius:7px;border:none;background-color:#0b1a34;

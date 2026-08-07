@@ -53,9 +53,22 @@
   function ensureProfile(u) {
     return sb.from('profiles').select('nickname').eq('user_id', u.id).maybeSingle().then(function (r) {
       if (r && r.data && r.data.nickname) return r.data.nickname;
-      var wanted = (u.user_metadata && u.user_metadata.nickname) ||
-        (u.user_metadata && u.user_metadata.name) || (u.email || 'user').split('@')[0];
-      return claimNick(u, cleanNick(wanted), 0);
+      var chosen = (u.user_metadata && u.user_metadata.nickname);
+      if (chosen) return claimNick(u, cleanNick(chosen), 0);  // email sign-up: they already picked one
+      return promptNick(u);                                    // Google etc: make them pick a unique one
+    });
+  }
+  // ask the user for a unique nickname (used when they signed up via Google and have none yet)
+  function promptNick(u) {
+    var suggestion = cleanNick((u.user_metadata && u.user_metadata.name) || (u.email || 'user').split('@')[0]);
+    var v = window.prompt('Pick a nickname for the chat — it must be unique (3–20 characters):', suggestion);
+    if (v == null) return Promise.resolve('');       // cancelled → they can set one later in the profile
+    v = cleanNick(v);
+    if (v.length < 3) { window.alert('Nickname needs at least 3 characters.'); return promptNick(u); }
+    return sb.from('profiles').insert({ user_id: u.id, nickname: v }).then(function (r) {
+      if (!r.error) return v;
+      if (/duplicate|unique/i.test(r.error.message || '')) { window.alert('“' + v + '” is already taken — pick another.'); return promptNick(u); }
+      return v;   // some other error → go with what they typed
     });
   }
   function cleanNick(s) { s = String(s || 'user').trim().replace(/\s+/g, '_').replace(/[^A-Za-z0-9_\.\-]/g, ''); return (s || 'user').slice(0, 20); }
@@ -86,9 +99,7 @@
   /* ---- widget shell ---- */
   function buildWidget() {
     var meChip = me ? ('@' + esc(myNick)) : '<a href="auth.html?view=login" style="color:#e7c257;text-decoration:none">Log in</a>';
-    var tabs = me
-      ? '<button data-tab="room" class="on">Room</button><button data-tab="dms">Messages</button>'
-      : '<button data-tab="room" class="on">Room</button>';
+    var dmsBtn = me ? '<button class="bc-dms" id="bc-dms-btn" title="Direct messages">✉</button>' : '';
     var footer = me
       ? '<form id="bc-form"><input id="bc-input" autocomplete="off" placeholder="Write a message…" maxlength="1000"><button type="submit">Send</button></form>'
       : '<div id="bc-guest"><a href="auth.html?view=login">Log in</a> or <a href="auth.html?view=register">sign up</a> to write in the chat</div>';
@@ -100,10 +111,10 @@
         '<div id="bc-head">' +
           '<button class="bc-back" id="bc-back" hidden>←</button>' +
           '<span id="bc-title">Community</span>' +
+          dmsBtn +
           '<span id="bc-me" title="your nickname">' + meChip + '</span>' +
           '<button class="bc-x" id="bc-close" aria-label="Close">✕</button>' +
         '</div>' +
-        '<div id="bc-tabs">' + tabs + '</div>' +
         '<div id="bc-body"></div>' +
         footer +
       '</div>';
@@ -111,8 +122,8 @@
 
     document.getElementById('bc-launch').onclick = function () { if (panelOpen()) closePanel(); else openPanel(); };
     document.getElementById('bc-close').onclick = closePanel;
-    document.getElementById('bc-back').onclick = function () { openTab('dms'); };
-    document.querySelectorAll('#bc-tabs button').forEach(function (b) { b.onclick = function () { openTab(b.dataset.tab); }; });
+    document.getElementById('bc-back').onclick = function () { if (view === 'thread') openTab('dms'); else openTab('room'); };
+    var db = document.getElementById('bc-dms-btn'); if (db) db.onclick = function () { openTab('dms'); };
     var form = document.getElementById('bc-form'); if (form) form.onsubmit = onSend;
 
     // open with the messages showing by default (skip on the exam page); remember if collapsed
@@ -134,13 +145,19 @@
 
   function openTab(tab) {
     view = tab; thread = null;
-    document.querySelectorAll('#bc-tabs button').forEach(function (b) { b.classList.toggle('on', b.dataset.tab === tab); });
-    document.getElementById('bc-back').hidden = true;
-    document.getElementById('bc-tabs').hidden = false;
-    document.getElementById('bc-title').textContent = 'Community';
+    var back = document.getElementById('bc-back');
+    var dmsBtn = document.getElementById('bc-dms-btn');
     var form = document.getElementById('bc-form');
-    if (tab === 'room') { if (form) { form.hidden = false; document.getElementById('bc-input').placeholder = 'Write to the room…'; } loadRoom(); }
-    else { if (form) form.hidden = true; loadThreads(); }
+    document.getElementById('bc-title').textContent = (tab === 'dms') ? 'Messages' : 'Community';
+    if (tab === 'room') {
+      back.hidden = true; if (dmsBtn) dmsBtn.hidden = false;
+      if (form) { form.hidden = false; document.getElementById('bc-input').placeholder = 'Write a message…'; }
+      loadRoom();
+    } else { // dms list
+      back.hidden = false; if (dmsBtn) dmsBtn.hidden = true;
+      if (form) form.hidden = true;
+      loadThreads();
+    }
   }
 
   /* ---- ROOM ---- */
@@ -198,7 +215,7 @@
 
   function openThread(other) {
     view = 'thread'; thread = other;
-    document.getElementById('bc-tabs').hidden = true;
+    var dmsBtn = document.getElementById('bc-dms-btn'); if (dmsBtn) dmsBtn.hidden = true;
     document.getElementById('bc-back').hidden = false;
     document.getElementById('bc-title').textContent = '@' + other.nick;
     var form = document.getElementById('bc-form'); form.hidden = false;
@@ -274,7 +291,8 @@
       '#bc-head{display:flex;align-items:center;gap:8px;padding:12px 14px;background:#122a52;border-bottom:1px solid #274069;}' +
       '#bc-title{font-weight:700;font-size:1rem;}' +
       '#bc-me{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:#e7c257;}' +
-      '#bc-head .bc-x,#bc-head .bc-back{background:none;border:none;color:#c3cee2;font-size:1rem;cursor:pointer;padding:2px 6px;}' +
+      '#bc-head .bc-x,#bc-head .bc-back,#bc-head .bc-dms{background:none;border:none;color:#c3cee2;font-size:1rem;cursor:pointer;padding:2px 6px;}' +
+      '#bc-head .bc-dms{font-size:1.05rem;}#bc-head .bc-dms:hover{color:#e7c257;}' +
       '#bc-head .bc-back{font-size:1.2rem;}' +
       '#bc-tabs{display:flex;border-bottom:1px solid #274069;}' +
       '#bc-tabs button{flex:1;background:none;border:none;color:#8296b7;padding:10px;cursor:pointer;font-weight:600;font-family:inherit;font-size:.9rem;}' +
