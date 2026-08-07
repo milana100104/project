@@ -36,11 +36,13 @@
       injectStyles();
       if (u) {                 // signed-in student: full chat
         me = u;
-        return ensureProfile(u).then(function (nick) {
-          myNick = nick || '';
+        var fallbackNick = (u.user_metadata && (u.user_metadata.nickname || u.user_metadata.name)) || (u.email || 'you').split('@')[0];
+        ensureProfile(u).catch(function () { return ''; }).then(function (nick) {
+          myNick = nick || fallbackNick;   // still show the chat even if the profile call hiccups
           buildWidget();
           subscribeDM();
         });
+        return;
       }
       me = null; myNick = '';   // guest: read-only chat (can read the room, can't post)
       buildWidget();

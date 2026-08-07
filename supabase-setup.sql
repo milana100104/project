@@ -163,6 +163,13 @@ create policy "dms read own" on public.dms for select using (auth.uid() = from_u
 drop policy if exists "dms insert own" on public.dms;
 create policy "dms insert own" on public.dms for insert with check (auth.uid() = from_user);
 
+-- make sure the API roles can reach the chat tables (RLS still governs rows)
+grant usage on schema public to anon, authenticated;
+grant select on public.profiles, public.messages to anon, authenticated;
+grant insert, update on public.profiles to authenticated;
+grant insert on public.messages to authenticated;
+grant select, insert on public.dms to authenticated;
+
 -- turn on realtime for the chat tables (idempotent)
 do $$ begin
   if not exists (select 1 from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename='messages')
