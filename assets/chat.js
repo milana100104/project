@@ -109,7 +109,10 @@
   /* ---- widget shell ---- */
   function buildWidget() {
     var meChip = me ? ('@' + esc(myNick)) : '<a href="auth.html?view=login" style="color:#e7c257;text-decoration:none">Log in</a>';
-    var dmsBtn = me ? '<button class="bc-dms" id="bc-dms-btn" title="Direct messages">✉</button>' : '';
+    // logged-in students get the two tabs; guests only see the read-only Chat
+    var tabs = me
+      ? '<div id="bc-tabs"><button data-tab="room" class="on">Chat</button><button data-tab="dms">Direct messages</button></div>'
+      : '';
     var footer = me
       ? '<form id="bc-form"><input id="bc-input" autocomplete="off" placeholder="Write a message…" maxlength="1000"><button type="submit">Send</button></form>'
       : '<div id="bc-guest"><a href="auth.html?view=login">Log in</a> or <a href="auth.html?view=register">sign up</a> to write in the chat</div>';
@@ -121,10 +124,10 @@
         '<div id="bc-head">' +
           '<button class="bc-back" id="bc-back" hidden>←</button>' +
           '<span id="bc-title">Community</span>' +
-          dmsBtn +
           '<span id="bc-me" title="your nickname">' + meChip + '</span>' +
           '<button class="bc-x" id="bc-close" aria-label="Close">✕</button>' +
         '</div>' +
+        tabs +
         '<div id="bc-body"></div>' +
         footer +
       '</div>';
@@ -133,7 +136,8 @@
     document.getElementById('bc-launch').onclick = function () { if (panelOpen()) closePanel(); else openPanel(); };
     document.getElementById('bc-close').onclick = closePanel;
     document.getElementById('bc-back').onclick = function () { if (view === 'thread') openTab('dms'); else openTab('room'); };
-    var db = document.getElementById('bc-dms-btn'); if (db) db.onclick = function () { openTab('dms'); };
+    var tabBtns = document.querySelectorAll('#bc-tabs button');
+    for (var i = 0; i < tabBtns.length; i++) { (function (b) { b.onclick = function () { openTab(b.getAttribute('data-tab')); }; })(tabBtns[i]); }
     var form = document.getElementById('bc-form'); if (form) form.onsubmit = onSend;
 
     // open with the messages showing by default (skip on the exam page); remember if collapsed
@@ -147,7 +151,7 @@
   function closePanel() { var p = document.getElementById('bc-panel'); if (p) p.classList.remove('open'); setLaunch('💬'); try { localStorage.setItem('beacon:chatClosed', '1'); } catch (e) {} }
   function openPanel() {
     var p = document.getElementById('bc-panel'); if (p) p.classList.add('open');
-    setLaunch('—');
+    setLaunch('✕');
     try { localStorage.setItem('beacon:chatClosed', '0'); } catch (e) {}
     unread = 0; renderBadge();
     openTab(view === 'thread' ? 'dms' : view);
@@ -156,15 +160,19 @@
   function openTab(tab) {
     view = tab; thread = null;
     var back = document.getElementById('bc-back');
-    var dmsBtn = document.getElementById('bc-dms-btn');
+    var tabsBar = document.getElementById('bc-tabs');
     var form = document.getElementById('bc-form');
-    document.getElementById('bc-title').textContent = (tab === 'dms') ? 'Messages' : 'Community';
+    if (back) back.hidden = true;
+    document.getElementById('bc-title').textContent = 'Community';
+    if (tabsBar) {
+      tabsBar.hidden = false;
+      var bs = tabsBar.querySelectorAll('button');
+      for (var i = 0; i < bs.length; i++) { bs[i].classList.toggle('on', bs[i].getAttribute('data-tab') === tab); }
+    }
     if (tab === 'room') {
-      back.hidden = true; if (dmsBtn) dmsBtn.hidden = false;
       if (form) { form.hidden = false; document.getElementById('bc-input').placeholder = 'Write a message…'; }
       loadRoom();
     } else { // dms list
-      back.hidden = false; if (dmsBtn) dmsBtn.hidden = true;
       if (form) form.hidden = true;
       loadThreads();
     }
@@ -232,12 +240,12 @@
 
   function openThread(other) {
     view = 'thread'; thread = other;
-    var dmsBtn = document.getElementById('bc-dms-btn'); if (dmsBtn) dmsBtn.hidden = true;
+    var tabsBar = document.getElementById('bc-tabs'); if (tabsBar) tabsBar.hidden = true;
     document.getElementById('bc-back').hidden = false;
     document.getElementById('bc-title').textContent = '@' + other.nick;
     var form = document.getElementById('bc-form'); form.hidden = false;
     document.getElementById('bc-input').placeholder = 'Message @' + other.nick + '…';
-    document.getElementById('bc-panel').classList.add('open'); setLaunch('—');
+    document.getElementById('bc-panel').classList.add('open'); setLaunch('✕');
     var body = document.getElementById('bc-body'); body.innerHTML = '<div class="bc-empty">Loading…</div>';
     sb.from('dms').select('*')
       .or('and(from_user.eq.' + me.id + ',to_user.eq.' + other.id + '),and(from_user.eq.' + other.id + ',to_user.eq.' + me.id + ')')
