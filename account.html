@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=43">
-<script src="assets/app.js?v=43" defer></script>
-<script src="assets/config.js?v=43" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=44">
+<script src="assets/app.js?v=44" defer></script>
+<script src="assets/config.js?v=44" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=43" defer></script>
-<script src="assets/chat.js?v=43" defer></script>
+<script src="assets/auth.js?v=44" defer></script>
+<script src="assets/chat.js?v=44" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var EX = { toefl:{name:"TOEFL", scale:"/120", ph:"target /120, e.g. 100"},
              ielts:{name:"IELTS", scale:"band", ph:"target band, e.g. 7.0"},
              sat:{name:"SAT", scale:"/1600", ph:"target /1600, e.g. 1400"} };
-  var AVATARS = ['🦊','🐼','🦁','🐯','🐸','🐵','🐧','🦉','🐙','🦄','🐷','🐨','🐰','🐺','🐢'];
+  var AVATARS = ['fox','panda','cat','bear','penguin','rabbit','frog','koala','tiger','pig','owl','dog'];
   function fmtScore(exam, v){ if (v==null) return "—"; return exam==="ielts" ? Number(v).toFixed(1) : String(Math.round(v)); }
 
   function renderProfile() {
@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
         '<span class="rl-num" id="nick-val" style="font-size:.95rem;font-weight:600">…</span>' +
         '<button class="icon-btn go" id="chg-nick">Change</button></div>' +
         '<div class="data-row"><div class="rl-main"><b>Avatar</b><span>Pick an icon shown next to your messages.</span></div>' +
-        '<span class="rl-num" id="av-current" style="font-size:1.4rem">🙂</span></div>' +
+        '<img id="av-current" alt="" style="width:34px;height:34px;border-radius:9px;object-fit:cover" src="assets/avatars/_default.svg"></div>' +
         '<div id="av-grid" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>' : '') +
       (user.role === "admin" ? '<a href="admin.html" class="btn btn-ghost full" style="margin-top:16px">Open admin panel</a>' : '') +
       '<button class="btn btn-gold full" id="lo" style="margin-top:12px">Log out</button>' +
@@ -118,10 +118,11 @@ document.addEventListener("DOMContentLoaded", function () {
       grid.innerHTML = AVATARS.map(function(a){
         var on = a === current;
         return '<button class="av-opt'+(on?" on":"")+'" data-av="'+a+'" '+
-          'style="font-size:1.4rem;width:44px;height:44px;border-radius:11px;cursor:pointer;'+
-          'border:2px solid '+(on?"var(--gold-line)":"var(--border)")+';background:'+(on?"var(--gold-soft)":"var(--bg-2)")+'">'+a+'</button>';
+          'style="width:46px;height:46px;padding:3px;border-radius:12px;cursor:pointer;'+
+          'border:2px solid '+(on?"var(--gold-line)":"var(--border)")+';background:'+(on?"var(--gold-soft)":"var(--bg-2)")+'">'+
+          '<img alt="'+a+'" src="assets/avatars/'+a+'.svg" style="width:100%;height:100%;border-radius:8px;object-fit:cover;display:block"></button>';
       }).join("");
-      var cur = document.getElementById("av-current"); if (cur) cur.textContent = current || "🙂";
+      var cur = document.getElementById("av-current"); if (cur) cur.src = "assets/avatars/" + (current || "_default") + ".svg";
       grid.querySelectorAll(".av-opt").forEach(function(b){
         b.onclick = function(){
           var a = b.dataset.av;

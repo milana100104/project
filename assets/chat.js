@@ -23,7 +23,15 @@
   function timeStr(iso) { try { return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
 
   var sb, me = null, myNick = '', myAvatar = '';
-  var AVATARS = ['🦊','🐼','🦁','🐯','🐸','🐵','🐧','🦉','🐙','🦄','🐷','🐨','🐰','🐺','🐢'];
+  // illustrated animal avatars, bundled in assets/avatars/<id>.svg
+  var AVATARS = ['fox','panda','cat','bear','penguin','rabbit','frog','koala','tiger','pig','owl','dog'];
+  var AV_BASE = 'assets/avatars/';
+  function avatarHtml(av, cls) {
+    cls = cls || 'bc-av';
+    if (av && AVATARS.indexOf(av) >= 0) return '<img class="' + cls + '" src="' + AV_BASE + av + '.svg" alt="">';
+    if (av && !/^[a-z_]+$/i.test(av)) return '<span class="' + cls + ' bc-av-emoji">' + esc(av) + '</span>'; // legacy emoji
+    return '<img class="' + cls + '" src="' + AV_BASE + '_default.svg" alt="">';
+  }
   var roomChan = null, dmChan = null;
   var view = 'room';          // 'room' | 'dms' | 'thread'
   var thread = null;          // { id, nick } of the other person in an open DM
@@ -52,12 +60,20 @@
 
   /* ---- nickname / profile ---- */
   function ensureProfile(u) {
-    return sb.from('profiles').select('nickname, avatar').eq('user_id', u.id).maybeSingle().then(function (r) {
-      if (r && r.data && r.data.nickname) { myAvatar = r.data.avatar || ''; return r.data.nickname; }
+    // select ONLY nickname — if we also asked for `avatar` and that column
+    // isn't there yet, the whole query errors and we'd wrongly re-prompt for a nick.
+    return sb.from('profiles').select('nickname').eq('user_id', u.id).maybeSingle().then(function (r) {
+      loadMyAvatar(u);   // fetched separately + defensively so a missing column can't break the nick
+      if (r && r.data && r.data.nickname) { return r.data.nickname; }
       var chosen = (u.user_metadata && u.user_metadata.nickname);
       if (chosen) return claimNick(u, cleanNick(chosen), 0);  // email sign-up: they already picked one
       return promptNick(u);                                    // Google etc: make them pick a unique one
     });
+  }
+  function loadMyAvatar(u) {
+    sb.from('profiles').select('avatar').eq('user_id', u.id).maybeSingle().then(function (r) {
+      if (r && r.data && r.data.avatar) myAvatar = r.data.avatar;
+    }).catch(function () {});
   }
   // ask the user for a unique nickname (used when they signed up via Google and have none yet)
   function promptNick(u) {
@@ -208,11 +224,10 @@
   }
   function msgEl(m) {
     var mine = me && m.user_id === me.id;
-    var av = m.avatar || '🙂';
     var d = document.createElement('div'); d.className = 'bc-msg' + (mine ? ' mine' : '');
     var dmBtn = (me && !mine && m.user_id) ? '<button class="bc-dm-one" title="Message @' + esc(m.nickname) + '">✉</button>' : '';
     d.innerHTML =
-      '<div class="bc-meta"><span class="bc-av">' + esc(av) + '</span>' +
+      '<div class="bc-meta">' + avatarHtml(mine ? (myAvatar || m.avatar) : m.avatar) +
       '<b class="bc-nick">' + (mine ? 'You' : esc(m.nickname)) + '</b>' +
       '<span class="bc-time">' + timeStr(m.created_at) + '</span>' + dmBtn + '</div>' +
       '<div class="bc-text">' + esc(m.body) + '</div>';
@@ -265,9 +280,9 @@
   }
   function dmEl(m) {
     var mine = m.from_user === me.id;
-    var av = mine ? (myAvatar || '🙂') : (m.avatar || '🙂');
+    var av = mine ? myAvatar : m.avatar;
     var d = document.createElement('div'); d.className = 'bc-msg' + (mine ? ' mine' : '');
-    d.innerHTML = '<div class="bc-meta"><span class="bc-av">' + esc(av) + '</span><b>' + (mine ? 'You' : esc(m.from_nick)) + '</b><span class="bc-time">' + timeStr(m.created_at) + '</span></div>' +
+    d.innerHTML = '<div class="bc-meta">' + avatarHtml(av) + '<b>' + (mine ? 'You' : esc(m.from_nick)) + '</b><span class="bc-time">' + timeStr(m.created_at) + '</span></div>' +
       '<div class="bc-text">' + esc(m.body) + '</div>';
     return d;
   }
@@ -291,16 +306,26 @@
     if (!body) return; inp.value = '';
     if (view === 'thread' && thread) {
       var row = { from_user: me.id, to_user: thread.id, from_nick: myNick, to_nick: thread.nick, avatar: myAvatar || null, body: body };
-      sb.from('dms').insert(row).then(function (r) {
+      insertRow('dms', row).then(function (r) {
         if (r.error) { inp.value = body; return; }
         var b = document.getElementById('bc-body'); var em = b.querySelector('.bc-empty'); if (em) em.remove();
-        b.appendChild(dmEl({ from_user: me.id, from_nick: myNick, body: body, created_at: new Date().toISOString() })); scrollDown();
+        b.appendChild(dmEl({ from_user: me.id, from_nick: myNick, avatar: myAvatar, body: body, created_at: new Date().toISOString() })); scrollDown();
       });
     } else {
-      sb.from('messages').insert({ user_id: me.id, nickname: myNick, avatar: myAvatar || null, body: body }).then(function (r) {
+      insertRow('messages', { user_id: me.id, nickname: myNick, avatar: myAvatar || null, body: body }).then(function (r) {
         if (r.error) inp.value = body; // realtime will render it for everyone (incl. me)
       });
     }
+  }
+  // insert a chat row; if the `avatar` column isn't in the schema yet, retry without it
+  function insertRow(table, row) {
+    return sb.from(table).insert(row).then(function (r) {
+      if (r.error && /avatar/i.test(r.error.message || '') && ('avatar' in row)) {
+        var r2 = {}; for (var k in row) if (k !== 'avatar') r2[k] = row[k];
+        return sb.from(table).insert(r2);
+      }
+      return r;
+    });
   }
 
   function scrollDown() { var b = document.getElementById('bc-body'); if (b) b.scrollTop = b.scrollHeight; }
@@ -340,7 +365,8 @@
       '.bc-msg{max-width:85%;align-self:flex-start;background:#ffffff;border:1px solid #e3e7f0;border-radius:12px;padding:7px 11px;box-shadow:0 1px 3px rgba(0,0,0,.18);}' +
       '.bc-msg.mine{align-self:flex-end;background:#fff6e0;border-color:#e8c65a;}' +
       '.bc-meta{display:flex;gap:6px;align-items:center;margin-bottom:2px;}' +
-      '.bc-av{font-size:1rem;line-height:1;}' +
+      'img.bc-av{width:22px;height:22px;border-radius:7px;object-fit:cover;flex-shrink:0;display:block;}' +
+      '.bc-av-emoji{font-size:1rem;line-height:1;}' +
       '.bc-meta b{font-size:.8rem;color:#b0851b;}' +
       '.bc-meta .bc-nick{cursor:pointer;}.bc-msg.mine .bc-meta b{color:#6b7690;cursor:default;}' +
       '.bc-time{font-size:.66rem;color:#9aa4bb;}' +
