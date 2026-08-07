@@ -29,8 +29,8 @@
 html{scroll-behavior:smooth;}
 body{
   background:var(--bg);color:var(--ink);font-family:var(--font);
-  font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden;
-  min-height:100vh;display:flex;flex-direction:column;padding-top:68px;   /* room for the fixed header */
+  font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:clip;
+  min-height:100vh;display:flex;flex-direction:column;   /* header is sticky (in-flow), so no padding needed */
 }
 body>main{flex:1 0 auto;}   /* push the footer to the very bottom on short pages */
 .site-footer{margin-top:auto;}
@@ -59,7 +59,7 @@ h1,h2,h3,h4,h5{font-family:var(--display);font-weight:600;letter-spacing:-.02em;
   background-size:cover,72%;background-position:center,center;background-repeat:no-repeat;}
 
 /* ---------- header ---------- */
-.site-header{position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(11,26,56,.92);
+.site-header{position:sticky;top:0;z-index:50;background:rgba(11,26,56,.92);
   backdrop-filter:blur(12px);border-bottom:1px solid var(--border);}
 .header-inner{height:68px;display:flex;align-items:center;gap:26px;}
 .brand{display:flex;align-items:center;gap:11px;font-family:var(--display);font-weight:700;font-size:1.18rem;flex-shrink:0;}

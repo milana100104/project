@@ -35,7 +35,7 @@ h1,h2,h3,h4{font-family:var(--display);letter-spacing:-.02em;}
 
 /* ---- top bar ---- */
 .ws-topbar{position:sticky;top:0;z-index:50;background:rgba(11,26,56,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);}
-.ws-topbar-inner{max-width:1100px;margin:0 auto;height:62px;padding:0 26px;display:flex;align-items:center;gap:24px;}
+.ws-topbar-inner{max-width:var(--wrap);margin:0 auto;height:62px;padding:0 26px;display:flex;align-items:center;gap:24px;}
 .ws-brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:1.12rem;flex-shrink:0;}
 .ws-brand .logo{width:30px;height:30px;border-radius:7px;border:none;background-color:#0b1a34;
   background-image:url("beacon-logo-icon.jpg"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%23e0bc4f' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M40 79 L44 41 L56 41 L60 79 Z'/%3E%3Cpath d='M44 41 L44 33 L56 33 L56 41'/%3E%3Cpath d='M42 33 L50 25 L58 33'/%3E%3Cpath d='M37 79 L63 79'/%3E%3C/g%3E%3Cg stroke='%23e0bc4f' stroke-width='3' stroke-linecap='round' opacity='0.65'%3E%3Cpath d='M60 31 L75 25'/%3E%3Cpath d='M60 37 L75 41'/%3E%3C/g%3E%3Ccircle cx='50' cy='31' r='3' fill='%23f7e199'/%3E%3C/svg%3E");
