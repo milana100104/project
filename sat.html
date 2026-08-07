@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/workspace.css?v=32">
-<script src="assets/config.js?v=32" defer></script>
+<link rel="stylesheet" href="assets/workspace.css?v=33">
+<script src="assets/config.js?v=33" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=32" defer></script>
-<script src="assets/chat.js?v=32" defer></script>
-<script src="assets/app.js?v=32" defer></script>
+<script src="assets/auth.js?v=33" defer></script>
+<script src="assets/chat.js?v=33" defer></script>
+<script src="assets/app.js?v=33" defer></script>
 </head>
 <body class="ws-white">
 <header class="ws-topbar">
@@ -46,14 +46,14 @@ document.addEventListener("DOMContentLoaded", function () {
   renderWorkspace("#workspace", {
     examId: "sat",
     skills: [
-      { id: "math", name: "Math", status: "free", blurb: "Four domains · answers checked instantly", types: [
+      { id: "math", name: "Math", status: "free", blurb: "", types: [
         { id: "algebra", name: "Algebra", desc: "Linear equations, inequalities and systems." },
         { id: "advanced-math", name: "Advanced Math", desc: "Quadratics, functions and nonlinear relationships." },
         { id: "problem-solving-data-analysis", name: "Problem-Solving & Data Analysis", desc: "Ratios, percentages, rates and reading data." },
         { id: "geometry-trig", name: "Geometry & Trigonometry", desc: "Lines, angles, circles and right triangles." },
         { id: "random", name: "Random mix", desc: "A shuffled pull from every Math domain." }
       ]},
-      { id: "english", name: "Reading & Writing", status: "free", blurb: "Four domains · answers checked instantly", types: [
+      { id: "english", name: "Reading & Writing", status: "free", blurb: "", types: [
         { id: "information-ideas", name: "Information & Ideas", desc: "Central ideas, evidence and inferences." },
         { id: "craft-structure", name: "Craft & Structure", desc: "Vocabulary in context, purpose and connections." },
         { id: "expression-ideas", name: "Expression of Ideas", desc: "Transitions, concision and rhetorical goals." },
