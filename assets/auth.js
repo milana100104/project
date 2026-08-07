@@ -151,11 +151,18 @@
         var admin = u.role === 'admin' ? '<a href="admin.html" class="link-quiet">Admin</a>' : '';
         var first = (u.name || 'You').split(' ')[0];
         slot.innerHTML = admin +
-          '<a href="account.html" class="acct-chip">' + esc(first) + '</a>' +
+          '<a href="account.html" class="acct-chip" style="display:inline-flex;align-items:center;gap:7px">' +
+            '<img class="acct-av" alt="" style="width:24px;height:24px;border-radius:7px;object-fit:cover;display:block" src="assets/avatars/_default.svg">' +
+            '<span>' + esc(first) + '</span></a>' +
           '<button type="button" class="link-quiet" data-logout>Log out</button>';
         var lo = slot.querySelector('[data-logout]');
         if (lo) lo.addEventListener('click', function () { Auth.logout(); });
       });
+      // drop the chosen avatar into every account chip
+      if (window.sb) sb.from('profiles').select('avatar').eq('user_id', u.id).maybeSingle().then(function (r) {
+        var av = r && r.data && r.data.avatar;
+        if (av && /^[a-z_]+$/i.test(av)) document.querySelectorAll('.acct-av').forEach(function (img) { img.src = 'assets/avatars/' + av + '.svg'; });
+      }).catch(function () {});
     });
   }
 

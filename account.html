@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=44">
-<script src="assets/app.js?v=44" defer></script>
-<script src="assets/config.js?v=44" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=45">
+<script src="assets/app.js?v=45" defer></script>
+<script src="assets/config.js?v=45" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=44" defer></script>
-<script src="assets/chat.js?v=44" defer></script>
+<script src="assets/auth.js?v=45" defer></script>
+<script src="assets/chat.js?v=45" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -113,7 +113,11 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   function loadAvatar() {
     var grid = document.getElementById("av-grid"); if (!grid || !window.sb) return;
-    var current = "";
+    var current = "", nick = "";
+    function fallbackNick(){
+      var b = (user.name || (user.email||"user").split("@")[0] || "user").trim().replace(/\s+/g,"_").replace(/[^A-Za-z0-9_.\-]/g,"").slice(0,20);
+      return b.length>=3 ? b : (b+"_user").slice(0,20);
+    }
     function paint() {
       grid.innerHTML = AVATARS.map(function(a){
         var on = a === current;
@@ -126,17 +130,25 @@ document.addEventListener("DOMContentLoaded", function () {
       grid.querySelectorAll(".av-opt").forEach(function(b){
         b.onclick = function(){
           var a = b.dataset.av;
-          sb.from("profiles").upsert({ user_id: user.id, avatar: a }, { onConflict: "user_id" }).then(function(r){
+          // include the nickname so a brand-new profile row doesn't hit the NOT NULL constraint
+          var payload = { user_id: user.id, avatar: a, nickname: nick || fallbackNick() };
+          sb.from("profiles").upsert(payload, { onConflict: "user_id" }).then(function(r){
             if (r.error) { alert(r.error.message); return; }
-            current = a; paint();
+            current = a; nick = payload.nickname; paint();
             if (window.BeaconChat && BeaconChat.setAvatar) BeaconChat.setAvatar(a);
           });
         };
       });
     }
-    sb.from("profiles").select("avatar").eq("user_id", user.id).maybeSingle().then(function(r){
-      current = (r && r.data && r.data.avatar) || "";
-      paint();
+    sb.from("profiles").select("nickname, avatar").eq("user_id", user.id).maybeSingle().then(function(r){
+      if (r && r.data) { current = r.data.avatar || ""; nick = r.data.nickname || ""; }
+      if (nick) { paint(); return; }
+      // no profile row yet — recover the nick they picked at sign-up (stored in auth metadata)
+      return sb.auth.getUser().then(function(g){
+        var mn = g && g.data && g.data.user && g.data.user.user_metadata && g.data.user.user_metadata.nickname;
+        if (mn) nick = String(mn).trim();
+        paint();
+      });
     }).catch(paint);
   }
 

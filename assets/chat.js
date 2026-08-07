@@ -123,7 +123,9 @@
     avatars: function () { return AVATARS.slice(); },
     setAvatar: function (av) {
       if (!me) return Promise.resolve({ ok: false, error: 'Sign in first.' });
-      return sb.from('profiles').upsert({ user_id: me.id, avatar: av }, { onConflict: 'user_id' }).then(function (r) {
+      var row = { user_id: me.id, avatar: av };
+      if (myNick) row.nickname = myNick;   // keep NOT NULL nickname satisfied if this inserts a new row
+      return sb.from('profiles').upsert(row, { onConflict: 'user_id' }).then(function (r) {
         if (r.error) return { ok: false, error: r.error.message };
         myAvatar = av; return { ok: true };
       });
