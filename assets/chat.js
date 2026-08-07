@@ -114,14 +114,20 @@
     document.getElementById('bc-back').onclick = function () { openTab('dms'); };
     document.querySelectorAll('#bc-tabs button').forEach(function (b) { b.onclick = function () { openTab(b.dataset.tab); }; });
     var form = document.getElementById('bc-form'); if (form) form.onsubmit = onSend;
+
+    // open with the messages showing by default (skip on the exam page); remember if collapsed
+    var isExam = /practice\.html/i.test(location.pathname);
+    var savedClosed = false; try { savedClosed = localStorage.getItem('beacon:chatClosed') === '1'; } catch (e) {}
+    if (!isExam && !savedClosed) openPanel();
   }
 
   function setLaunch(ch) { var l = document.getElementById('bc-launch'); if (l && l.childNodes[0]) l.childNodes[0].nodeValue = ch; }
   function panelOpen() { var p = document.getElementById('bc-panel'); return p && p.classList.contains('open'); }
-  function closePanel() { var p = document.getElementById('bc-panel'); if (p) p.classList.remove('open'); setLaunch('💬'); }
+  function closePanel() { var p = document.getElementById('bc-panel'); if (p) p.classList.remove('open'); setLaunch('💬'); try { localStorage.setItem('beacon:chatClosed', '1'); } catch (e) {} }
   function openPanel() {
     var p = document.getElementById('bc-panel'); if (p) p.classList.add('open');
     setLaunch('—');
+    try { localStorage.setItem('beacon:chatClosed', '0'); } catch (e) {}
     unread = 0; renderBadge();
     openTab(view === 'thread' ? 'dms' : view);
   }
@@ -258,7 +264,7 @@
     var s = document.createElement('style'); s.id = 'bc-style';
     s.textContent =
       '@keyframes bc-pop{from{opacity:0;transform:scale(.5) translateY(10px);}to{opacity:1;transform:none;}}' +
-      '#bc-root{position:fixed;right:20px;bottom:20px;z-index:9000;font-family:"Hanken Grotesk",system-ui,sans-serif;}' +
+      '#bc-root{position:fixed!important;right:20px!important;left:auto!important;bottom:20px!important;top:auto!important;z-index:9000;font-family:"Hanken Grotesk",system-ui,sans-serif;}' +
       '#bc-launch{width:56px;height:56px;border-radius:50%;border:none;background:#e0bc4f;color:#20180a;font-size:1.5rem;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.35);position:relative;animation:bc-pop .35s cubic-bezier(.2,.9,.3,1.2) both;transition:background .15s,transform .15s;}' +
       '#bc-launch:hover{background:#f0d372;transform:scale(1.06);}' +
       '#bc-badge{position:absolute;top:-3px;right:-3px;background:#ef5350;color:#fff;font-size:.7rem;font-weight:700;min-width:20px;height:20px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 5px;}' +
@@ -275,13 +281,13 @@
       '#bc-tabs button.on{color:#e7c257;box-shadow:inset 0 -2px 0 #e7c257;}' +
       '#bc-body{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;}' +
       '.bc-empty{color:#8296b7;text-align:center;margin:auto;font-size:.9rem;padding:20px;}' +
-      '.bc-msg{max-width:85%;align-self:flex-start;background:#17315b;border:1px solid #274069;border-radius:12px;padding:7px 11px;}' +
-      '.bc-msg.mine{align-self:flex-end;background:#243d6e;}' +
+      '.bc-msg{max-width:85%;align-self:flex-start;background:#ffffff;border:1px solid #e3e7f0;border-radius:12px;padding:7px 11px;box-shadow:0 1px 3px rgba(0,0,0,.18);}' +
+      '.bc-msg.mine{align-self:flex-end;background:#fff6e0;border-color:#e8c65a;}' +
       '.bc-meta{display:flex;gap:8px;align-items:baseline;margin-bottom:2px;}' +
-      '.bc-meta b{font-size:.8rem;color:#e7c257;}' +
-      '.bc-meta .bc-nick{cursor:pointer;}.bc-msg.mine .bc-meta b{color:#c3cee2;cursor:default;}' +
-      '.bc-meta span{font-size:.66rem;color:#8296b7;}' +
-      '.bc-text{font-size:.92rem;line-height:1.4;word-wrap:break-word;overflow-wrap:anywhere;}' +
+      '.bc-meta b{font-size:.8rem;color:#b0851b;}' +
+      '.bc-meta .bc-nick{cursor:pointer;}.bc-msg.mine .bc-meta b{color:#6b7690;cursor:default;}' +
+      '.bc-meta span{font-size:.66rem;color:#9aa4bb;}' +
+      '.bc-text{font-size:.92rem;line-height:1.4;color:#14233f;word-wrap:break-word;overflow-wrap:anywhere;}' +
       '.bc-thread{width:100%;text-align:left;background:#17315b;border:1px solid #274069;border-radius:12px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:2px;color:inherit;font-family:inherit;}' +
       '.bc-thread:hover{border-color:#e7c257;}.bc-thread b{color:#e7c257;font-size:.9rem;}.bc-thread span{color:#8296b7;font-size:.8rem;}' +
       '#bc-form{display:flex;gap:8px;padding:10px;border-top:1px solid #274069;background:#0e2144;}' +
