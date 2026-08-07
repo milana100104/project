@@ -47,7 +47,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .grain,#beacon-grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.06;mix-blend-mode:soft-light;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
   background-size:180px 180px;}
-body>*:not(.grain):not(#beacon-grain):not(#beacon-sketch-defs){position:relative;z-index:2;}
+body>*:not(.grain):not(#beacon-grain):not(#beacon-sketch-defs):not(.site-header){position:relative;z-index:2;}
 
 /* ---------- headings ---------- */
 h1,h2,h3,h4,h5{font-family:var(--display);font-weight:600;letter-spacing:-.02em;line-height:1.12;}

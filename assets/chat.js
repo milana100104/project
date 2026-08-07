@@ -66,18 +66,26 @@
     if (v == null) return Promise.resolve('');       // cancelled → they can set one later in the profile
     v = cleanNick(v);
     if (v.length < 3) { window.alert('Nickname needs at least 3 characters.'); return promptNick(u); }
-    return sb.from('profiles').insert({ user_id: u.id, nickname: v }).then(function (r) {
-      if (!r.error) return v;
-      if (/duplicate|unique/i.test(r.error.message || '')) { window.alert('“' + v + '” is already taken — pick another.'); return promptNick(u); }
-      return v;   // some other error → go with what they typed
+    // Is this nickname held by someone else? (a row that isn't ours = genuinely taken)
+    return sb.from('profiles').select('user_id').eq('nickname', v).maybeSingle().then(function (chk) {
+      if (chk && chk.data && chk.data.user_id && chk.data.user_id !== u.id) {
+        window.alert('“' + v + '” is already taken — pick another.'); return promptNick(u);
+      }
+      // upsert on user_id: writes our own row whether or not one already exists (no false PK clash)
+      return sb.from('profiles').upsert({ user_id: u.id, nickname: v }, { onConflict: 'user_id' }).then(function (r) {
+        if (!r.error) return v;
+        if (/duplicate|unique/i.test(r.error.message || '')) { window.alert('“' + v + '” is already taken — pick another.'); return promptNick(u); }
+        return v;   // some other error → go with what they typed
+      });
     });
   }
   function cleanNick(s) { s = String(s || 'user').trim().replace(/\s+/g, '_').replace(/[^A-Za-z0-9_\.\-]/g, ''); return (s || 'user').slice(0, 20); }
   function claimNick(u, base, tries) {
     var nick = tries === 0 ? base : (base + (Math.floor(Math.random() * 900) + 100));
-    return sb.from('profiles').insert({ user_id: u.id, nickname: nick }).then(function (r) {
+    // upsert on user_id so an existing (nickname-less) row for us doesn't look like a clash
+    return sb.from('profiles').upsert({ user_id: u.id, nickname: nick }, { onConflict: 'user_id' }).then(function (r) {
       if (!r.error) return nick;
-      if (tries < 5) return claimNick(u, base, tries + 1); // nickname clash → try a suffix
+      if (tries < 5) return claimNick(u, base, tries + 1); // real nickname clash → try a suffix
       return nick;
     });
   }
