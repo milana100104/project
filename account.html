@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=38">
-<script src="assets/app.js?v=38" defer></script>
-<script src="assets/config.js?v=38" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=39">
+<script src="assets/app.js?v=39" defer></script>
+<script src="assets/config.js?v=39" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=38" defer></script>
-<script src="assets/chat.js?v=38" defer></script>
+<script src="assets/auth.js?v=39" defer></script>
+<script src="assets/chat.js?v=39" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -59,6 +59,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var EX = { toefl:{name:"TOEFL", scale:"/120", ph:"target /120, e.g. 100"},
              ielts:{name:"IELTS", scale:"band", ph:"target band, e.g. 7.0"},
              sat:{name:"SAT", scale:"/1600", ph:"target /1600, e.g. 1400"} };
+  var AVATARS = ['🦊','🐼','🦁','🐯','🐸','🐵','🐧','🦉','🐙','🦄','🐷','🐨','🐰','🐺','🐢'];
   function fmtScore(exam, v){ if (v==null) return "—"; return exam==="ielts" ? Number(v).toFixed(1) : String(Math.round(v)); }
 
   function renderProfile() {
@@ -87,13 +88,17 @@ document.addEventListener("DOMContentLoaded", function () {
         '<span class="rl-num">' + BeaconStore.favCount() + '</span></div>' +
       (user.role !== "admin" ? '<div class="data-row"><div class="rl-main"><b>Nickname</b><span>Shown in the community chat.</span></div>' +
         '<span class="rl-num" id="nick-val" style="font-size:.95rem;font-weight:600">…</span>' +
-        '<button class="icon-btn go" id="chg-nick">Change</button></div>' : '') +
+        '<button class="icon-btn go" id="chg-nick">Change</button></div>' +
+        '<div class="data-row"><div class="rl-main"><b>Avatar</b><span>Pick an icon shown next to your messages.</span></div>' +
+        '<span class="rl-num" id="av-current" style="font-size:1.4rem">🙂</span></div>' +
+        '<div id="av-grid" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>' : '') +
       (user.role === "admin" ? '<a href="admin.html" class="btn btn-ghost full" style="margin-top:16px">Open admin panel</a>' : '') +
       '<button class="btn btn-gold full" id="lo" style="margin-top:12px">Log out</button>' +
       '</div>' + goalsCard;
 
     document.getElementById("lo").onclick = function () { BeaconAuth.logout(); };
     loadNick();
+    loadAvatar();
     var cn = document.getElementById("chg-nick"); if (cn) cn.onclick = changeNick;
     var eg = document.getElementById("edit-goals");
     if (eg) eg.onclick = function(){ editGoals(goals); };
@@ -106,6 +111,34 @@ document.addEventListener("DOMContentLoaded", function () {
       el.textContent = (r && r.data && r.data.nickname) ? "@"+r.data.nickname : "not set";
     }).catch(function(){});
   }
+  function loadAvatar() {
+    var grid = document.getElementById("av-grid"); if (!grid || !window.sb) return;
+    var current = "";
+    function paint() {
+      grid.innerHTML = AVATARS.map(function(a){
+        var on = a === current;
+        return '<button class="av-opt'+(on?" on":"")+'" data-av="'+a+'" '+
+          'style="font-size:1.4rem;width:44px;height:44px;border-radius:11px;cursor:pointer;'+
+          'border:2px solid '+(on?"var(--gold-line)":"var(--border)")+';background:'+(on?"var(--gold-soft)":"var(--bg-2)")+'">'+a+'</button>';
+      }).join("");
+      var cur = document.getElementById("av-current"); if (cur) cur.textContent = current || "🙂";
+      grid.querySelectorAll(".av-opt").forEach(function(b){
+        b.onclick = function(){
+          var a = b.dataset.av;
+          sb.from("profiles").upsert({ user_id: user.id, avatar: a }, { onConflict: "user_id" }).then(function(r){
+            if (r.error) { alert(r.error.message); return; }
+            current = a; paint();
+            if (window.BeaconChat && BeaconChat.setAvatar) BeaconChat.setAvatar(a);
+          });
+        };
+      });
+    }
+    sb.from("profiles").select("avatar").eq("user_id", user.id).maybeSingle().then(function(r){
+      current = (r && r.data && r.data.avatar) || "";
+      paint();
+    }).catch(paint);
+  }
+
   function changeNick() {
     if (!window.sb) return;
     var v = prompt("Pick a nickname (unique, 3–20 characters):"); if (!v) return;

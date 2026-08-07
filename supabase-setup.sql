@@ -163,6 +163,11 @@ create policy "dms read own" on public.dms for select using (auth.uid() = from_u
 drop policy if exists "dms insert own" on public.dms;
 create policy "dms insert own" on public.dms for insert with check (auth.uid() = from_user);
 
+-- avatars (an emoji, chosen in the profile) — safe to add if missing
+alter table public.profiles add column if not exists avatar text;
+alter table public.messages add column if not exists avatar text;
+alter table public.dms      add column if not exists avatar text;
+
 -- make sure the API roles can reach the chat tables (RLS still governs rows)
 grant usage on schema public to anon, authenticated;
 grant select on public.profiles, public.messages to anon, authenticated;

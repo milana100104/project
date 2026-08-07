@@ -22,7 +22,8 @@
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function timeStr(iso) { try { return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
 
-  var sb, me = null, myNick = '';
+  var sb, me = null, myNick = '', myAvatar = '';
+  var AVATARS = ['🦊','🐼','🦁','🐯','🐸','🐵','🐧','🦉','🐙','🦄','🐷','🐨','🐰','🐺','🐢'];
   var roomChan = null, dmChan = null;
   var view = 'room';          // 'room' | 'dms' | 'thread'
   var thread = null;          // { id, nick } of the other person in an open DM
@@ -51,8 +52,8 @@
 
   /* ---- nickname / profile ---- */
   function ensureProfile(u) {
-    return sb.from('profiles').select('nickname').eq('user_id', u.id).maybeSingle().then(function (r) {
-      if (r && r.data && r.data.nickname) return r.data.nickname;
+    return sb.from('profiles').select('nickname, avatar').eq('user_id', u.id).maybeSingle().then(function (r) {
+      if (r && r.data && r.data.nickname) { myAvatar = r.data.avatar || ''; return r.data.nickname; }
       var chosen = (u.user_metadata && u.user_metadata.nickname);
       if (chosen) return claimNick(u, cleanNick(chosen), 0);  // email sign-up: they already picked one
       return promptNick(u);                                    // Google etc: make them pick a unique one
@@ -92,6 +93,15 @@
       return sb.from('profiles').upsert({ user_id: me.id, nickname: nick }, { onConflict: 'user_id' }).then(function (r) {
         if (r.error) return { ok: false, error: /duplicate|unique/i.test(r.error.message) ? 'That nickname is taken.' : r.error.message };
         myNick = nick; var b = document.getElementById('bc-me'); if (b) b.textContent = '@' + myNick; return { ok: true };
+      });
+    },
+    getAvatar: function () { return myAvatar; },
+    avatars: function () { return AVATARS.slice(); },
+    setAvatar: function (av) {
+      if (!me) return Promise.resolve({ ok: false, error: 'Sign in first.' });
+      return sb.from('profiles').upsert({ user_id: me.id, avatar: av }, { onConflict: 'user_id' }).then(function (r) {
+        if (r.error) return { ok: false, error: r.error.message };
+        myAvatar = av; return { ok: true };
       });
     }
   };
@@ -182,12 +192,19 @@
   }
   function msgEl(m) {
     var mine = me && m.user_id === me.id;
+    var av = m.avatar || '🙂';
     var d = document.createElement('div'); d.className = 'bc-msg' + (mine ? ' mine' : '');
-    d.innerHTML = '<div class="bc-meta"><b class="bc-nick" data-uid="' + esc(m.user_id) + '" data-nick="' + esc(m.nickname) + '">' +
-      (mine ? 'You' : esc(m.nickname)) + '</b><span>' + timeStr(m.created_at) + '</span></div>' +
+    var dmBtn = (me && !mine && m.user_id) ? '<button class="bc-dm-one" title="Message @' + esc(m.nickname) + '">✉</button>' : '';
+    d.innerHTML =
+      '<div class="bc-meta"><span class="bc-av">' + esc(av) + '</span>' +
+      '<b class="bc-nick">' + (mine ? 'You' : esc(m.nickname)) + '</b>' +
+      '<span class="bc-time">' + timeStr(m.created_at) + '</span>' + dmBtn + '</div>' +
       '<div class="bc-text">' + esc(m.body) + '</div>';
-    var nk = d.querySelector('.bc-nick');
-    if (me && !mine) nk.onclick = function () { openThread({ id: m.user_id, nick: m.nickname }); };  // DM only when signed in
+    if (me && !mine && m.user_id) {   // click name or ✉ to open a DM
+      var open = function () { openThread({ id: m.user_id, nick: m.nickname }); };
+      var nk = d.querySelector('.bc-nick'); nk.style.cursor = 'pointer'; nk.onclick = open;
+      var b = d.querySelector('.bc-dm-one'); if (b) b.onclick = open;
+    }
     return d;
   }
 
@@ -232,8 +249,9 @@
   }
   function dmEl(m) {
     var mine = m.from_user === me.id;
+    var av = mine ? (myAvatar || '🙂') : (m.avatar || '🙂');
     var d = document.createElement('div'); d.className = 'bc-msg' + (mine ? ' mine' : '');
-    d.innerHTML = '<div class="bc-meta"><b>' + (mine ? 'You' : esc(m.from_nick)) + '</b><span>' + timeStr(m.created_at) + '</span></div>' +
+    d.innerHTML = '<div class="bc-meta"><span class="bc-av">' + esc(av) + '</span><b>' + (mine ? 'You' : esc(m.from_nick)) + '</b><span class="bc-time">' + timeStr(m.created_at) + '</span></div>' +
       '<div class="bc-text">' + esc(m.body) + '</div>';
     return d;
   }
@@ -256,14 +274,14 @@
     var inp = document.getElementById('bc-input'); var body = inp.value.trim();
     if (!body) return; inp.value = '';
     if (view === 'thread' && thread) {
-      var row = { from_user: me.id, to_user: thread.id, from_nick: myNick, to_nick: thread.nick, body: body };
+      var row = { from_user: me.id, to_user: thread.id, from_nick: myNick, to_nick: thread.nick, avatar: myAvatar || null, body: body };
       sb.from('dms').insert(row).then(function (r) {
         if (r.error) { inp.value = body; return; }
         var b = document.getElementById('bc-body'); var em = b.querySelector('.bc-empty'); if (em) em.remove();
         b.appendChild(dmEl({ from_user: me.id, from_nick: myNick, body: body, created_at: new Date().toISOString() })); scrollDown();
       });
     } else {
-      sb.from('messages').insert({ user_id: me.id, nickname: myNick, body: body }).then(function (r) {
+      sb.from('messages').insert({ user_id: me.id, nickname: myNick, avatar: myAvatar || null, body: body }).then(function (r) {
         if (r.error) inp.value = body; // realtime will render it for everyone (incl. me)
       });
     }
@@ -301,10 +319,13 @@
       '.bc-empty{color:#8296b7;text-align:center;margin:auto;font-size:.9rem;padding:20px;}' +
       '.bc-msg{max-width:85%;align-self:flex-start;background:#ffffff;border:1px solid #e3e7f0;border-radius:12px;padding:7px 11px;box-shadow:0 1px 3px rgba(0,0,0,.18);}' +
       '.bc-msg.mine{align-self:flex-end;background:#fff6e0;border-color:#e8c65a;}' +
-      '.bc-meta{display:flex;gap:8px;align-items:baseline;margin-bottom:2px;}' +
+      '.bc-meta{display:flex;gap:6px;align-items:center;margin-bottom:2px;}' +
+      '.bc-av{font-size:1rem;line-height:1;}' +
       '.bc-meta b{font-size:.8rem;color:#b0851b;}' +
       '.bc-meta .bc-nick{cursor:pointer;}.bc-msg.mine .bc-meta b{color:#6b7690;cursor:default;}' +
-      '.bc-meta span{font-size:.66rem;color:#9aa4bb;}' +
+      '.bc-time{font-size:.66rem;color:#9aa4bb;}' +
+      '.bc-dm-one{margin-left:4px;background:none;border:none;color:#b0851b;cursor:pointer;font-size:.85rem;padding:0 2px;opacity:.7;}' +
+      '.bc-dm-one:hover{opacity:1;}' +
       '.bc-text{font-size:.92rem;line-height:1.4;color:#14233f;word-wrap:break-word;overflow-wrap:anywhere;}' +
       '.bc-thread{width:100%;text-align:left;background:#17315b;border:1px solid #274069;border-radius:12px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:2px;color:inherit;font-family:inherit;}' +
       '.bc-thread:hover{border-color:#e7c257;}.bc-thread b{color:#e7c257;font-size:.9rem;}.bc-thread span{color:#8296b7;font-size:.8rem;}' +
