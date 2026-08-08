@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=45">
-<script src="assets/app.js?v=45" defer></script>
-<script src="assets/config.js?v=45" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=46">
+<script src="assets/app.js?v=46" defer></script>
+<script src="assets/config.js?v=46" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=45" defer></script>
-<script src="assets/chat.js?v=45" defer></script>
+<script src="assets/auth.js?v=46" defer></script>
+<script src="assets/chat.js?v=46" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -84,84 +84,80 @@ document.addEventListener("DOMContentLoaded", function () {
       '<div class="card">' +
       '<h1 style="color:var(--gold)">' + esc(user.name) + '</h1>' +
       '<p class="sub">' + esc(user.email) + (user.role === "admin" ? ' · admin' : ' · student') + '</p>' +
-      '<div class="data-row"><div class="rl-main"><b>Saved</b><span>Questions you saved to redo.</span></div>' +
-        '<span class="rl-num">' + BeaconStore.favCount() + '</span></div>' +
-      (user.role !== "admin" ? '<div class="data-row"><div class="rl-main"><b>Nickname</b><span>Shown in the community chat.</span></div>' +
-        '<span class="rl-num" id="nick-val" style="font-size:.95rem;font-weight:600">…</span>' +
-        '<button class="icon-btn go" id="chg-nick">Change</button></div>' +
-        '<div class="data-row"><div class="rl-main"><b>Avatar</b><span>Pick an icon shown next to your messages.</span></div>' +
-        '<img id="av-current" alt="" style="width:34px;height:34px;border-radius:9px;object-fit:cover" src="assets/avatars/_default.svg"></div>' +
-        '<div id="av-grid" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>' : '') +
+      (user.role !== "admin" ?
+        '<div class="data-row" style="margin-bottom:14px"><div class="rl-main"><b>Nickname</b><span>Shown in the community chat.</span></div>' +
+          '<input id="nick-input" maxlength="20" placeholder="your nickname" autocomplete="off" ' +
+          'style="width:180px;max-width:52%;background:var(--bg-2);border:1px solid var(--border-strong);border-radius:9px;padding:8px 11px;color:var(--ink);font-family:var(--mono);font-size:.85rem"></div>' +
+        '<div class="data-row" style="margin-bottom:14px"><div class="rl-main"><b>Avatar</b><span>Pick a picture shown next to your messages.</span></div>' +
+          '<img id="av-current" alt="" style="width:38px;height:38px;border-radius:9px;object-fit:cover" src="assets/avatars/_default.svg"></div>' +
+        '<div id="av-grid" style="display:flex;flex-wrap:wrap;gap:8px"></div>' +
+        '<button class="btn btn-gold full" id="save-prof" style="margin-top:22px">Save changes</button>' +
+        '<p id="save-msg" style="text-align:center;font-size:.85rem;margin:8px 0 0;min-height:1.1em"></p>'
+        : '') +
       (user.role === "admin" ? '<a href="admin.html" class="btn btn-ghost full" style="margin-top:16px">Open admin panel</a>' : '') +
-      '<button class="btn btn-gold full" id="lo" style="margin-top:12px">Log out</button>' +
-      '</div>' + goalsCard;
+      '</div>' + goalsCard +
+      '<button class="btn btn-ghost full" id="lo" style="margin-top:24px;margin-bottom:20px">Log out</button>';
 
     document.getElementById("lo").onclick = function () { BeaconAuth.logout(); };
-    loadNick();
-    loadAvatar();
-    var cn = document.getElementById("chg-nick"); if (cn) cn.onclick = changeNick;
+    loadProfileEditor();
     var eg = document.getElementById("edit-goals");
     if (eg) eg.onclick = function(){ editGoals(goals); };
   }
 
-  function loadNick() {
+  // combined nickname + avatar editor: pick/type, then one "Save changes" button persists both
+  function loadProfileEditor() {
     if (user.role === "admin" || !window.sb) return;
-    sb.from("profiles").select("nickname").eq("user_id", user.id).maybeSingle().then(function(r){
-      var el = document.getElementById("nick-val"); if (!el) return;
-      el.textContent = (r && r.data && r.data.nickname) ? "@"+r.data.nickname : "not set";
-    }).catch(function(){});
-  }
-  function loadAvatar() {
-    var grid = document.getElementById("av-grid"); if (!grid || !window.sb) return;
-    var current = "", nick = "";
-    function fallbackNick(){
-      var b = (user.name || (user.email||"user").split("@")[0] || "user").trim().replace(/\s+/g,"_").replace(/[^A-Za-z0-9_.\-]/g,"").slice(0,20);
-      return b.length>=3 ? b : (b+"_user").slice(0,20);
-    }
-    function paint() {
+    var grid = document.getElementById("av-grid");
+    var input = document.getElementById("nick-input");
+    var saveBtn = document.getElementById("save-prof");
+    var msg = document.getElementById("save-msg");
+    if (!grid || !input || !saveBtn) return;
+    var selected = "";
+    function setMsg(t, ok){ if (msg){ msg.textContent = t || ""; msg.style.color = ok ? "var(--good)" : "var(--bad)"; } }
+    function paintGrid() {
       grid.innerHTML = AVATARS.map(function(a){
-        var on = a === current;
-        return '<button class="av-opt'+(on?" on":"")+'" data-av="'+a+'" '+
+        var on = a === selected;
+        return '<button type="button" class="av-opt'+(on?" on":"")+'" data-av="'+a+'" '+
           'style="width:46px;height:46px;padding:3px;border-radius:12px;cursor:pointer;'+
           'border:2px solid '+(on?"var(--gold-line)":"var(--border)")+';background:'+(on?"var(--gold-soft)":"var(--bg-2)")+'">'+
           '<img alt="'+a+'" src="assets/avatars/'+a+'.svg" style="width:100%;height:100%;border-radius:8px;object-fit:cover;display:block"></button>';
       }).join("");
-      var cur = document.getElementById("av-current"); if (cur) cur.src = "assets/avatars/" + (current || "_default") + ".svg";
+      var cur = document.getElementById("av-current"); if (cur) cur.src = "assets/avatars/" + (selected || "_default") + ".svg";
       grid.querySelectorAll(".av-opt").forEach(function(b){
-        b.onclick = function(){
-          var a = b.dataset.av;
-          // include the nickname so a brand-new profile row doesn't hit the NOT NULL constraint
-          var payload = { user_id: user.id, avatar: a, nickname: nick || fallbackNick() };
-          sb.from("profiles").upsert(payload, { onConflict: "user_id" }).then(function(r){
-            if (r.error) { alert(r.error.message); return; }
-            current = a; nick = payload.nickname; paint();
-            if (window.BeaconChat && BeaconChat.setAvatar) BeaconChat.setAvatar(a);
-          });
-        };
+        b.onclick = function(){ selected = b.dataset.av; setMsg("", true); paintGrid(); };
       });
     }
+    input.addEventListener("input", function(){ setMsg("", true); });
+    // load current nickname + avatar into the form
     sb.from("profiles").select("nickname, avatar").eq("user_id", user.id).maybeSingle().then(function(r){
-      if (r && r.data) { current = r.data.avatar || ""; nick = r.data.nickname || ""; }
-      if (nick) { paint(); return; }
-      // no profile row yet — recover the nick they picked at sign-up (stored in auth metadata)
+      var nick = (r && r.data && r.data.nickname) || "";
+      selected = (r && r.data && r.data.avatar) || "";
+      if (nick) { input.value = nick; paintGrid(); return; }
       return sb.auth.getUser().then(function(g){
         var mn = g && g.data && g.data.user && g.data.user.user_metadata && g.data.user.user_metadata.nickname;
-        if (mn) nick = String(mn).trim();
-        paint();
+        if (mn) input.value = String(mn).trim();
+        paintGrid();
       });
-    }).catch(paint);
-  }
-
-  function changeNick() {
-    if (!window.sb) return;
-    var v = prompt("Pick a nickname (unique, 3–20 characters):"); if (!v) return;
-    v = v.trim();
-    if (v.length < 3) { alert("Nickname needs at least 3 characters."); return; }
-    sb.from("profiles").upsert({ user_id: user.id, nickname: v }, { onConflict: "user_id" }).then(function(r){
-      if (r.error) { alert(/duplicate|unique/i.test(r.error.message) ? "That nickname is taken — try another." : r.error.message); return; }
-      loadNick();
-      if (window.BeaconChat && BeaconChat.setNick) BeaconChat.setNick(v);
-    });
+    }).catch(paintGrid);
+    // save nickname + avatar together
+    saveBtn.onclick = function(){
+      var v = (input.value || "").trim().replace(/\s+/g,"_").replace(/[^A-Za-z0-9_.\-]/g,"").slice(0,20);
+      if (v.length < 3) { setMsg("Nickname needs at least 3 characters.", false); return; }
+      input.value = v;
+      var payload = { user_id: user.id, nickname: v };
+      if (selected) payload.avatar = selected;
+      saveBtn.disabled = true; setMsg("Saving…", true);
+      sb.from("profiles").upsert(payload, { onConflict: "user_id" }).then(function(r){
+        saveBtn.disabled = false;
+        if (r.error) { setMsg(/duplicate|unique/i.test(r.error.message) ? "That nickname is taken — try another." : r.error.message, false); return; }
+        setMsg("Saved ✓", true);
+        if (window.BeaconChat) {
+          if (BeaconChat.setNick) BeaconChat.setNick(v);
+          if (selected && BeaconChat.setAvatar) BeaconChat.setAvatar(selected);
+        }
+        if (selected) document.querySelectorAll(".acct-av").forEach(function(img){ img.src = "assets/avatars/" + selected + ".svg"; });
+      });
+    };
   }
 
   function editGoals(goals) {
