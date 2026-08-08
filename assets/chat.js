@@ -44,6 +44,11 @@
       need.forEach(function (id) { if (!(id in profCache)) profCache[id] = {}; });  // remember misses so we don't refetch
     }).catch(function () { need.forEach(function (id) { if (!(id in profCache)) profCache[id] = {}; }); });
   }
+  // push my current avatar into the top-right account chip(s) — used after onboarding/first load
+  function paintChipAvatar() {
+    if (!myAvatar) return;
+    try { document.querySelectorAll('.acct-av').forEach(function (img) { img.src = AV_BASE + myAvatar + '.svg'; }); } catch (e) {}
+  }
   var roomChan = null, dmChan = null;
   var view = 'room';          // 'room' | 'dms' | 'thread'
   var thread = null;          // { id, nick } of the other person in an open DM
@@ -61,6 +66,7 @@
         setupProfile(u).then(function (p) {
           myNick = (p && p.nick) || fallbackNick;   // still show the chat even if the profile call hiccups
           myAvatar = (p && p.avatar) || '';
+          paintChipAvatar();   // refresh the top-right account chip now (its own fetch ran before onboarding saved)
           buildWidget();
           subscribeDM();
         });
