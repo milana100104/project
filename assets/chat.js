@@ -58,8 +58,9 @@
       if (u) {                 // signed-in student: full chat
         me = u;
         var fallbackNick = (u.user_metadata && (u.user_metadata.nickname || u.user_metadata.name)) || (u.email || 'you').split('@')[0];
-        ensureProfile(u).catch(function () { return ''; }).then(function (nick) {
-          myNick = nick || fallbackNick;   // still show the chat even if the profile call hiccups
+        setupProfile(u).then(function (p) {
+          myNick = (p && p.nick) || fallbackNick;   // still show the chat even if the profile call hiccups
+          myAvatar = (p && p.avatar) || '';
           buildWidget();
           subscribeDM();
         });
@@ -71,40 +72,73 @@
   }
 
   /* ---- nickname / profile ---- */
-  function ensureProfile(u) {
-    // select ONLY nickname — if we also asked for `avatar` and that column
-    // isn't there yet, the whole query errors and we'd wrongly re-prompt for a nick.
-    return sb.from('profiles').select('nickname').eq('user_id', u.id).maybeSingle().then(function (r) {
-      loadMyAvatar(u);   // fetched separately + defensively so a missing column can't break the nick
-      if (r && r.data && r.data.nickname) { return r.data.nickname; }
-      var chosen = (u.user_metadata && u.user_metadata.nickname);
-      if (chosen) return claimNick(u, cleanNick(chosen), 0);  // email sign-up: they already picked one
-      return promptNick(u);                                    // Google etc: make them pick a unique one
+  // Decide whether the signed-in user still needs to set up a nickname + avatar.
+  // Everyone (including Google sign-ups) must have BOTH before using the site.
+  function setupProfile(u) {
+    var isAdmin = window.BEACON_ADMIN_EMAIL && u.email === window.BEACON_ADMIN_EMAIL;
+    return sb.from('profiles').select('nickname, avatar').eq('user_id', u.id).maybeSingle().then(function (r) {
+      var nick = r && r.data && r.data.nickname;
+      var av = r && r.data && r.data.avatar;
+      if (nick && av) return { nick: nick, avatar: av };          // already complete → straight in
+      if (isAdmin) {                                              // never gate the admin account
+        if (!nick) { var mn = (u.user_metadata && u.user_metadata.nickname) || 'Milana'; return claimNick(u, cleanNick(mn), 0).then(function (n) { return { nick: n, avatar: av || '' }; }); }
+        return { nick: nick, avatar: av || '' };
+      }
+      var presetNick = nick || (u.user_metadata && u.user_metadata.nickname) || '';
+      return runOnboarding(u, presetNick, av || '');             // force the setup screen
+    }).catch(function () {
+      // fail open — a query hiccup must never lock someone out of the whole site
+      var fb = (u.user_metadata && (u.user_metadata.nickname || u.user_metadata.name)) || (u.email || 'you').split('@')[0];
+      return { nick: fb, avatar: '' };
     });
   }
-  function loadMyAvatar(u) {
-    sb.from('profiles').select('avatar').eq('user_id', u.id).maybeSingle().then(function (r) {
-      if (r && r.data && r.data.avatar) myAvatar = r.data.avatar;
-    }).catch(function () {});
-  }
-  // ask the user for a unique nickname (used when they signed up via Google and have none yet)
-  function promptNick(u) {
-    var suggestion = cleanNick((u.user_metadata && u.user_metadata.name) || (u.email || 'user').split('@')[0]);
-    var v = window.prompt('Pick a nickname for the chat — it must be unique (3–20 characters):', suggestion);
-    if (v == null) return Promise.resolve('');       // cancelled → they can set one later in the profile
-    v = cleanNick(v);
-    if (v.length < 3) { window.alert('Nickname needs at least 3 characters.'); return promptNick(u); }
-    // Is this nickname held by someone else? (a row that isn't ours = genuinely taken)
-    return sb.from('profiles').select('user_id').eq('nickname', v).maybeSingle().then(function (chk) {
-      if (chk && chk.data && chk.data.user_id && chk.data.user_id !== u.id) {
-        window.alert('“' + v + '” is already taken — pick another.'); return promptNick(u);
+
+  // Blocking welcome screen: a unique nickname AND an avatar are required to continue.
+  function runOnboarding(u, presetNick, presetAv) {
+    return new Promise(function (resolve) {
+      var selected = presetAv || '';
+      var overlay = document.createElement('div'); overlay.id = 'bc-onbo';
+      overlay.innerHTML =
+        '<div class="bc-onbo-card">' +
+          '<h2>Welcome to Beacon 👋</h2>' +
+          '<p>Pick a nickname and a picture to finish setting up — they appear next to your messages in the community chat.</p>' +
+          '<label class="bc-onbo-lbl">Nickname</label>' +
+          '<input id="bc-onbo-nick" maxlength="20" placeholder="e.g. star_reader" autocomplete="off" value="' + esc(presetNick) + '">' +
+          '<div id="bc-onbo-msg" class="bc-onbo-msg"></div>' +
+          '<label class="bc-onbo-lbl">Choose an avatar</label>' +
+          '<div id="bc-onbo-grid" class="bc-onbo-grid"></div>' +
+          '<button id="bc-onbo-go" class="bc-onbo-go" disabled>Get started</button>' +
+        '</div>';
+      document.body.appendChild(overlay);
+      var nickI = document.getElementById('bc-onbo-nick');
+      var grid = document.getElementById('bc-onbo-grid');
+      var go = document.getElementById('bc-onbo-go');
+      var msg = document.getElementById('bc-onbo-msg');
+      function setMsg(t, ok) { msg.textContent = t || ''; msg.style.color = ok ? '#4bcf94' : '#ef7d7d'; }
+      function refresh() { go.disabled = !(cleanNick(nickI.value).length >= 3 && selected); }
+      function paint() {
+        grid.innerHTML = AVATARS.map(function (a) {
+          return '<button type="button" data-av="' + a + '" class="bc-onbo-av' + (a === selected ? ' on' : '') + '"><img src="' + AV_BASE + a + '.svg" alt=""></button>';
+        }).join('');
+        grid.querySelectorAll('button').forEach(function (b) { b.onclick = function () { selected = b.getAttribute('data-av'); setMsg('', true); paint(); refresh(); }; });
       }
-      // upsert on user_id: writes our own row whether or not one already exists (no false PK clash)
-      return sb.from('profiles').upsert({ user_id: u.id, nickname: v }, { onConflict: 'user_id' }).then(function (r) {
-        if (!r.error) return v;
-        if (/duplicate|unique/i.test(r.error.message || '')) { window.alert('“' + v + '” is already taken — pick another.'); return promptNick(u); }
-        return v;   // some other error → go with what they typed
-      });
+      paint(); refresh();
+      nickI.addEventListener('input', function () { setMsg('', true); refresh(); });
+      go.onclick = function () {
+        var v = cleanNick(nickI.value);
+        if (v.length < 3) { setMsg('Nickname needs at least 3 characters.', false); return; }
+        if (!selected) { setMsg('Pick an avatar too.', false); return; }
+        go.disabled = true; setMsg('Saving…', true);
+        sb.from('profiles').select('user_id').eq('nickname', v).maybeSingle().then(function (chk) {
+          if (chk && chk.data && chk.data.user_id && chk.data.user_id !== u.id) { setMsg('“' + v + '” is already taken — pick another.', false); refresh(); return; }
+          return sb.from('profiles').upsert({ user_id: u.id, nickname: v, avatar: selected }, { onConflict: 'user_id' }).then(function (r) {
+            if (r.error) { setMsg(/duplicate|unique/i.test(r.error.message || '') ? 'That nickname is taken — pick another.' : r.error.message, false); refresh(); return; }
+            overlay.remove();
+            resolve({ nick: v, avatar: selected });
+          });
+        }).catch(function () { setMsg('Something went wrong — please try again.', false); refresh(); });
+      };
+      setTimeout(function () { try { nickI.focus(); } catch (e) {} }, 60);
     });
   }
   function cleanNick(s) { s = String(s || 'user').trim().replace(/\s+/g, '_').replace(/[^A-Za-z0-9_\.\-]/g, ''); return (s || 'user').slice(0, 20); }
@@ -403,6 +437,21 @@
       '#bc-form button{background:#e0bc4f;color:#20180a;border:none;border-radius:10px;padding:0 16px;font-weight:700;cursor:pointer;font-family:inherit;}' +
       '#bc-guest{padding:12px 14px;border-top:1px solid #274069;background:#0e2144;text-align:center;font-size:.85rem;color:#c3cee2;}' +
       '#bc-guest a{color:#e7c257;text-decoration:none;font-weight:600;}' +
+      '#bc-onbo{position:fixed;inset:0;z-index:10000;background:rgba(6,14,30,.82);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;}' +
+      '.bc-onbo-card{background:#0e2144;border:1px solid #274069;border-radius:18px;max-width:420px;width:100%;padding:26px 24px;box-shadow:0 24px 60px rgba(0,0,0,.55);color:#f4efe3;animation:bc-pop .3s cubic-bezier(.2,.9,.3,1.15) both;}' +
+      '.bc-onbo-card h2{margin:0 0 6px;font-size:1.3rem;font-weight:700;}' +
+      '.bc-onbo-card p{margin:0 0 18px;color:#c3cee2;font-size:.92rem;line-height:1.45;}' +
+      '.bc-onbo-lbl{display:block;font-size:.72rem;font-weight:700;color:#8296b7;margin:0 0 7px;text-transform:uppercase;letter-spacing:.05em;}' +
+      '#bc-onbo-nick{width:100%;background:#0b1a38;border:1px solid #365286;border-radius:10px;padding:11px 13px;color:#f4efe3;font-family:inherit;font-size:.95rem;box-sizing:border-box;}' +
+      '#bc-onbo-nick:focus{outline:none;border-color:#e7c257;}' +
+      '.bc-onbo-msg{min-height:1.1em;font-size:.82rem;margin:6px 0 14px;}' +
+      '.bc-onbo-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px;}' +
+      '.bc-onbo-av{width:50px;height:50px;padding:3px;border-radius:12px;cursor:pointer;border:2px solid #274069;background:#0b1a38;}' +
+      '.bc-onbo-av.on{border-color:#e7c257;background:rgba(212,167,44,.16);}' +
+      '.bc-onbo-av img{width:100%;height:100%;border-radius:8px;display:block;}' +
+      '.bc-onbo-go{width:100%;background:#e0bc4f;color:#20180a;border:none;border-radius:11px;padding:12px;font-weight:700;font-size:1rem;cursor:pointer;font-family:inherit;}' +
+      '.bc-onbo-go:disabled{opacity:.5;cursor:not-allowed;}' +
+      '.bc-onbo-go:not(:disabled):hover{background:#f0d372;}' +
       '@media(max-width:480px){#bc-root{right:12px;bottom:12px;}#bc-panel{width:calc(100vw - 24px);}}';
     document.head.appendChild(s);
   }
