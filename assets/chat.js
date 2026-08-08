@@ -32,6 +32,18 @@
     if (av && !/^[a-z_]+$/i.test(av)) return '<span class="' + cls + ' bc-av-emoji">' + esc(av) + '</span>'; // legacy emoji
     return '<img class="' + cls + '" src="' + AV_BASE + '_default.svg" alt="">';
   }
+  // current nickname + avatar per author (user_id → {nickname, avatar}), so every
+  // message shows the author's up-to-date picture & name — even for logged-out guests
+  var profCache = {};
+  function ensureProfiles(ids) {
+    var need = [];
+    (ids || []).forEach(function (id) { if (id && !(id in profCache) && need.indexOf(id) < 0) need.push(id); });
+    if (!need.length) return Promise.resolve();
+    return sb.from('profiles').select('user_id, nickname, avatar').in('user_id', need).then(function (r) {
+      (r.data || []).forEach(function (p) { profCache[p.user_id] = { nickname: p.nickname, avatar: p.avatar }; });
+      need.forEach(function (id) { if (!(id in profCache)) profCache[id] = {}; });  // remember misses so we don't refetch
+    }).catch(function () { need.forEach(function (id) { if (!(id in profCache)) profCache[id] = {}; }); });
+  }
   var roomChan = null, dmChan = null;
   var view = 'room';          // 'room' | 'dms' | 'thread'
   var thread = null;          // { id, nick } of the other person in an open DM
@@ -210,31 +222,39 @@
     body.innerHTML = '<div class="bc-empty">Loading…</div>';
     sb.from('messages').select('*').order('created_at', { ascending: false }).limit(60).then(function (r) {
       var rows = (r.data || []).reverse();
-      body.innerHTML = rows.length ? '' : '<div class="bc-empty">No messages yet — say hi 👋</div>';
-      rows.forEach(function (m) { body.appendChild(msgEl(m)); });
-      scrollDown();
+      ensureProfiles(rows.map(function (m) { return m.user_id; })).then(function () {
+        body.innerHTML = rows.length ? '' : '<div class="bc-empty">No messages yet — say hi 👋</div>';
+        rows.forEach(function (m) { body.appendChild(msgEl(m)); });
+        scrollDown();
+      });
     });
     if (!roomChan) {
       roomChan = sb.channel('bc-room').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, function (p) {
-        if (view === 'room' && panelOpen()) {
-          var body2 = document.getElementById('bc-body');
-          var em = body2.querySelector('.bc-empty'); if (em) em.remove();
-          body2.appendChild(msgEl(p.new)); scrollDown();
-        } else if (!me || p.new.user_id !== me.id) { unread++; renderBadge(); }
+        ensureProfiles([p.new.user_id]).then(function () {
+          if (view === 'room' && panelOpen()) {
+            var body2 = document.getElementById('bc-body');
+            var em = body2.querySelector('.bc-empty'); if (em) em.remove();
+            body2.appendChild(msgEl(p.new)); scrollDown();
+          } else if (!me || p.new.user_id !== me.id) { unread++; renderBadge(); }
+        });
       }).subscribe();
     }
   }
   function msgEl(m) {
     var mine = me && m.user_id === me.id;
+    var p = profCache[m.user_id] || {};
+    // prefer the author's current profile (works for guests too), fall back to what the message stored
+    var nick = mine ? myNick : (p.nickname || m.nickname || 'someone');
+    var av = mine ? (myAvatar || p.avatar || m.avatar) : (p.avatar || m.avatar);
     var d = document.createElement('div'); d.className = 'bc-msg' + (mine ? ' mine' : '');
-    var dmBtn = (me && !mine && m.user_id) ? '<button class="bc-dm-one" title="Message @' + esc(m.nickname) + '">✉</button>' : '';
+    var dmBtn = (me && !mine && m.user_id) ? '<button class="bc-dm-one" title="Message @' + esc(nick) + '">✉</button>' : '';
     d.innerHTML =
-      '<div class="bc-meta">' + avatarHtml(mine ? (myAvatar || m.avatar) : m.avatar) +
-      '<b class="bc-nick">' + (mine ? 'You' : esc(m.nickname)) + '</b>' +
+      '<div class="bc-meta">' + avatarHtml(av) +
+      '<b class="bc-nick">' + (mine ? 'You' : esc(nick)) + '</b>' +
       '<span class="bc-time">' + timeStr(m.created_at) + '</span>' + dmBtn + '</div>' +
       '<div class="bc-text">' + esc(m.body) + '</div>';
     if (me && !mine && m.user_id) {   // click name or ✉ to open a DM
-      var open = function () { openThread({ id: m.user_id, nick: m.nickname }); };
+      var open = function () { openThread({ id: m.user_id, nick: nick }); };
       var nk = d.querySelector('.bc-nick'); nk.style.cursor = 'pointer'; nk.onclick = open;
       var b = d.querySelector('.bc-dm-one'); if (b) b.onclick = open;
     }
