@@ -7,15 +7,62 @@
 <link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=55">
-<script src="assets/app.js?v=55" defer></script>
-<script src="assets/config.js?v=55" defer></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/app.css?v=56">
+<script src="assets/app.js?v=56" defer></script>
+<script src="assets/config.js?v=56" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=55" defer></script>
-<script src="assets/chat.js?v=55" defer></script>
+<script src="assets/auth.js?v=56" defer></script>
+<script src="assets/chat.js?v=56" defer></script>
+<style>
+/* ---- Admin: clean white workspace ---- */
+body.adm-body{background:#eef1f7;color:#16233d;font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;}
+body.adm-body .grain,body.adm-body #beacon-grain{display:none!important;}
+.adm-wrap{max-width:920px;margin:0 auto;padding:26px 20px 80px;}
+.adm-title{font-size:1.7rem;font-weight:700;color:#14233f;margin:6px 0 2px;}
+.adm-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:#8a97b0;letter-spacing:.02em;}
+.adm-nav{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 24px;}
+.adm-nav a{padding:9px 16px;border-radius:10px;background:#fff;border:1px solid #dfe4ee;color:#41506e;font-weight:600;font-size:.92rem;text-decoration:none;transition:.15s;}
+.adm-nav a:hover{border-color:#c8b268;color:#14233f;}
+.adm-nav a.active{background:#14233f;border-color:#14233f;color:#fff;}
+.adm-card{background:#fff;border:1px solid #e2e7f0;border-radius:16px;padding:26px;box-shadow:0 6px 22px rgba(20,40,80,.06);margin-bottom:22px;}
+.adm-h{font-size:1.2rem;font-weight:700;margin:0 0 4px;color:#14233f;}
+.adm-sub{color:#5a6b8c;font-size:.9rem;margin:0 0 20px;line-height:1.45;}
+.adm-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+@media(max-width:640px){.adm-grid3{grid-template-columns:1fr;}}
+.adm-field{margin-bottom:16px;}
+.adm-field>label{display:block;font-weight:600;font-size:.82rem;color:#33415f;margin-bottom:6px;}
+.adm-field .hint{color:#93a0b8;font-weight:400;}
+.adm-input,.adm-textarea,.adm-select{width:100%;box-sizing:border-box;background:#fff;border:1px solid #c9d2e2;border-radius:10px;padding:10px 12px;font-size:.95rem;color:#14233f;font-family:inherit;}
+.adm-input[type=file]{padding:8px 10px;background:#f7f9fc;}
+.adm-input:focus,.adm-textarea:focus,.adm-select:focus{outline:none;border-color:#d4a72c;box-shadow:0 0 0 3px rgba(212,167,44,.16);}
+.adm-textarea{min-height:82px;resize:vertical;line-height:1.5;}
+.adm-row{display:flex;gap:10px;align-items:center;margin-bottom:9px;}
+.adm-radio{width:18px;height:18px;flex-shrink:0;accent-color:#d4a72c;cursor:pointer;}
+.adm-choice-in{flex:1;}
+.adm-x{background:#fff;border:1px solid #e3c3c3;color:#c23b3b;border-radius:8px;width:34px;height:38px;flex-shrink:0;cursor:pointer;font-size:.85rem;}
+.adm-x:hover{background:#fdecec;}
+.adm-note{font-size:.82rem;color:#6b7a97;margin:2px 0 14px;line-height:1.5;}
+.adm-note code{background:#eef1f7;border:1px solid #dbe1ec;border-radius:5px;padding:1px 6px;font-family:'IBM Plex Mono',monospace;font-size:.82rem;color:#14233f;}
+.adm-btn{background:#d4a72c;color:#20180a;border:none;border-radius:11px;padding:13px 18px;font-weight:700;font-size:.98rem;cursor:pointer;width:100%;transition:background .15s;}
+.adm-btn:hover{background:#e0bc4f;}
+.adm-btn:disabled{opacity:.55;cursor:not-allowed;}
+.adm-btn.sec{background:#eef1f7;color:#33415f;border:1px solid #cdd5e4;width:auto;padding:8px 14px;font-size:.85rem;font-weight:600;margin-top:2px;}
+.adm-btn.sec:hover{background:#e3e8f2;}
+.adm-msg{margin-top:12px;font-size:.9rem;min-height:1.1em;font-weight:600;}
+.adm-msg.good{color:#1a8f5a;}.adm-msg.bad{color:#c23b3b;}
+.adm-listtitle{font-size:1rem;font-weight:700;color:#3a496a;margin:26px 0 12px;}
+.adm-item{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid #e2e7f0;border-radius:12px;padding:12px 15px;margin-bottom:8px;}
+.adm-item-main{flex:1;min-width:0;}
+.adm-item-main b{color:#14233f;font-size:.92rem;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.adm-item-main span{color:#7382a0;font-size:.78rem;text-transform:capitalize;}
+.adm-del{background:#fff;border:1px solid #e3b3b3;color:#c23b3b;border-radius:9px;padding:7px 13px;font-weight:600;cursor:pointer;font-size:.82rem;flex-shrink:0;}
+.adm-del:hover{background:#fdecec;}
+.adm-empty{color:#8a97b0;font-size:.9rem;padding:16px;text-align:center;background:#fff;border:1px dashed #d5dceb;border-radius:12px;}
+.adm-denied{background:#fff;border:1px solid #e2e7f0;border-radius:16px;padding:40px;text-align:center;color:#5a6b8c;}
+</style>
 </head>
-<body>
+<body class="adm-body">
 <div class="grain"></div>
 
 <header class="site-header">
@@ -30,10 +77,13 @@
 </header>
 
 <main>
-  <div class="wrap" style="max-width:860px">
-    <div class="page-head" style="padding-bottom:0"><span class="mono-label">// admin</span><h1>Content admin</h1></div>
-    <nav class="tabs" id="tabs">
-      <a href="admin.html?tab=questions" data-tab="questions">Questions</a>
+  <div class="adm-wrap">
+    <div class="adm-eyebrow">// admin</div>
+    <h1 class="adm-title">Content admin</h1>
+    <nav class="adm-nav" id="tabs">
+      <a href="admin.html?tab=toefl" data-tab="toefl">TOEFL</a>
+      <a href="admin.html?tab=ielts" data-tab="ielts">IELTS</a>
+      <a href="admin.html?tab=sat" data-tab="sat">SAT</a>
       <a href="admin.html?tab=webinars" data-tab="webinars">Webinars</a>
     </nav>
     <div id="panel"></div>
@@ -43,169 +93,318 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   BeaconAuth.requireAuth().then(function (user) {
-  if (!user) return;
-  if (user.role !== "admin") { document.getElementById("panel").innerHTML = '<div class="empty-state">Admin only. Log in as the admin account.</div>'; return; }
+    if (!user) return;
+    var panel = document.getElementById("panel");
+    if (user.role !== "admin") {
+      panel.innerHTML = '<div class="adm-denied">Admin only. Sign in with an admin account.</div>';
+      return;
+    }
 
-  function qs(n){var m=new RegExp("[?&]"+n+"=([^&]*)").exec(location.search);return m?decodeURIComponent(m[1]):null;}
-  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
-  var tab = qs("tab") || "questions";
-  var panel = document.getElementById("panel");
-  document.querySelectorAll("#tabs a").forEach(function (a){ if (a.dataset.tab === tab) a.classList.add("active"); });
+    function qs(n){ var m=new RegExp("[?&]"+n+"=([^&]*)").exec(location.search); return m?decodeURIComponent(m[1]):null; }
+    function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+    function shorten(s){ s=String(s||""); return s.length>76 ? s.slice(0,76)+"…" : s; }
+    function field(label, inner){ return '<div class="adm-field"><label>'+label+'</label>'+inner+'</div>'; }
+    function val(id){ var e=document.getElementById(id); return e ? String(e.value||"").trim() : ""; }
+    function fileOf(id){ var e=document.getElementById(id); return e && e.files && e.files[0]; }
 
-  var SKILLS = {
-    toefl: { reading: ["multiple-choice","complete-the-words","whole-text"], listening: ["best-response","dialogues","lectures"] },
-    ielts: { reading: ["true-false-notgiven","matching-headings","multiple-choice","sentence-completion","table-completion","diagram-labelling"], listening: ["form-completion","multiple-choice","matching","map-labelling"] },
-    sat:   { math: ["algebra","advanced-math","problem-solving-data-analysis","geometry-trig"], english: ["information-ideas","craft-structure","expression-ideas","standard-conventions"] }
-  };
-
-  if (tab === "webinars") renderWebinars();
-  else BeaconStore.ready().then(renderQuestions);
-
-  /* ---------------- questions ---------------- */
-  function renderQuestions() {
-    panel.innerHTML =
-      '<div class="card" style="margin-bottom:24px"><h1 style="font-size:1.3rem">Add a question</h1>' +
-      '<p class="sub">Choice-based questions (multiple choice, best response, T/F/NG, etc.). Passage and audio are optional.</p>' +
-      '<div class="field"><label>Exam</label><select id="f-exam"></select></div>' +
-      '<div class="field"><label>Skill</label><select id="f-skill"></select></div>' +
-      '<div class="field"><label>Type</label><select id="f-type"></select></div>' +
-      '<div class="field"><label>Difficulty</label><select id="f-diff"><option>easy</option><option selected>medium</option><option>hard</option></select></div>' +
-      '<div class="field"><label>Image <span class="hint">(optional — for a photo/diagram question, e.g. SAT graphs)</span></label><input id="f-image" type="file" accept="image/*"></div>' +
-      '<div class="field"><label>Passage / context <span class="hint">(optional)</span></label><textarea id="f-passage" placeholder="Reading passage or spoken context…"></textarea></div>' +
-      '<div class="field"><label><input type="checkbox" id="f-audio"> Listening item (show audio placeholder)</label></div>' +
-      '<div class="field"><label>Transcript <span class="hint">(optional, for listening)</span></label><textarea id="f-transcript"></textarea></div>' +
-      '<div class="field"><label>Prompt</label><input id="f-prompt" placeholder="The question itself"></div>' +
-      '<div class="field"><label>Choices <span class="hint">one per line</span></label><textarea id="f-choices" placeholder="Option A&#10;Option B&#10;Option C&#10;Option D"></textarea></div>' +
-      '<div class="field"><label>Correct choice number <span class="hint">(1 = first line)</span></label><input id="f-answer" inputmode="numeric" placeholder="1"></div>' +
-      '<div class="field"><label>Explanation <span class="hint">(optional)</span></label><textarea id="f-exp"></textarea></div>' +
-      '<button class="btn btn-gold full" id="add">Add question</button>' +
-      '<div class="form-msg" id="m"></div></div>' +
-      '<h2 class="group-title">Existing questions</h2><div class="row-list" id="qlist"></div>';
-
-    var exam = document.getElementById("f-exam"), skill = document.getElementById("f-skill"), type = document.getElementById("f-type");
-    Object.keys(SKILLS).forEach(function (e){ exam.appendChild(opt(e)); });
-    function fillSkills(){ skill.innerHTML=""; Object.keys(SKILLS[exam.value]).forEach(function (s){ skill.appendChild(opt(s)); }); fillTypes(); }
-    function fillTypes(){ type.innerHTML=""; SKILLS[exam.value][skill.value].forEach(function (t){ type.appendChild(opt(t)); }); }
-    exam.onchange = fillSkills; skill.onchange = fillTypes; fillSkills();
-
-    document.getElementById("add").onclick = function () {
-      var m = document.getElementById("m");
-      var btn = document.getElementById("add");
-      var choices = document.getElementById("f-choices").value.split("\n").map(function (s){return s.trim();}).filter(Boolean);
-      var ans = parseInt(document.getElementById("f-answer").value, 10) - 1;
-      var prompt = document.getElementById("f-prompt").value.trim();
-      if (!prompt) return fail(m, "Add a prompt.");
-      if (choices.length < 2) return fail(m, "Add at least two choices.");
-      if (isNaN(ans) || ans < 0 || ans >= choices.length) return fail(m, "Correct choice number is out of range.");
-      var q = {
-        id: "q-" + Date.now().toString(36) + "-" + Math.floor(Math.random()*1e4).toString(36),
-        exam: exam.value, skill: skill.value, type: type.value,
-        difficulty: document.getElementById("f-diff").value,
-        prompt: prompt, choices: choices, answer: ans,
-        explanation: document.getElementById("f-exp").value.trim() || undefined
-      };
-      var passage = document.getElementById("f-passage").value.trim(); if (passage) q.passage = passage;
-      if (document.getElementById("f-audio").checked) q.audio = true;
-      var tr = document.getElementById("f-transcript").value.trim(); if (tr) q.transcript = tr;
-
-      var fileInput = document.getElementById("f-image");
-      var file = fileInput && fileInput.files && fileInput.files[0];
-
-      btn.disabled = true;
-      m.className = "form-msg show"; m.textContent = file ? "Uploading image…" : "Saving…";
-
-      var prep = file
-        ? BeaconStore.uploadImage(file).then(function (r) {
-            if (!r.ok) throw new Error("Image upload failed: " + r.error);
-            q.image = r.url;
-          })
-        : Promise.resolve();
-
-      prep.then(function () { return BeaconStore.addQuestion(q); })
-        .then(function (r) {
-          btn.disabled = false;
-          if (!r.ok) return fail(m, r.error || "Could not save the question.");
-          m.className = "form-msg show good";
-          m.textContent = r.local
-            ? "Added on this device only (couldn’t reach the database)."
-            : "Added to the database — every student sees it now.";
-          document.getElementById("f-prompt").value = ""; document.getElementById("f-choices").value = "";
-          document.getElementById("f-answer").value = ""; document.getElementById("f-exp").value = "";
-          document.getElementById("f-passage").value = ""; document.getElementById("f-transcript").value = "";
-          if (fileInput) fileInput.value = "";
-          listQuestions();
-        })
-        .catch(function (e) { btn.disabled = false; fail(m, e.message || "Something went wrong."); });
+    // Each exam → sections → question types, with the answer FORMAT and per-section rules.
+    // fmt: 'choice' (options), 'cloze' (fill missing letters), 'text' (typed answer).
+    var EXAMS = {
+      toefl: { label:"TOEFL", skills:{
+        reading:  { label:"Reading", passage:true, types:{
+          "multiple-choice":{ label:"Multiple choice", fmt:"choice" },
+          "complete-the-words":{ label:"Complete the Words", fmt:"cloze" },
+          "whole-text":{ label:"Whole-text", fmt:"choice" } }},
+        listening:{ label:"Listening", audio:true, image:true, transcript:true, types:{
+          "best-response":{ label:"Best response", fmt:"choice" },
+          "dialogues":{ label:"Short dialogues", fmt:"choice" },
+          "lectures":{ label:"Lectures & announcements", fmt:"choice" } }}
+      }},
+      ielts: { label:"IELTS", skills:{
+        reading:  { label:"Reading", passage:true, types:{
+          "multiple-choice":{ label:"Multiple choice", fmt:"choice" },
+          "true-false-notgiven":{ label:"True / False / Not Given", fmt:"choice", fixed:["True","False","Not Given"] },
+          "yes-no-notgiven":{ label:"Yes / No / Not Given", fmt:"choice", fixed:["Yes","No","Not Given"] },
+          "matching-headings":{ label:"Matching headings", fmt:"choice" },
+          "matching-information":{ label:"Matching information", fmt:"choice" },
+          "sentence-completion":{ label:"Sentence completion", fmt:"text" },
+          "summary-completion":{ label:"Summary completion", fmt:"text" } }},
+        listening:{ label:"Listening", audio:true, image:true, transcript:true, types:{
+          "multiple-choice":{ label:"Multiple choice", fmt:"choice" },
+          "form-completion":{ label:"Form / note / table completion", fmt:"text" },
+          "matching":{ label:"Matching", fmt:"choice" },
+          "plan-map-diagram-labelling":{ label:"Plan / map / diagram labelling", fmt:"choice" },
+          "sentence-completion":{ label:"Sentence completion", fmt:"text" },
+          "short-answer":{ label:"Short-answer questions", fmt:"text" } }}
+      }},
+      sat: { label:"SAT", skills:{
+        math:    { label:"Math", image:true, types:{
+          "algebra":{ label:"Algebra", fmt:"choice" },
+          "advanced-math":{ label:"Advanced Math", fmt:"choice" },
+          "problem-solving-data-analysis":{ label:"Problem-Solving & Data Analysis", fmt:"choice" },
+          "geometry-trig":{ label:"Geometry & Trigonometry", fmt:"choice" } }},
+        english: { label:"Reading & Writing", passage:true, types:{
+          "information-ideas":{ label:"Information & Ideas", fmt:"choice" },
+          "craft-structure":{ label:"Craft & Structure", fmt:"choice" },
+          "expression-ideas":{ label:"Expression of Ideas", fmt:"choice" },
+          "standard-conventions":{ label:"Standard English Conventions", fmt:"choice" } }}
+      }}
     };
 
-    listQuestions();
-    function listQuestions() {
-      var list = document.getElementById("qlist");
-      var all = BeaconStore.allQuestions();
-      list.innerHTML = all.map(function (q) {
-        return '<div class="data-row"><div class="rl-main"><b>' + esc(shorten(q.prompt)) + '</b>' +
-          '<span>' + esc(q.exam) + ' · ' + esc(q.skill) + ' · ' + esc((q.type||"").replace(/-/g," ")) + '</span></div>' +
-          (q.difficulty ? '<span class="pill-diff">' + esc(q.difficulty) + '</span>' : '') +
-          '<button class="icon-btn" data-id="' + esc(q.id) + '">Delete</button></div>';
-      }).join("") || '<div class="empty-state">No questions yet.</div>';
-      list.querySelectorAll(".icon-btn").forEach(function (b){ b.onclick = function (){ b.disabled = true; Promise.resolve(BeaconStore.removeQuestion(b.dataset.id)).then(listQuestions); }; });
-    }
-  }
+    var tab = qs("tab") || "toefl";
+    document.querySelectorAll("#tabs a").forEach(function (a){ if (a.dataset.tab === tab) a.classList.add("active"); });
 
-  /* ---------------- webinars ---------------- */
-  function renderWebinars() {
-    panel.innerHTML =
-      '<div class="card" style="margin-bottom:24px"><h1 style="font-size:1.3rem">Add a webinar</h1>' +
-      '<div class="field"><label>Date <span class="hint">(sets the order — newest on top)</span></label><input id="w-when" type="date"></div>' +
-      '<div class="field"><label>Shown date / time <span class="hint">(optional; auto-filled from the date)</span></label><input id="w-date" placeholder="Aug 23 · 6:00 PM"></div>' +
-      '<div class="field"><label>Title</label><input id="w-title"></div>' +
-      '<div class="field"><label>Description</label><textarea id="w-desc"></textarea></div>' +
-      '<div class="field"><label>Link</label><input id="w-url" placeholder="https://…"></div>' +
-      '<div class="field"><label>Cover image URL <span class="hint">(optional)</span></label><input id="w-cover" placeholder="assets/webinars/…"></div>' +
-      '<button class="btn btn-gold full" id="wadd">Add webinar</button>' +
-      '<div class="form-msg" id="wm"></div></div>' +
-      '<h2 class="group-title">Scheduled</h2><div class="row-list" id="wlist"></div>';
-    document.getElementById("wadd").onclick = function () {
-      var wm = document.getElementById("wm");
-      var btn = this;
-      var title = document.getElementById("w-title").value.trim();
-      if (!title) { wm.className="form-msg show bad"; wm.textContent="Add a title."; return; }
-      var when = document.getElementById("w-when").value; // yyyy-mm-dd
-      var iso = when ? when + "T18:00" : new Date().toISOString().slice(0,16);
-      var shown = document.getElementById("w-date").value.trim();
-      if (!shown && when) {
-        var d = new Date(when + "T18:00");
-        shown = d.toLocaleDateString("en-US",{month:"short",day:"2-digit"}) + " · 6:00 PM";
+    if (tab === "webinars") { renderWebinars(); return; }
+    if (!EXAMS[tab]) { renderExam("toefl"); return; }
+    BeaconStore.ready().then(function () { renderExam(tab); });
+
+    /* =================== questions, per exam =================== */
+    function renderExam(ex) {
+      var conf = EXAMS[ex];
+      var skillKeys = Object.keys(conf.skills);
+      panel.innerHTML =
+        '<div class="adm-card">' +
+          '<h2 class="adm-h">Add a ' + esc(conf.label) + ' question</h2>' +
+          '<p class="adm-sub">Choose the section and type — the form below adapts to how that question is answered, and each one is checked by its own rules.</p>' +
+          '<div class="adm-grid3">' +
+            '<div class="adm-field"><label>Section</label><select class="adm-select" id="a-skill">' +
+              skillKeys.map(function (s){ return '<option value="'+s+'">'+esc(conf.skills[s].label)+'</option>'; }).join("") + '</select></div>' +
+            '<div class="adm-field"><label>Type</label><select class="adm-select" id="a-type"></select></div>' +
+            '<div class="adm-field"><label>Difficulty</label><select class="adm-select" id="a-diff"><option>easy</option><option selected>medium</option><option>hard</option></select></div>' +
+          '</div>' +
+          '<div id="a-dyn"></div>' +
+          '<button class="adm-btn" id="a-add">Add question</button>' +
+          '<div class="adm-msg" id="a-msg"></div>' +
+        '</div>' +
+        '<h3 class="adm-listtitle">' + esc(conf.label) + ' questions</h3>' +
+        '<div class="adm-list" id="a-list"></div>';
+
+      var skillSel = document.getElementById("a-skill");
+      var typeSel  = document.getElementById("a-type");
+      skillSel.onchange = function(){ fillTypes(); };
+      typeSel.onchange  = function(){ buildDyn(); };
+      fillTypes();
+      document.getElementById("a-add").onclick = onAdd;
+      listQ();
+
+      function curSkill(){ return conf.skills[skillSel.value]; }
+      function curType(){ return curSkill().types[typeSel.value]; }
+      function setMsg(t, kind){ var m=document.getElementById("a-msg"); m.className="adm-msg"+(kind?" "+kind:""); m.textContent=t||""; }
+      function err(t){ setMsg(t,"bad"); return null; }
+
+      function fillTypes(){
+        var sk = curSkill();
+        var tk = Object.keys(sk.types);
+        typeSel.innerHTML = tk.map(function (t){ return '<option value="'+t+'">'+esc(sk.types[t].label)+'</option>'; }).join("");
+        buildDyn();
       }
-      btn.disabled = true; wm.className="form-msg show"; wm.textContent="Saving…";
-      Promise.resolve(BeaconStore.addWebinar({
-        id: "w-" + Date.now().toString(36),
-        iso: iso, date: shown,
-        title: title, desc: document.getElementById("w-desc").value.trim(),
-        url: document.getElementById("w-url").value.trim() || "#",
-        cover: document.getElementById("w-cover").value.trim()
-      })).then(function (res) {
-        btn.disabled = false;
-        if (res && res.ok === false) { wm.className="form-msg show bad"; wm.textContent = res.error || "Could not add."; return; }
-        wm.className="form-msg show good"; wm.textContent = (res && res.local) ? "Added on this device only — check the Supabase webinars setup." : "Added — everyone can see it now.";
-        ["w-when","w-date","w-title","w-desc","w-url","w-cover"].forEach(function (id){ document.getElementById(id).value=""; });
-        listWebinars();
-      });
-    };
-    BeaconStore.ready().then(listWebinars);
-    function listWebinars() {
-      var list = document.getElementById("wlist");
-      list.innerHTML = BeaconStore.webinars().map(function (w) {
-        return '<div class="data-row"><div class="rl-main"><b>' + esc(w.title) + '</b><span>' + esc(w.date) + '</span></div>' +
-          '<button class="icon-btn" data-id="' + esc(w.id) + '">Delete</button></div>';
-      }).join("") || '<div class="empty-state">No webinars yet.</div>';
-      list.querySelectorAll(".icon-btn").forEach(function (b){ b.onclick = function (){ b.disabled = true; Promise.resolve(BeaconStore.removeWebinar(b.dataset.id)).then(listWebinars); }; });
-    }
-  }
 
-  function opt(v){ var o=document.createElement("option"); o.value=v; o.textContent=v.replace(/-/g," "); return o; }
-  function fail(m,t){ m.className="form-msg show bad"; m.textContent=t; }
-  function shorten(s){ s=String(s||""); return s.length>72 ? s.slice(0,72)+"…" : s; }
+      /* ---- dynamic, type-specific fields ---- */
+      function buildDyn(){
+        var sk = curSkill(), t = curType(), h = "";
+        if (sk.passage) h += field('Passage / context <span class="hint">(optional)</span>', '<textarea class="adm-textarea" id="d-passage"></textarea>');
+        if (sk.image)   h += field('Image <span class="hint">(optional — graph, map or diagram)</span>', '<input class="adm-input" type="file" id="d-image" accept="image/*">');
+        if (sk.audio)   h += field('Audio file <span class="hint">(upload the listening clip — mp3 / m4a)</span>', '<input class="adm-input" type="file" id="d-audio" accept="audio/*">');
+        h += field('Question prompt', '<input class="adm-input" id="d-prompt" placeholder="' + (t.fmt==="cloze" ? "e.g. Complete the missing letters to finish each word." : "The question the student answers") + '">');
+
+        if (t.fmt === "cloze")      h += clozeEditor();
+        else if (t.fmt === "text")  h += textEditor(t);
+        else                        h += choiceEditor(t.fixed);
+
+        if (sk.transcript) h += field('Transcript <span class="hint">(optional, revealed after answering)</span>', '<textarea class="adm-textarea" id="d-transcript"></textarea>');
+        h += field('Explanation <span class="hint">(optional, shown after answering)</span>', '<textarea class="adm-textarea" id="d-exp"></textarea>');
+
+        document.getElementById("a-dyn").innerHTML = h;
+        if (t.fmt === "cloze") { var p=document.getElementById("d-prompt"); if (p && !p.value) p.value = "Complete the missing letters to finish each word."; }
+        wireEditor(t);
+        setMsg("");
+      }
+
+      function choiceEditor(fixed){
+        return '<div class="adm-field"><label>Answer options <span class="hint">— tick the correct one</span></label>' +
+          '<div id="d-choices">' + choiceRows(fixed) + '</div>' +
+          (fixed ? "" : '<button type="button" class="adm-btn sec" id="d-addopt">+ Add option</button>') +
+          '</div>';
+      }
+      function choiceRows(fixed){
+        if (fixed) return fixed.map(function (o,i){ return choiceRow(o, true, i===0); }).join("");
+        var out=""; for (var i=0;i<4;i++) out += choiceRow("", false, i===0); return out;
+      }
+      function choiceRow(text, ro, checked){
+        return '<div class="adm-row">' +
+          '<input type="radio" name="d-correct" class="adm-radio"' + (checked?" checked":"") + '>' +
+          '<input class="adm-input adm-choice-in" data-choice value="' + esc(text) + '"' + (ro?" readonly":"") + ' placeholder="Answer option">' +
+          (ro ? "" : '<button type="button" class="adm-x" title="Remove option">✕</button>') +
+          '</div>';
+      }
+      function textEditor(){
+        return field('Correct answer <span class="hint">— what the student must type</span>', '<input class="adm-input" id="d-answer" placeholder="e.g. photosynthesis">') +
+          field('Also accept <span class="hint">(optional — comma-separated variants)</span>', '<input class="adm-input" id="d-accept" placeholder="e.g. photo-synthesis, photosynthesise">') +
+          '<p class="adm-note">Answers are checked ignoring case and surrounding spaces.</p>';
+      }
+      function clozeEditor(){
+        return field('Sentence with missing letters <span class="hint">— wrap the letters to hide in [brackets]</span>',
+            '<textarea class="adm-textarea" id="d-cloze" placeholder="A migrating bird can nav[igate] by the stars like a com[pass]."></textarea>') +
+          '<p class="adm-note">Example: <code>eleph[ant]</code> shows “eleph” with a blank the student fills with “ant”. Use as many [brackets] as you like.</p>';
+      }
+
+      function wireEditor(t){
+        if (t.fmt !== "choice" || t.fixed) return;
+        var add = document.getElementById("d-addopt");
+        if (add) add.onclick = function(){
+          var c = document.getElementById("d-choices");
+          if (c.querySelectorAll(".adm-row").length >= 6) return;
+          c.insertAdjacentHTML("beforeend", choiceRow("", false, false));
+          wireX();
+        };
+        wireX();
+        function wireX(){
+          document.querySelectorAll("#d-choices .adm-x").forEach(function (x){
+            x.onclick = function(){
+              var c = document.getElementById("d-choices");
+              if (c.querySelectorAll(".adm-row").length <= 2) return;
+              var row = x.parentNode; row.parentNode.removeChild(row);
+            };
+          });
+        }
+      }
+
+      /* ---- build + validate a question object per its rules ---- */
+      function collect(){
+        var t = curType();
+        var q = {
+          id: "q-" + Date.now().toString(36) + "-" + Math.floor(Math.random()*1e4).toString(36),
+          exam: ex, skill: skillSel.value, type: typeSel.value,
+          difficulty: document.getElementById("a-diff").value
+        };
+        if (t.fmt === "cloze") {
+          var pc = parseCloze(val("d-cloze"));
+          if (!pc.blanks) return err("Wrap the missing letters in [brackets], e.g. eleph[ant].");
+          q.parts = pc.parts; q.format = "complete-the-words";
+        } else {
+          var prompt = val("d-prompt"); if (!prompt) return err("Add a prompt.");
+          q.prompt = prompt;
+        }
+        if (t.fmt === "cloze") { var cp=val("d-prompt"); q.prompt = cp || "Complete the missing letters to finish each word."; }
+
+        if (t.fmt === "text") {
+          var a = val("d-answer"); if (!a) return err("Enter the correct answer.");
+          q.format = "text"; q.answer = a;
+          var acc = val("d-accept");
+          if (acc) q.accept = acc.split(",").map(function (s){ return s.trim(); }).filter(Boolean);
+        } else if (t.fmt === "choice") {
+          var choices = [], answerIdx = -1;
+          Array.prototype.slice.call(document.querySelectorAll("#d-choices .adm-row")).forEach(function (row){
+            var txtEl = row.querySelector("[data-choice]"), rad = row.querySelector("input[type=radio]");
+            var txt = (txtEl.value || "").trim(); if (!txt) return;
+            if (rad.checked) answerIdx = choices.length;
+            choices.push(txt);
+          });
+          if (choices.length < 2) return err("Add at least two answer options.");
+          if (answerIdx < 0) return err("Tick which option is correct.");
+          q.choices = choices; q.answer = answerIdx;
+        }
+
+        var passage = val("d-passage"); if (passage) q.passage = passage;
+        var tr = val("d-transcript"); if (tr) q.transcript = tr;
+        var exp = val("d-exp"); if (exp) q.explanation = exp;
+        return q;
+      }
+
+      function onAdd(){
+        var btn = document.getElementById("a-add");
+        var q = collect(); if (!q) return;
+        var imageFile = curSkill().image ? fileOf("d-image") : null;
+        var audioFile = curSkill().audio ? fileOf("d-audio") : null;
+        btn.disabled = true; setMsg("Saving…");
+        var chain = Promise.resolve();
+        if (imageFile) chain = chain.then(function(){ setMsg("Uploading image…"); return BeaconStore.uploadImage(imageFile).then(function(r){ if(!r.ok) throw new Error("Image upload failed: "+r.error); q.image = r.url; }); });
+        if (audioFile) chain = chain.then(function(){ setMsg("Uploading audio…"); return BeaconStore.uploadImage(audioFile).then(function(r){ if(!r.ok) throw new Error("Audio upload failed: "+r.error); q.audioSrc = r.url; q.audio = true; }); });
+        chain.then(function(){ return BeaconStore.addQuestion(q); }).then(function (r){
+          btn.disabled = false;
+          if (!r.ok) return setMsg(r.error || "Could not save the question.", "bad");
+          setMsg(r.local ? "Added on this device only (couldn’t reach the database)." : "Added — every student sees it now.", "good");
+          buildDyn();               // reset the form
+          listQ();
+        }).catch(function (e){ btn.disabled = false; setMsg(e.message || "Something went wrong.", "bad"); });
+      }
+
+      function listQ(){
+        var list = document.getElementById("a-list");
+        var all = BeaconStore.allQuestions().filter(function (q){ return q.exam === ex; });
+        list.innerHTML = all.length ? all.map(function (q){
+          return '<div class="adm-item"><div class="adm-item-main"><b>' + esc(shorten(q.prompt || (q.parts ? clozePreview(q.parts) : ""))) + '</b>' +
+            '<span>' + esc(q.skill) + ' · ' + esc((q.type||"").replace(/-/g," ")) + (q.difficulty ? " · " + esc(q.difficulty) : "") + '</span></div>' +
+            '<button class="adm-del" data-id="' + esc(q.id) + '">Delete</button></div>';
+        }).join("") : '<div class="adm-empty">No ' + esc(conf.label) + ' questions yet — add the first one above.</div>';
+        list.querySelectorAll(".adm-del").forEach(function (b){ b.onclick = function(){ b.disabled = true; Promise.resolve(BeaconStore.removeQuestion(b.dataset.id)).then(listQ); }; });
+      }
+    }
+
+    // "nav[igate] ... com[pass]" → parts for the cloze engine
+    function parseCloze(str){
+      str = String(str || "");
+      var parts = [], re = /([^\s\[\]]*)\[([^\]]+)\]/g, last = 0, m, blanks = 0;
+      while ((m = re.exec(str))) {
+        var before = str.slice(last, m.index);
+        if (before) parts.push({ text: before });
+        parts.push({ stem: m[1] || "", blank: m[2] });
+        blanks++; last = re.lastIndex;
+      }
+      var tail = str.slice(last); if (tail) parts.push({ text: tail });
+      return { parts: parts, blanks: blanks };
+    }
+    function clozePreview(parts){
+      return (parts || []).map(function (p){ return p.text != null ? p.text : (p.stem || "") + (p.blank || ""); }).join("");
+    }
+
+    /* =================== webinars =================== */
+    function renderWebinars(){
+      panel.innerHTML =
+        '<div class="adm-card">' +
+          '<h2 class="adm-h">Add a webinar</h2>' +
+          '<p class="adm-sub">Webinars are shared with every student — the home page shows the two nearest by date.</p>' +
+          '<div class="adm-field"><label>Date <span class="hint">(sets the order)</span></label><input class="adm-input" id="w-when" type="date"></div>' +
+          '<div class="adm-field"><label>Shown date / time <span class="hint">(optional; auto-filled from the date)</span></label><input class="adm-input" id="w-date" placeholder="Aug 23 · 6:00 PM"></div>' +
+          '<div class="adm-field"><label>Title</label><input class="adm-input" id="w-title"></div>' +
+          '<div class="adm-field"><label>Description</label><textarea class="adm-textarea" id="w-desc"></textarea></div>' +
+          '<div class="adm-field"><label>Link</label><input class="adm-input" id="w-url" placeholder="https://…"></div>' +
+          '<div class="adm-field"><label>Cover image URL <span class="hint">(optional)</span></label><input class="adm-input" id="w-cover" placeholder="assets/webinars/…"></div>' +
+          '<button class="adm-btn" id="wadd">Add webinar</button>' +
+          '<div class="adm-msg" id="wm"></div>' +
+        '</div>' +
+        '<h3 class="adm-listtitle">Scheduled</h3><div class="adm-list" id="wlist"></div>';
+
+      document.getElementById("wadd").onclick = function(){
+        var wm = document.getElementById("wm"), btn = this;
+        function wmsg(t,k){ wm.className="adm-msg"+(k?" "+k:""); wm.textContent=t||""; }
+        var title = val("w-title"); if (!title) return wmsg("Add a title.","bad");
+        var when = val("w-when");
+        var iso = when ? when + "T18:00" : new Date().toISOString().slice(0,16);
+        var shown = val("w-date");
+        if (!shown && when) { var d=new Date(when+"T18:00"); shown = d.toLocaleDateString("en-US",{month:"short",day:"2-digit"}) + " · 6:00 PM"; }
+        btn.disabled = true; wmsg("Saving…");
+        Promise.resolve(BeaconStore.addWebinar({
+          id: "w-" + Date.now().toString(36), iso: iso, date: shown,
+          title: title, desc: val("w-desc"), url: val("w-url") || "#", cover: val("w-cover")
+        })).then(function (res){
+          btn.disabled = false;
+          if (res && res.ok === false) return wmsg(res.error || "Could not add.","bad");
+          wmsg((res && res.local) ? "Added on this device only — check the Supabase webinars setup." : "Added — everyone can see it now.","good");
+          ["w-when","w-date","w-title","w-desc","w-url","w-cover"].forEach(function (id){ document.getElementById(id).value=""; });
+          listWebinars();
+        });
+      };
+      BeaconStore.ready().then(listWebinars);
+      function listWebinars(){
+        var list = document.getElementById("wlist");
+        list.innerHTML = BeaconStore.webinars().map(function (w){
+          return '<div class="adm-item"><div class="adm-item-main"><b>' + esc(w.title) + '</b><span>' + esc(w.date) + '</span></div>' +
+            '<button class="adm-del" data-id="' + esc(w.id) + '">Delete</button></div>';
+        }).join("") || '<div class="adm-empty">No webinars yet.</div>';
+        list.querySelectorAll(".adm-del").forEach(function (b){ b.onclick = function(){ b.disabled = true; Promise.resolve(BeaconStore.removeWebinar(b.dataset.id)).then(listWebinars); }; });
+      }
+    }
   });
 });
 </script>
