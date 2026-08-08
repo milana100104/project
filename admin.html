@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=53">
-<script src="assets/app.js?v=53" defer></script>
-<script src="assets/config.js?v=53" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=54">
+<script src="assets/app.js?v=54" defer></script>
+<script src="assets/config.js?v=54" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=53" defer></script>
-<script src="assets/chat.js?v=53" defer></script>
+<script src="assets/auth.js?v=54" defer></script>
+<script src="assets/chat.js?v=54" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -167,6 +167,7 @@ document.addEventListener("DOMContentLoaded", function () {
       '<h2 class="group-title">Scheduled</h2><div class="row-list" id="wlist"></div>';
     document.getElementById("wadd").onclick = function () {
       var wm = document.getElementById("wm");
+      var btn = this;
       var title = document.getElementById("w-title").value.trim();
       if (!title) { wm.className="form-msg show bad"; wm.textContent="Add a title."; return; }
       var when = document.getElementById("w-when").value; // yyyy-mm-dd
@@ -176,25 +177,29 @@ document.addEventListener("DOMContentLoaded", function () {
         var d = new Date(when + "T18:00");
         shown = d.toLocaleDateString("en-US",{month:"short",day:"2-digit"}) + " · 6:00 PM";
       }
-      BeaconStore.addWebinar({
+      btn.disabled = true; wm.className="form-msg show"; wm.textContent="Saving…";
+      Promise.resolve(BeaconStore.addWebinar({
         id: "w-" + Date.now().toString(36),
         iso: iso, date: shown,
         title: title, desc: document.getElementById("w-desc").value.trim(),
         url: document.getElementById("w-url").value.trim() || "#",
         cover: document.getElementById("w-cover").value.trim()
+      })).then(function (res) {
+        btn.disabled = false;
+        if (res && res.ok === false) { wm.className="form-msg show bad"; wm.textContent = res.error || "Could not add."; return; }
+        wm.className="form-msg show good"; wm.textContent = (res && res.local) ? "Added on this device only — check the Supabase webinars setup." : "Added — everyone can see it now.";
+        ["w-when","w-date","w-title","w-desc","w-url","w-cover"].forEach(function (id){ document.getElementById(id).value=""; });
+        listWebinars();
       });
-      wm.className="form-msg show good"; wm.textContent="Added.";
-      ["w-when","w-date","w-title","w-desc","w-url","w-cover"].forEach(function (id){ document.getElementById(id).value=""; });
-      listWebinars();
     };
-    listWebinars();
+    BeaconStore.ready().then(listWebinars);
     function listWebinars() {
       var list = document.getElementById("wlist");
       list.innerHTML = BeaconStore.webinars().map(function (w) {
         return '<div class="data-row"><div class="rl-main"><b>' + esc(w.title) + '</b><span>' + esc(w.date) + '</span></div>' +
           '<button class="icon-btn" data-id="' + esc(w.id) + '">Delete</button></div>';
       }).join("") || '<div class="empty-state">No webinars yet.</div>';
-      list.querySelectorAll(".icon-btn").forEach(function (b){ b.onclick = function (){ BeaconStore.removeWebinar(b.dataset.id); listWebinars(); }; });
+      list.querySelectorAll(".icon-btn").forEach(function (b){ b.onclick = function (){ b.disabled = true; Promise.resolve(BeaconStore.removeWebinar(b.dataset.id)).then(listWebinars); }; });
     }
   }
 

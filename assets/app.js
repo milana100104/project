@@ -243,6 +243,8 @@
   var BeaconStore = {
     _data: null,
     _remote: {},   // questions loaded from Supabase (shared across everyone). Not persisted locally.
+    _webRemote: {},   // webinars loaded from Supabase (shared across everyone)
+    _webLoaded: false,
     _ready: null,
 
     /** Merge: built-in seed + admin's locally-added + Supabase-shared questions. */
@@ -270,7 +272,13 @@
           });
         }
       }).catch(function () { /* table missing / offline: fall back to the seed */ });
-      this._ready = Promise.all([qP, this._loadProgress()]).then(function () {});
+      var wP = sb.from('webinars').select('data').then(function (res) {
+        if (res && !res.error && res.data) {
+          res.data.forEach(function (row) { var w = row && row.data; if (w && w.id) self._webRemote[w.id] = w; });
+          self._webLoaded = true;   // shared list is authoritative once it loads
+        }
+      }).catch(function () { /* table missing / offline: fall back to the seed */ });
+      this._ready = Promise.all([qP, wP, this._loadProgress()]).then(function () {});
       return this._ready;
     },
 
@@ -457,11 +465,40 @@
     },
     allQuestions: function () { var bank = this._bank(); return Object.keys(bank).map(function (k) { return bank[k]; }); },
     webinars: function () {
+      var self = this;
       function k(w) { return w.iso || '9999-12-31'; } // newest first; undated go on top
-      return this._load().webinars.slice().sort(function (a, b) { return k(b).localeCompare(k(a)); });
+      var rk = Object.keys(this._webRemote);
+      var list = (this._webLoaded && rk.length)
+        ? rk.map(function (id) { return self._webRemote[id]; })   // shared list from Supabase
+        : this._load().webinars.slice();                          // seed / offline fallback
+      return list.sort(function (a, b) { return k(b).localeCompare(k(a)); });
     },
-    addWebinar: function (w) { var d = this._load(); d.webinars.unshift(w); this._save(); },
-    removeWebinar: function (id) { var d = this._load(); d.webinars = d.webinars.filter(function (w) { return w.id !== id; }); this._save(); }
+    /** Add a webinar. Writes to Supabase (shared with everyone) when the admin is
+     *  signed in; otherwise keeps it on this device only. Returns a Promise → {ok,error?,local?}. */
+    addWebinar: function (w) {
+      var self = this, sb = window.sb, pw = this._adminPw();
+      if (sb && pw) {
+        return sb.rpc('beacon_add_webinar', { pass: pw, w: w }).then(function (res) {
+          if (res.error) return { ok: false, error: res.error.message };
+          self._webRemote[w.id] = w; self._webLoaded = true;
+          return { ok: true };
+        });
+      }
+      var d = this._load(); d.webinars.unshift(w); this._save();
+      return Promise.resolve({ ok: true, local: true });
+    },
+    removeWebinar: function (id) {
+      var self = this, sb = window.sb, pw = this._adminPw();
+      if (sb && pw && this._webRemote[id]) {
+        return sb.rpc('beacon_delete_webinar', { pass: pw, wid: id }).then(function (res) {
+          if (res.error) return { ok: false, error: res.error.message };
+          delete self._webRemote[id];
+          return { ok: true };
+        });
+      }
+      var d = this._load(); d.webinars = d.webinars.filter(function (w) { return w.id !== id; }); this._save();
+      return Promise.resolve({ ok: true, local: true });
+    }
   };
 
   function defaultWebinars() {

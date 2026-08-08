@@ -183,6 +183,54 @@ do $$ begin
     then alter publication supabase_realtime add table public.dms; end if;
 end $$;
 
--- Done. Reload the site; questions you add in the admin panel are now shared,
--- each student's Saved list + progress follow them to any device, and the
--- bottom-right chat is live for signed-in students.
+-- ============================================================================
+-- 8) Shared webinars (admin-managed, visible to every student) ---------------
+-- Same pattern as questions: everyone can READ; only the admin functions WRITE.
+create table if not exists public.webinars (
+  id          text primary key,
+  iso         text,                       -- e.g. '2026-08-09T18:00' — used to sort by date
+  data        jsonb not null,             -- the whole webinar (title, desc, date, url, cover, …)
+  created_at  timestamptz default now()
+);
+
+alter table public.webinars enable row level security;
+
+drop policy if exists "webinars public read" on public.webinars;
+create policy "webinars public read" on public.webinars for select using (true);
+
+create or replace function public.beacon_add_webinar(pass text, w jsonb)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if pass is distinct from 'Milanaadmin' then      -- <-- admin password
+    raise exception 'not authorized';
+  end if;
+  insert into public.webinars (id, iso, data)
+  values (w->>'id', w->>'iso', w)
+  on conflict (id) do update set iso = excluded.iso, data = excluded.data;
+end; $$;
+
+create or replace function public.beacon_delete_webinar(pass text, wid text)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if pass is distinct from 'Milanaadmin' then      -- <-- admin password
+    raise exception 'not authorized';
+  end if;
+  delete from public.webinars where id = wid;
+end; $$;
+
+grant execute on function public.beacon_add_webinar(text, jsonb) to anon, authenticated;
+grant execute on function public.beacon_delete_webinar(text, text) to anon, authenticated;
+
+-- Seed the shared list with the current default webinars (safe to re-run).
+insert into public.webinars (id, iso, data) values
+  ('w1','2026-08-02T18:00', '{"id":"w1","iso":"2026-08-02T18:00","date":"Aug 02 · 6:00 PM","title":"The new TOEFL Speaking, decoded","desc":"What Listen-and-Repeat and the interview task actually reward — and how to rehearse for them.","url":"#","cover":""}'::jsonb),
+  ('w2','2026-08-09T18:00', '{"id":"w2","iso":"2026-08-09T18:00","date":"Aug 09 · 6:00 PM","title":"An IELTS Task 2 that actually scores","desc":"A structure examiners recognize, and the mistakes that quietly cost you a band.","url":"#","cover":""}'::jsonb),
+  ('w3','2026-08-16T18:00', '{"id":"w3","iso":"2026-08-16T18:00","date":"Aug 16 · 6:00 PM","title":"Digital SAT Math: pacing the two modules","desc":"How the adaptive second module works, and where students lose easy points.","url":"#","cover":""}'::jsonb),
+  ('w4','2026-08-23T18:00', '{"id":"w4","iso":"2026-08-23T18:00","date":"Aug 23 · 6:00 PM","title":"TOEFL Reading: beating the clock","desc":"A repeatable way to read academic passages fast without losing the details the questions test.","url":"#","cover":""}'::jsonb),
+  ('w5','2026-08-30T18:00', '{"id":"w5","iso":"2026-08-30T18:00","date":"Aug 30 · 6:00 PM","title":"IELTS Listening: the traps in Section 3","desc":"Multi-speaker discussions, distractors, and how to keep your place on the answer sheet.","url":"#","cover":""}'::jsonb),
+  ('w6','2026-09-06T18:00', '{"id":"w6","iso":"2026-09-06T18:00","date":"Sep 06 · 6:00 PM","title":"SAT Reading & Writing: grammar that pays off","desc":"The handful of Standard English Conventions questions you can get right every single time.","url":"#","cover":""}'::jsonb)
+on conflict (id) do nothing;
+
+-- Done. Reload the site; questions AND webinars you manage in the admin panel are
+-- now shared with everyone, each student's Saved list + progress follow them to any
+-- device, and the bottom-right chat is live for signed-in students.

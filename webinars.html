@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=53">
-<script src="assets/app.js?v=53" defer></script>
-<script src="assets/config.js?v=53" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=54">
+<script src="assets/app.js?v=54" defer></script>
+<script src="assets/config.js?v=54" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=53" defer></script>
-<script src="assets/chat.js?v=53" defer></script>
+<script src="assets/auth.js?v=54" defer></script>
+<script src="assets/chat.js?v=54" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -64,15 +64,18 @@ document.addEventListener("DOMContentLoaded", function () {
   var list = document.getElementById("webinar-list");
   var glyph = '<div class="thumb-ph"><svg class="ph-glyph" viewBox="0 0 56 56" aria-hidden="true"><path d="M22 48 Q24 33 26 19"/><path d="M34 48 Q32 33 30 19"/><path d="M19 48 L37 48"/><path d="M25 19 L31 19"/><path d="M24 19 L24 11 L32 11 L32 19"/><path d="M21 11 L28 4 L35 11"/><path class="ph-beam" d="M33 9 L47 4"/><path class="ph-beam" d="M33 12 L48 13"/></svg></div>';
   function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
-  var items = (window.BeaconStore ? BeaconStore.webinars() : []);
-  list.innerHTML = items.map(function (w) {
-    var thumb = w.cover ? '<img class="webinar-cover" src="' + esc(w.cover) + '" alt="' + esc(w.title) + '">' : glyph;
-    return '<div class="webinar-card"><div class="webinar-thumb">' + thumb + '</div>' +
-      '<div class="webinar-body"><div class="webinar-date">' + esc(w.date) + '</div>' +
-      '<h4>' + esc(w.title) + '</h4><p>' + esc(w.desc) + '</p>' +
-      '<a href="' + esc(w.url || '#') + '" class="link-arrow">Join &#8594;</a></div></div>';
-  }).join("");
-  if (!items.length) list.innerHTML = '<p style="color:var(--muted)">No webinars scheduled right now — check back soon.</p>';
+  function render() {
+    var items = (window.BeaconStore ? BeaconStore.webinars() : []);
+    list.innerHTML = items.map(function (w) {
+      var thumb = w.cover ? '<img class="webinar-cover" src="' + esc(w.cover) + '" alt="' + esc(w.title) + '">' : glyph;
+      return '<div class="webinar-card"><div class="webinar-thumb">' + thumb + '</div>' +
+        '<div class="webinar-body"><div class="webinar-date">' + esc(w.date) + '</div>' +
+        '<h4>' + esc(w.title) + '</h4><p>' + esc(w.desc) + '</p>' +
+        '<a href="' + esc(w.url || '#') + '" class="link-arrow">Join &#8594;</a></div></div>';
+    }).join("");
+    if (!items.length) list.innerHTML = '<p style="color:var(--muted)">No webinars scheduled right now — check back soon.</p>';
+  }
+  if (window.BeaconStore && BeaconStore.ready) BeaconStore.ready().then(render); else render();
 });
 </script>
 </body>
