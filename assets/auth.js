@@ -23,6 +23,14 @@
   function siteBase() { return location.origin + location.pathname.replace(/[^/]*$/, ''); }
   function readAdmin() { try { return JSON.parse(localStorage.getItem(ADMIN_KEY)); } catch (e) { return null; } }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  // Real accounts that count as admins (configured in config.js), matched by email.
+  function isAdminEmail(email) {
+    email = String(email || '').toLowerCase();
+    if (!email) return false;
+    var list = (window.BEACON_ADMIN_EMAILS || []).map(function (e) { return String(e).toLowerCase(); });
+    if (window.BEACON_ADMIN_EMAIL) list.push(String(window.BEACON_ADMIN_EMAIL).toLowerCase());
+    return list.indexOf(email) >= 0;
+  }
 
   var Auth = {
     /** async → {id,name,email,role} or null */
@@ -33,7 +41,7 @@
       return sb.auth.getSession().then(function (res) {
         var u = res && res.data && res.data.session && res.data.session.user;
         if (!u) return null;
-        return { id: u.id, email: u.email, name: (u.user_metadata && u.user_metadata.name) || (u.email || '').split('@')[0], role: 'student' };
+        return { id: u.id, email: u.email, name: (u.user_metadata && u.user_metadata.name) || (u.email || '').split('@')[0], role: isAdminEmail(u.email) ? 'admin' : 'student' };
       }).catch(function () { return null; });
     },
     isAdmin: function () { var a = readAdmin(); return !!a && a.role === 'admin'; },

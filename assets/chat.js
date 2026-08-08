@@ -81,7 +81,9 @@
   // Decide whether the signed-in user still needs to set up a nickname + avatar.
   // Everyone (including Google sign-ups) must have BOTH before using the site.
   function setupProfile(u) {
-    var isAdmin = window.BEACON_ADMIN_EMAIL && u.email === window.BEACON_ADMIN_EMAIL;
+    var adminList = (window.BEACON_ADMIN_EMAILS || []).slice();
+    if (window.BEACON_ADMIN_EMAIL) adminList.push(window.BEACON_ADMIN_EMAIL);
+    var isAdmin = adminList.map(function (e) { return String(e).toLowerCase(); }).indexOf(String(u.email || '').toLowerCase()) >= 0;
     return sb.from('profiles').select('nickname, avatar').eq('user_id', u.id).maybeSingle().then(function (r) {
       var nick = r && r.data && r.data.nickname;
       var av = r && r.data && r.data.avatar;

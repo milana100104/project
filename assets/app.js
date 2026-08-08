@@ -245,6 +245,7 @@
     _remote: {},   // questions loaded from Supabase (shared across everyone). Not persisted locally.
     _webRemote: {},   // webinars loaded from Supabase (shared across everyone)
     _webLoaded: false,
+    _isAdmin: false,  // true when the signed-in account's email is a configured admin
     _ready: null,
 
     /** Merge: built-in seed + admin's locally-added + Supabase-shared questions. */
@@ -293,6 +294,12 @@
         var u = res && res.data && res.data.session && res.data.session.user;
         if (!u) return; // guest or client-side admin → this browser only
         self._userId = u.id;
+        self._isAdmin = (function (e) {
+          e = String(e || '').toLowerCase();
+          var list = (window.BEACON_ADMIN_EMAILS || []).map(function (x) { return String(x).toLowerCase(); });
+          if (window.BEACON_ADMIN_EMAIL) list.push(String(window.BEACON_ADMIN_EMAIL).toLowerCase());
+          return !!e && list.indexOf(e) >= 0;
+        })(u.email);
         return sb.from('progress').select('*').eq('user_id', u.id).maybeSingle()
           .then(function (r) {
             var d = self._load();
@@ -429,8 +436,8 @@
      *  otherwise keeps it in this browser only. Returns a Promise → {ok,error?,local?}. */
     addQuestion: function (q) {
       var self = this, sb = window.sb, pw = this._adminPw();
-      if (sb && pw) {
-        return sb.rpc('beacon_add_question', { pass: pw, q: q }).then(function (res) {
+      if (sb && (pw || this._isAdmin)) {
+        return sb.rpc('beacon_add_question', { pass: pw || '', q: q }).then(function (res) {
           if (res.error) return { ok: false, error: res.error.message };
           self._remote[q.id] = q;
           return { ok: true };
@@ -441,8 +448,8 @@
     },
     removeQuestion: function (id) {
       var self = this, sb = window.sb, pw = this._adminPw();
-      if (sb && pw && this._remote[id]) {
-        return sb.rpc('beacon_delete_question', { pass: pw, qid: id }).then(function (res) {
+      if (sb && (pw || this._isAdmin) && this._remote[id]) {
+        return sb.rpc('beacon_delete_question', { pass: pw || '', qid: id }).then(function (res) {
           if (res.error) return { ok: false, error: res.error.message };
           delete self._remote[id];
           return { ok: true };
@@ -477,8 +484,8 @@
      *  signed in; otherwise keeps it on this device only. Returns a Promise → {ok,error?,local?}. */
     addWebinar: function (w) {
       var self = this, sb = window.sb, pw = this._adminPw();
-      if (sb && pw) {
-        return sb.rpc('beacon_add_webinar', { pass: pw, w: w }).then(function (res) {
+      if (sb && (pw || this._isAdmin)) {
+        return sb.rpc('beacon_add_webinar', { pass: pw || '', w: w }).then(function (res) {
           if (res.error) return { ok: false, error: res.error.message };
           self._webRemote[w.id] = w; self._webLoaded = true;
           return { ok: true };
@@ -489,8 +496,8 @@
     },
     removeWebinar: function (id) {
       var self = this, sb = window.sb, pw = this._adminPw();
-      if (sb && pw && this._webRemote[id]) {
-        return sb.rpc('beacon_delete_webinar', { pass: pw, wid: id }).then(function (res) {
+      if (sb && (pw || this._isAdmin) && this._webRemote[id]) {
+        return sb.rpc('beacon_delete_webinar', { pass: pw || '', wid: id }).then(function (res) {
           if (res.error) return { ok: false, error: res.error.message };
           delete self._webRemote[id];
           return { ok: true };

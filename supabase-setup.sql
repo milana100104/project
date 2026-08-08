@@ -34,9 +34,23 @@ create policy "questions public read"
 -- NOTE: no INSERT/UPDATE/DELETE policy exists, so the table cannot be written
 -- directly from the browser. Writes only happen through the functions below.
 
--- 2) Admin write functions (password checked on the server) ------------------
--- The admin password lives ONLY inside these functions, never in the website
--- code. If you change the admin password, change the two lines marked below.
+-- 2) Admin write functions (authorization checked on the server) -------------
+-- Who counts as an admin: either the shared admin password is supplied, OR the
+-- caller is signed in with an admin email (e.g. via Google). Add emails to the
+-- array below to grant a real account admin powers.
+create or replace function public.beacon_is_admin(pass text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select pass = 'Milanaadmin'                                   -- <-- shared admin password
+      or coalesce(auth.jwt() ->> 'email', '') = any (array[
+           'loki100104@gmail.com'                               -- <-- admin email(s)
+         ]);
+$$;
+grant execute on function public.beacon_is_admin(text) to anon, authenticated;
 
 create or replace function public.beacon_add_question(pass text, q jsonb)
 returns void
@@ -45,7 +59,7 @@ security definer
 set search_path = public
 as $$
 begin
-  if pass is distinct from 'Milanaadmin' then      -- <-- admin password
+  if not public.beacon_is_admin(pass) then
     raise exception 'not authorized';
   end if;
   insert into public.questions (id, exam, skill, type, data)
@@ -65,7 +79,7 @@ security definer
 set search_path = public
 as $$
 begin
-  if pass is distinct from 'Milanaadmin' then      -- <-- admin password
+  if not public.beacon_is_admin(pass) then
     raise exception 'not authorized';
   end if;
   delete from public.questions where id = qid;
@@ -201,7 +215,7 @@ create policy "webinars public read" on public.webinars for select using (true);
 create or replace function public.beacon_add_webinar(pass text, w jsonb)
 returns void language plpgsql security definer set search_path = public as $$
 begin
-  if pass is distinct from 'Milanaadmin' then      -- <-- admin password
+  if not public.beacon_is_admin(pass) then
     raise exception 'not authorized';
   end if;
   insert into public.webinars (id, iso, data)
@@ -212,7 +226,7 @@ end; $$;
 create or replace function public.beacon_delete_webinar(pass text, wid text)
 returns void language plpgsql security definer set search_path = public as $$
 begin
-  if pass is distinct from 'Milanaadmin' then      -- <-- admin password
+  if not public.beacon_is_admin(pass) then
     raise exception 'not authorized';
   end if;
   delete from public.webinars where id = wid;
