@@ -95,6 +95,9 @@
 
   // Blocking welcome screen: a unique nickname AND an avatar are required to continue.
   function runOnboarding(u, presetNick, presetAv) {
+    // the setup window belongs on the home page — if we're anywhere else, go there and show it
+    var file = location.pathname.split('/').pop() || '';
+    if (file !== '' && file !== 'index.html') { location.href = 'index.html'; return new Promise(function () {}); }
     return new Promise(function (resolve) {
       var selected = presetAv || '';
       var overlay = document.createElement('div'); overlay.id = 'bc-onbo';
@@ -437,8 +440,9 @@
       '#bc-form button{background:#e0bc4f;color:#20180a;border:none;border-radius:10px;padding:0 16px;font-weight:700;cursor:pointer;font-family:inherit;}' +
       '#bc-guest{padding:12px 14px;border-top:1px solid #274069;background:#0e2144;text-align:center;font-size:.85rem;color:#c3cee2;}' +
       '#bc-guest a{color:#e7c257;text-decoration:none;font-weight:600;}' +
-      '#bc-onbo{position:fixed;inset:0;z-index:10000;background:rgba(6,14,30,.82);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;}' +
-      '.bc-onbo-card{background:#0e2144;border:1px solid #274069;border-radius:18px;max-width:420px;width:100%;padding:26px 24px;box-shadow:0 24px 60px rgba(0,0,0,.55);color:#f4efe3;animation:bc-pop .3s cubic-bezier(.2,.9,.3,1.15) both;}' +
+      '@keyframes bc-drop{from{opacity:0;transform:translateY(-56px);}to{opacity:1;transform:none;}}' +
+      '#bc-onbo{position:fixed;inset:0;z-index:10000;background:rgba(6,14,30,.82);backdrop-filter:blur(6px);display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow:auto;}' +
+      '.bc-onbo-card{background:#0e2144;border:1px solid #274069;border-radius:18px;max-width:420px;width:100%;margin-top:min(11vh,90px);padding:26px 24px;box-shadow:0 24px 60px rgba(0,0,0,.55);color:#f4efe3;animation:bc-drop .34s cubic-bezier(.2,.8,.3,1) both;}' +
       '.bc-onbo-card h2{margin:0 0 6px;font-size:1.3rem;font-weight:700;}' +
       '.bc-onbo-card p{margin:0 0 18px;color:#c3cee2;font-size:.92rem;line-height:1.45;}' +
       '.bc-onbo-lbl{display:block;font-size:.72rem;font-weight:700;color:#8296b7;margin:0 0 7px;text-transform:uppercase;letter-spacing:.05em;}' +
