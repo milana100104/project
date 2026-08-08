@@ -91,7 +91,12 @@
         return { nick: nick, avatar: av || '' };
       }
       var presetNick = nick || (u.user_metadata && u.user_metadata.nickname) || '';
-      return runOnboarding(u, presetNick, av || '');             // force the setup screen
+      var dismissed = false; try { dismissed = sessionStorage.getItem('beacon:onboClosed') === '1'; } catch (e) {}
+      if (dismissed) {                                           // they closed it earlier this session — don't nag/redirect
+        var fb = cleanNick(presetNick || (u.email || 'you').split('@')[0]);
+        return { nick: nick || fb, avatar: av || '' };
+      }
+      return runOnboarding(u, presetNick, av || '');             // otherwise show the setup screen
     }).catch(function () {
       // fail open — a query hiccup must never lock someone out of the whole site
       var fb = (u.user_metadata && (u.user_metadata.nickname || u.user_metadata.name)) || (u.email || 'you').split('@')[0];
@@ -109,6 +114,7 @@
       var overlay = document.createElement('div'); overlay.id = 'bc-onbo';
       overlay.innerHTML =
         '<div class="bc-onbo-card">' +
+          '<button id="bc-onbo-x" class="bc-onbo-x" aria-label="Close" title="Close">✕</button>' +
           '<h2>Welcome to Beacon 👋</h2>' +
           '<p>Pick a nickname and a picture to finish setting up — they appear next to your messages in the community chat.</p>' +
           '<label class="bc-onbo-lbl">Nickname</label>' +
@@ -132,6 +138,14 @@
         grid.querySelectorAll('button').forEach(function (b) { b.onclick = function () { selected = b.getAttribute('data-av'); setMsg('', true); paint(); refresh(); }; });
       }
       paint(); refresh();
+      var xBtn = document.getElementById('bc-onbo-x');
+      if (xBtn) xBtn.onclick = function () {
+        try { sessionStorage.setItem('beacon:onboClosed', '1'); } catch (e) {}   // don't nag again this session
+        overlay.remove();
+        var fb = cleanNick(nickI.value);
+        if (fb.length < 3) fb = cleanNick(presetNick || (u.email || 'you').split('@')[0]);
+        resolve({ nick: fb, avatar: selected || presetAv || '' });
+      };
       nickI.addEventListener('input', function () { setMsg('', true); refresh(); });
       go.onclick = function () {
         var v = cleanNick(nickI.value);
@@ -448,7 +462,9 @@
       '#bc-guest a{color:#e7c257;text-decoration:none;font-weight:600;}' +
       '@keyframes bc-drop{from{opacity:0;transform:translateY(-56px);}to{opacity:1;transform:none;}}' +
       '#bc-onbo{position:fixed!important;inset:0!important;z-index:10000!important;background:rgba(6,14,30,.82);backdrop-filter:blur(6px);display:flex!important;align-items:flex-start;justify-content:center;padding:20px;overflow:auto;}' +
-      '.bc-onbo-card{background:#0e2144;border:1px solid #274069;border-radius:18px;max-width:420px;width:100%;margin-top:min(11vh,90px);padding:26px 24px;box-shadow:0 24px 60px rgba(0,0,0,.55);color:#f4efe3;animation:bc-drop .34s cubic-bezier(.2,.8,.3,1) both;}' +
+      '.bc-onbo-card{position:relative;background:#0e2144;border:1px solid #274069;border-radius:18px;max-width:420px;width:100%;margin-top:min(11vh,90px);padding:26px 24px;box-shadow:0 24px 60px rgba(0,0,0,.55);color:#f4efe3;animation:bc-drop .34s cubic-bezier(.2,.8,.3,1) both;}' +
+      '.bc-onbo-x{position:absolute;top:12px;right:14px;background:none;border:none;color:#8296b7;font-size:1.1rem;line-height:1;cursor:pointer;padding:4px;}' +
+      '.bc-onbo-x:hover{color:#e7c257;}' +
       '.bc-onbo-card h2{margin:0 0 6px;font-size:1.3rem;font-weight:700;}' +
       '.bc-onbo-card p{margin:0 0 18px;color:#c3cee2;font-size:.92rem;line-height:1.45;}' +
       '.bc-onbo-lbl{display:block;font-size:.72rem;font-weight:700;color:#8296b7;margin:0 0 7px;text-transform:uppercase;letter-spacing:.05em;}' +
