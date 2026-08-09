@@ -8,17 +8,19 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=56">
-<script src="assets/app.js?v=56" defer></script>
-<script src="assets/config.js?v=56" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=57">
+<script src="assets/app.js?v=57" defer></script>
+<script src="assets/config.js?v=57" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=56" defer></script>
-<script src="assets/chat.js?v=56" defer></script>
+<script src="assets/auth.js?v=57" defer></script>
+<script src="assets/chat.js?v=57" defer></script>
 <style>
 /* ---- Admin: clean white workspace ---- */
-body.adm-body{background:#eef1f7;color:#16233d;font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;}
+body.adm-body{background:#eef1f7;font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;}
 body.adm-body .grain,body.adm-body #beacon-grain{display:none!important;}
-.adm-wrap{max-width:920px;margin:0 auto;padding:26px 20px 80px;}
+/* keep the top bar (logo + brand) light on its navy background */
+body.adm-body .site-header .brand-name,body.adm-body .site-header .main-nav a,body.adm-body .site-header .link-quiet{color:#f4efe3;}
+.adm-wrap{max-width:920px;margin:0 auto;padding:26px 20px 80px;color:#16233d;}
 .adm-title{font-size:1.7rem;font-weight:700;color:#14233f;margin:6px 0 2px;}
 .adm-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:#8a97b0;letter-spacing:.02em;}
 .adm-nav{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 24px;}
@@ -44,6 +46,12 @@ body.adm-body .grain,body.adm-body #beacon-grain{display:none!important;}
 .adm-x:hover{background:#fdecec;}
 .adm-note{font-size:.82rem;color:#6b7a97;margin:2px 0 14px;line-height:1.5;}
 .adm-note code{background:#eef1f7;border:1px solid #dbe1ec;border-radius:5px;padding:1px 6px;font-family:'IBM Plex Mono',monospace;font-size:.82rem;color:#14233f;}
+.adm-typenote{background:#fff8e6;border:1px solid #f0dfa8;border-radius:10px;padding:10px 13px;font-size:.85rem;color:#6d5a1e;margin-bottom:16px;line-height:1.5;}
+.adm-prev{background:#f4f7fc;border:1px solid #dbe3f0;border-radius:10px;padding:12px 14px;margin:2px 0 14px;font-size:.9rem;line-height:1.6;}
+.adm-prev-line{margin:2px 0;color:#33415f;}
+.adm-prev-line b{color:#14233f;}
+.adm-prev u{color:#b0851b;text-decoration:none;border-bottom:2px solid #d4a72c;padding:0 3px;font-weight:600;}
+.adm-prev-empty{color:#8a97b0;}
 .adm-btn{background:#d4a72c;color:#20180a;border:none;border-radius:11px;padding:13px 18px;font-weight:700;font-size:.98rem;cursor:pointer;width:100%;transition:background .15s;}
 .adm-btn:hover{background:#e0bc4f;}
 .adm-btn:disabled{opacity:.55;cursor:not-allowed;}
@@ -123,10 +131,10 @@ document.addEventListener("DOMContentLoaded", function () {
       ielts: { label:"IELTS", skills:{
         reading:  { label:"Reading", passage:true, types:{
           "multiple-choice":{ label:"Multiple choice", fmt:"choice" },
-          "true-false-notgiven":{ label:"True / False / Not Given", fmt:"choice", fixed:["True","False","Not Given"] },
-          "yes-no-notgiven":{ label:"Yes / No / Not Given", fmt:"choice", fixed:["Yes","No","Not Given"] },
-          "matching-headings":{ label:"Matching headings", fmt:"choice" },
-          "matching-information":{ label:"Matching information", fmt:"choice" },
+          "true-false-notgiven":{ label:"True / False / Not Given", fmt:"choice", fixed:["True","False","Not Given"], note:"For statements about FACTS in the passage. Put the statement in the prompt; the passage goes in the text box; tick True / False / Not Given." },
+          "yes-no-notgiven":{ label:"Yes / No / Not Given", fmt:"choice", fixed:["Yes","No","Not Given"], note:"Different from True/False/Not Given: this is about the WRITER’S opinions or claims, not facts. Put the claim in the prompt; tick Yes / No / Not Given." },
+          "matching-headings":{ label:"Matching headings", fmt:"choice", note:"One question = one paragraph. Prompt: e.g. “Which heading best fits Paragraph B?”. Type the list of candidate headings as the answer options and tick the correct one." },
+          "matching-information":{ label:"Matching information", fmt:"choice", note:"Prompt: the detail to find (e.g. “Which paragraph mentions the cost of the project?”). Options are the paragraph labels (A, B, C…); tick the correct one." },
           "sentence-completion":{ label:"Sentence completion", fmt:"text" },
           "summary-completion":{ label:"Summary completion", fmt:"text" } }},
         listening:{ label:"Listening", audio:true, image:true, transcript:true, types:{
@@ -202,11 +210,15 @@ document.addEventListener("DOMContentLoaded", function () {
       /* ---- dynamic, type-specific fields ---- */
       function buildDyn(){
         var sk = curSkill(), t = curType(), h = "";
-        if (sk.passage) h += field('Passage / context <span class="hint">(optional)</span>', '<textarea class="adm-textarea" id="d-passage"></textarea>');
+        if (t.note) h += '<div class="adm-typenote">' + t.note + '</div>';
+        // 1) the question
+        h += field('Question' + (t.fmt==="cloze" ? ' <span class="hint">(instruction line shown above the words)</span>' : ''),
+                   '<input class="adm-input" id="d-prompt" placeholder="' + (t.fmt==="cloze" ? "e.g. Complete the missing letters to finish each word." : "The question the student answers") + '">');
+        // 2) the text
+        if (sk.passage) h += field('Reading text / passage <span class="hint">(optional — the text the questions are based on)</span>', '<textarea class="adm-textarea" id="d-passage"></textarea>');
         if (sk.image)   h += field('Image <span class="hint">(optional — graph, map or diagram)</span>', '<input class="adm-input" type="file" id="d-image" accept="image/*">');
         if (sk.audio)   h += field('Audio file <span class="hint">(upload the listening clip — mp3 / m4a)</span>', '<input class="adm-input" type="file" id="d-audio" accept="audio/*">');
-        h += field('Question prompt', '<input class="adm-input" id="d-prompt" placeholder="' + (t.fmt==="cloze" ? "e.g. Complete the missing letters to finish each word." : "The question the student answers") + '">');
-
+        // 3) the answers
         if (t.fmt === "cloze")      h += clozeEditor();
         else if (t.fmt === "text")  h += textEditor(t);
         else                        h += choiceEditor(t.fixed);
@@ -243,12 +255,32 @@ document.addEventListener("DOMContentLoaded", function () {
           '<p class="adm-note">Answers are checked ignoring case and surrounding spaces.</p>';
       }
       function clozeEditor(){
-        return field('Sentence with missing letters <span class="hint">— wrap the letters to hide in [brackets]</span>',
-            '<textarea class="adm-textarea" id="d-cloze" placeholder="A migrating bird can nav[igate] by the stars like a com[pass]."></textarea>') +
-          '<p class="adm-note">Example: <code>eleph[ant]</code> shows “eleph” with a blank the student fills with “ant”. Use as many [brackets] as you like.</p>';
+        return field('Words with missing letters <span class="hint">— put the letters the student must type in [brackets]</span>',
+            '<textarea class="adm-textarea" id="d-cloze" placeholder="eleph[ant]   —   or a whole sentence: A migrating bird can nav[igate] by the stars."></textarea>') +
+          '<p class="adm-note">The letters <b>before</b> the brackets are shown to the student; the letters <b>inside</b> [ ] are the blank they fill. Example: <code>eleph[ant]</code> → the student sees <b>eleph___</b> and must type <b>ant</b>. Add as many [brackets] as you like.</p>' +
+          '<div class="adm-prev" id="d-cloze-prev"><span class="adm-prev-empty">Type above to preview what the student will see…</span></div>';
       }
 
       function wireEditor(t){
+        if (t.fmt === "cloze") {
+          var ta = document.getElementById("d-cloze"), prev = document.getElementById("d-cloze-prev");
+          if (ta && prev) {
+            var upd = function(){
+              var pc = parseCloze(ta.value);
+              if (!pc.blanks) { prev.innerHTML = '<span class="adm-prev-empty">Wrap letters in [brackets] to preview…</span>'; return; }
+              var shown = pc.parts.map(function(p){
+                if (p.text != null) return esc(p.text);
+                var n = Math.max(3, (p.blank||"").length);
+                return esc(p.stem||"") + '<u>' + new Array(n+1).join("_") + '</u>';
+              }).join("");
+              var answers = pc.parts.filter(function(p){ return p.blank != null; }).map(function(p){ return esc(p.blank); }).join(", ");
+              prev.innerHTML = '<div class="adm-prev-line"><b>Student sees:</b> ' + shown + '</div>' +
+                               '<div class="adm-prev-line"><b>Correct answer(s):</b> ' + (answers || "—") + '</div>';
+            };
+            ta.addEventListener("input", upd); upd();
+          }
+          return;
+        }
         if (t.fmt !== "choice" || t.fixed) return;
         var add = document.getElementById("d-addopt");
         if (add) add.onclick = function(){
