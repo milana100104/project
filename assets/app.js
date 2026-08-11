@@ -704,45 +704,58 @@
       head.appendChild(save);
       card.appendChild(head);
 
-      if (q.passage) card.appendChild(el('div', 'pr-passage', esc(q.passage)));
-      if (q.image) {
-        var fig = el('div', 'pr-image');
-        fig.innerHTML = '<img src="' + esc(q.image) + '" alt="Question image" loading="lazy">';
-        card.appendChild(fig);
-      }
+      var feedback = el('div', 'pr-feedback');
+      var fmt = q.format || q.type;
+
+      // the answer block (built once, placed by the layout below)
+      var answerEl;
+      if (fmt === 'complete-the-words' || fmt === 'cloze') answerEl = clozeBlock(q, feedback, onResolved, reveal);
+      else if (q.items && q.items.length) answerEl = groupBlock(q, feedback, onResolved, reveal);   // matching / multi-blank completion
+      else if (fmt === 'text') answerEl = textBlock(q, feedback, onResolved, reveal);
+      else answerEl = choiceBlock(q, feedback, onResolved, reveal);
+
+      var imageEl = null;
+      if (q.image) { imageEl = el('div', 'pr-image'); imageEl.innerHTML = '<img src="' + esc(q.image) + '" alt="Question image" loading="lazy">'; }
+      var audioEl = null;
       if (q.audio) {
-        var au = el('div', 'pr-audio');
-        au.innerHTML = q.audioSrc
+        audioEl = el('div', 'pr-audio');
+        audioEl.innerHTML = q.audioSrc
           ? '<audio controls src="' + esc(q.audioSrc) + '"></audio>'
           : '<div class="ph"><span class="ico">▶</span> Audio placeholder' + (reveal ? ' — read the transcript after answering.' : '.') + '</div>';
-        card.appendChild(au);
       }
-      card.appendChild(el('div', 'pr-prompt', esc(q.prompt)));
-
-      var feedback = el('div', 'pr-feedback');
-
-      // render mode: q.format overrides, else derived from q.type
-      var fmt = q.format || q.type;
-      if (fmt === 'complete-the-words' || fmt === 'cloze') {
-        card.appendChild(clozeBlock(q, feedback, onResolved, reveal));
-      } else if (q.items && q.items.length) {
-        card.appendChild(groupBlock(q, feedback, onResolved, reveal));   // matching / multi-blank completion
-      } else if (fmt === 'text') {
-        card.appendChild(textBlock(q, feedback, onResolved, reveal));
-      } else {
-        card.appendChild(choiceBlock(q, feedback, onResolved, reveal));
-      }
-      card.appendChild(feedback);
+      var promptEl = el('div', 'pr-prompt', esc(q.prompt || ''));
 
       // transcript for listening (shown after answering — practice only, not during a test)
-      var transcriptEls = null;
+      var transcriptEls = null, tbtn = null, tp = null;
       if (q.transcript && reveal) {
-        var tbtn = el('button', 'btn btn-navy pr-transcript-btn', 'Show transcript');
+        tbtn = el('button', 'btn btn-navy pr-transcript-btn', 'Show transcript');
         tbtn.type = 'button'; tbtn.style.display = 'none';
-        var tp = el('div', 'pr-transcript', '<span class="tlabel">Transcript</span>' + esc(q.transcript));
+        tp = el('div', 'pr-transcript', '<span class="tlabel">Transcript</span>' + esc(q.transcript));
         tbtn.addEventListener('click', function () { tp.classList.toggle('show'); });
-        card.appendChild(tbtn); card.appendChild(tp);
         transcriptEls = tbtn;
+      }
+
+      if (q.passage) {
+        // reading: the text sits on the left, the questions on the right
+        var split = el('div', 'pr-split');
+        var left = el('div', 'pr-split-left');
+        left.appendChild(el('div', 'pr-passage', esc(q.passage)));
+        if (imageEl) left.appendChild(imageEl);
+        var right = el('div', 'pr-split-right');
+        right.appendChild(promptEl);
+        if (audioEl) right.appendChild(audioEl);
+        right.appendChild(answerEl);
+        right.appendChild(feedback);
+        if (tbtn) { right.appendChild(tbtn); right.appendChild(tp); }
+        split.appendChild(left); split.appendChild(right);
+        card.appendChild(split);
+      } else {
+        if (imageEl) card.appendChild(imageEl);
+        if (audioEl) card.appendChild(audioEl);
+        card.appendChild(promptEl);
+        card.appendChild(answerEl);
+        card.appendChild(feedback);
+        if (tbtn) { card.appendChild(tbtn); card.appendChild(tp); }
       }
 
       stage.appendChild(card);
