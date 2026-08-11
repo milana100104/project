@@ -710,6 +710,7 @@
       // the answer block (built once, placed by the layout below)
       var answerEl;
       if (fmt === 'complete-the-words' || fmt === 'cloze') answerEl = clozeBlock(q, feedback, onResolved, reveal);
+      else if (q.blocks && q.blocks.length) answerEl = passageSetBlock(q, feedback, onResolved, reveal);   // one passage, mixed blocks
       else if (q.items && q.items.length) answerEl = groupBlock(q, feedback, onResolved, reveal);   // matching / multi-blank completion
       else if (fmt === 'text') answerEl = textBlock(q, feedback, onResolved, reveal);
       else answerEl = choiceBlock(q, feedback, onResolved, reveal);
@@ -1285,6 +1286,76 @@
       done(all);
     });
     actions.appendChild(check); wrap.appendChild(actions);
+    return wrap;
+  }
+
+  // passage set: one passage + several blocks of different types, each checked on its own.
+  function passageSetBlock(q, feedback, done, reveal) {
+    var wrap = el('div', 'pr-pset');
+    var blocks = q.blocks || [];
+    var total = blocks.length, checked = 0, allOk = true, num = 1;
+    if (!total) { done(true); return wrap; }
+    blocks.forEach(function (bl) {
+      var sec = el('div', 'pr-pblock');
+      if (bl.prompt) sec.appendChild(el('div', 'pr-bprompt', esc(bl.prompt)));
+      var opts = (bl.kind === 'matching' && bl.options && bl.options.length) ? bl.options : null;
+      var controls = [];
+      (bl.items || []).forEach(function (it) {
+        var n = num++;
+        var row = el('div', 'pr-gitem' + (bl.kind === 'choice' ? ' pr-mcitem' : ''));
+        row.appendChild(el('div', 'pr-gq', '<span class="pr-gn">' + n + '.</span> ' + esc(it.prompt || '')));
+        if (bl.kind === 'choice') {
+          var ch = el('div', 'pr-choices pr-mcchoices');
+          (it.choices || []).forEach(function (c, ci) {
+            var b = el('button', 'pr-choice'); b.type = 'button';
+            b.innerHTML = '<span class="mark">' + String.fromCharCode(65 + ci) + '</span><span>' + esc(c) + '</span>';
+            b.addEventListener('click', function () {
+              if (ch.dataset.locked) return;
+              ch.querySelectorAll('.pr-choice').forEach(function (k) { k.classList.remove('picked'); });
+              b.classList.add('picked'); ch.dataset.picked = ci;
+            });
+            ch.appendChild(b);
+          });
+          row.appendChild(ch); controls.push({ kind: 'mc', node: ch, answer: it.answer });
+        } else if (opts) {
+          var s = document.createElement('select'); s.className = 'pr-gsel';
+          s.innerHTML = '<option value="">—</option>' + opts.map(function (o) { return '<option value="' + esc(o) + '">' + esc(o) + '</option>'; }).join('');
+          row.appendChild(s); controls.push({ kind: 'sel', node: s, answer: it.answer });
+        } else {
+          var inp = document.createElement('input'); inp.type = 'text'; inp.className = 'pr-gin'; inp.placeholder = 'Your answer';
+          row.appendChild(inp); controls.push({ kind: 'in', node: inp, answer: it.answer });
+        }
+        sec.appendChild(row);
+      });
+      var bfb = el('div', 'pr-bfeedback');
+      var bcheck = el('button', 'btn btn-navy pr-bcheck', 'Check'); bcheck.type = 'button';
+      bcheck.addEventListener('click', function () {
+        if (sec.dataset.done) return; sec.dataset.done = '1';
+        var blockOk = true, nOk = 0;
+        controls.forEach(function (c) {
+          var ok = false;
+          if (c.kind === 'mc') {
+            c.node.dataset.locked = '1';
+            var picked = (c.node.dataset.picked != null && c.node.dataset.picked !== '') ? Number(c.node.dataset.picked) : -1;
+            ok = picked === c.answer;
+            var kids = c.node.querySelectorAll('.pr-choice');
+            if (reveal) { if (picked >= 0) kids[picked].classList.add(ok ? 'correct' : 'wrong'); if (!ok && kids[c.answer]) kids[c.answer].classList.add('correct'); }
+          } else {
+            var got = String(c.node.value || '').trim().toLowerCase();
+            ok = got === String(c.answer == null ? '' : c.answer).trim().toLowerCase();
+            c.node.disabled = true; if (c.kind === 'in') c.node.readOnly = true;
+            if (reveal) { c.node.classList.add(ok ? 'correct' : 'wrong'); if (!ok) c.node.title = 'Answer: ' + c.answer; }
+          }
+          if (ok) nOk++; else blockOk = false;
+        });
+        bcheck.style.display = 'none';
+        if (reveal) { bfb.className = 'pr-bfeedback show ' + (blockOk ? 'good' : 'bad'); bfb.textContent = nOk + ' / ' + controls.length + ' correct'; }
+        checked++; allOk = allOk && blockOk;
+        if (checked >= total) done(allOk);
+      });
+      sec.appendChild(bfb); sec.appendChild(bcheck);
+      wrap.appendChild(sec);
+    });
     return wrap;
   }
 

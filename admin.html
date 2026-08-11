@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=59">
-<script src="assets/app.js?v=59" defer></script>
-<script src="assets/config.js?v=59" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=60">
+<script src="assets/app.js?v=60" defer></script>
+<script src="assets/config.js?v=60" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=59" defer></script>
-<script src="assets/chat.js?v=59" defer></script>
+<script src="assets/auth.js?v=60" defer></script>
+<script src="assets/chat.js?v=60" defer></script>
 <style>
 /* ---- Admin: clean white workspace ---- */
 body.adm-body{background:#eef1f7;font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;}
@@ -68,6 +68,14 @@ body.adm-body .site-header .brand-name,body.adm-body .site-header .main-nav a,bo
 .adm-del:hover{background:#fdecec;}
 .adm-empty{color:#8a97b0;font-size:.9rem;padding:16px;text-align:center;background:#fff;border:1px dashed #d5dceb;border-radius:12px;}
 .adm-denied{background:#fff;border:1px solid #e2e7f0;border-radius:16px;padding:40px;text-align:center;color:#5a6b8c;}
+/* passage-set block editor */
+.adm-pblock{border:1px solid #dbe3f0;border-left:3px solid #d4a72c;border-radius:12px;padding:16px;margin-bottom:14px;background:#fafbfe;}
+.adm-prow{display:flex;gap:10px;align-items:center;margin-bottom:8px;}
+.adm-birow{margin-bottom:8px;}
+.adm-mcq{border:1px dashed #d5dceb;border-radius:10px;padding:12px;margin-bottom:10px;background:#fff;}
+.adm-mcq>.adm-input{margin-bottom:8px;}
+.adm-mcopts .adm-row{margin-bottom:6px;}
+.adm-mcq [data-irm]{margin-top:4px;color:#c23b3b;border-color:#e3c3c3;}
 </style>
 </head>
 <body class="adm-body">
@@ -136,7 +144,8 @@ document.addEventListener("DOMContentLoaded", function () {
           "matching-headings":{ label:"Matching headings", fmt:"matching", note:"Paste the whole passage (with paragraphs A, B, C…) in the text box. Options = the letters A–H. Each item is one heading; type the paragraph letter it matches." },
           "matching-information":{ label:"Matching information", fmt:"matching", note:"Paste the passage (paragraphs A–H) in the text box. Options = the letters A–H. Each item is a statement; type the paragraph letter that contains it." },
           "sentence-completion":{ label:"Sentence completion", fmt:"completion", note:"Paste the paragraph in the text box, then add each sentence with a gap (use ______ for the blank) and its answer." },
-          "summary-completion":{ label:"Summary completion", fmt:"completion", note:"Paste the text, then add each gap sentence from the summary and its answer." } }},
+          "summary-completion":{ label:"Summary completion", fmt:"completion", note:"Paste the text, then add each gap sentence from the summary and its answer." },
+          "full-passage":{ label:"★ Full passage (mixed types)", fmt:"passage", note:"One text with several question blocks of different types (multiple choice + matching + completion), like a real IELTS Reading passage. Paste the whole passage in the text box above, then add blocks — numbering (14, 15, 16 …) runs automatically." } }},
         listening:{ label:"Listening", audio:true, image:true, transcript:true, types:{
           "multiple-choice":{ label:"Multiple choice", fmt:"choice" },
           "form-completion":{ label:"Form / note / table completion", fmt:"completion", note:"Add each line with a gap (e.g. “Name: ______”) and its answer." },
@@ -220,6 +229,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (sk.audio)   h += field('Audio file <span class="hint">(upload the listening clip — mp3 / m4a)</span>', '<input class="adm-input" type="file" id="d-audio" accept="audio/*">');
         // 3) the answers
         if (t.fmt === "cloze")          h += clozeEditor();
+        else if (t.fmt === "passage")   h += passageEditor();
         else if (t.fmt === "matching")  h += matchingEditor();
         else if (t.fmt === "completion")h += completionEditor();
         else if (t.fmt === "text")      h += textEditor(t);
@@ -296,7 +306,91 @@ document.addEventListener("DOMContentLoaded", function () {
           '<button type="button" class="adm-x" title="Remove">✕</button></div>';
       }
 
+      // ---- passage set: one text + several blocks of different types ----
+      var PSET = null;
+      function newBlock(kind){
+        if (kind === "matching")   return { kind:"matching", prompt:"", options:"A, B, C, D", items:[{prompt:"",answer:""},{prompt:"",answer:""}] };
+        if (kind === "completion") return { kind:"completion", prompt:"", items:[{prompt:"",answer:""},{prompt:"",answer:""}] };
+        return { kind:"choice", prompt:"", items:[{prompt:"",opts:["","","",""],ans:0}] };
+      }
+      function passageEditor(){
+        return '<div class="adm-field"><label>Question blocks <span class="hint">— one passage, several sets of questions</span></label>' +
+          '<div id="d-pset"></div>' +
+          '<button type="button" class="adm-btn sec" id="d-addblock">+ Add block</button>' +
+          '<p class="adm-note">Paste the whole passage in the “Reading text” box above. Each block is one set of questions (e.g. 14–18 multiple choice, then 19–21 matching, then 22–26 completion). Numbering runs automatically; each block gets its own Check.</p></div>';
+      }
+      function psetItemRow(kind, it, bi, ii){
+        if (kind === "matching")
+          return '<div class="adm-row adm-birow"><input class="adm-input" data-ip placeholder="Statement / heading" value="'+esc(it.prompt||"")+'" style="flex:1"><input class="adm-input" data-ia placeholder="A" value="'+esc(it.answer||"")+'" style="width:64px;text-align:center"><button type="button" class="adm-x" data-irm title="Remove">✕</button></div>';
+        if (kind === "completion")
+          return '<div class="adm-row adm-birow"><input class="adm-input" data-ip placeholder="Sentence with a ______ gap" value="'+esc(it.prompt||"")+'" style="flex:1"><input class="adm-input" data-ia placeholder="answer" value="'+esc(it.answer||"")+'" style="width:150px"><button type="button" class="adm-x" data-irm title="Remove">✕</button></div>';
+        var optRows = (it.opts||["","","",""]).map(function(o,oi){
+          return '<div class="adm-row"><input type="radio" class="adm-radio" name="mc-'+bi+'-'+ii+'" data-mcans '+(it.ans===oi?"checked":"")+'><input class="adm-input" data-mcopt placeholder="Option '+String.fromCharCode(65+oi)+'" value="'+esc(o||"")+'"></div>';
+        }).join("");
+        return '<div class="adm-mcq"><input class="adm-input" data-ip placeholder="Question text" value="'+esc(it.prompt||"")+'"><div class="adm-mcopts">'+optRows+'</div><button type="button" class="adm-btn sec" data-irm>✕ Remove question</button></div>';
+      }
+      function renderPset(){
+        var box = document.getElementById("d-pset"); if (!box) return;
+        box.innerHTML = PSET.map(function(bl, bi){
+          var kinds = [["choice","Multiple choice"],["matching","Matching (letters)"],["completion","Completion (typed)"]];
+          var head = '<div class="adm-prow"><select class="adm-select" data-bkind style="max-width:220px">' +
+            kinds.map(function(k){ return '<option value="'+k[0]+'"'+(bl.kind===k[0]?" selected":"")+'>'+k[1]+'</option>'; }).join("") +
+            '</select><button type="button" class="adm-x" data-brm title="Remove block">✕</button></div>' +
+            '<input class="adm-input" data-bprompt placeholder="Instruction (e.g. Questions 14–18 — choose A, B, C or D)" value="'+esc(bl.prompt||"")+'" style="margin-bottom:8px">';
+          var body = "";
+          if (bl.kind === "matching") body += '<input class="adm-input" data-boptions placeholder="A, B, C, D" value="'+esc(bl.options||"")+'" style="margin-bottom:8px">';
+          body += bl.items.map(function(it,ii){ return psetItemRow(bl.kind, it, bi, ii); }).join("");
+          body += '<button type="button" class="adm-btn sec" data-iadd>+ Add '+(bl.kind==="choice"?"question":(bl.kind==="matching"?"item":"sentence"))+'</button>';
+          return '<div class="adm-pblock" data-block>'+head+body+'</div>';
+        }).join("");
+        wirePset();
+      }
+      function syncPset(){
+        var box = document.getElementById("d-pset"); if (!box) return;
+        PSET = Array.prototype.slice.call(box.querySelectorAll(".adm-pblock")).map(function(bd){
+          var kind = bd.querySelector("[data-bkind]").value;
+          var prompt = bd.querySelector("[data-bprompt]").value;
+          if (kind === "matching"){
+            var oel = bd.querySelector("[data-boptions]");
+            var items = Array.prototype.slice.call(bd.querySelectorAll(".adm-birow")).map(function(r){ return {prompt:r.querySelector("[data-ip]").value, answer:r.querySelector("[data-ia]").value}; });
+            return {kind:kind, prompt:prompt, options:oel?oel.value:"", items:items.length?items:[{prompt:"",answer:""}]};
+          } else if (kind === "completion"){
+            var items2 = Array.prototype.slice.call(bd.querySelectorAll(".adm-birow")).map(function(r){ return {prompt:r.querySelector("[data-ip]").value, answer:r.querySelector("[data-ia]").value}; });
+            return {kind:kind, prompt:prompt, items:items2.length?items2:[{prompt:"",answer:""}]};
+          }
+          var mcqs = Array.prototype.slice.call(bd.querySelectorAll(".adm-mcq")).map(function(m){
+            var opts = Array.prototype.slice.call(m.querySelectorAll("[data-mcopt]")).map(function(o){ return o.value; });
+            var radios = Array.prototype.slice.call(m.querySelectorAll("[data-mcans]"));
+            var ans = 0; radios.forEach(function(r,i){ if (r.checked) ans = i; });
+            return {prompt:m.querySelector("[data-ip]").value, opts:opts, ans:ans};
+          });
+          return {kind:kind, prompt:prompt, items:mcqs.length?mcqs:[{prompt:"",opts:["","","",""],ans:0}]};
+        });
+        if (!PSET.length) PSET = [newBlock("choice")];
+      }
+      function wirePset(){
+        var box = document.getElementById("d-pset");
+        function blockIndex(node){ return Array.prototype.indexOf.call(box.querySelectorAll(".adm-pblock"), node.parentNode.closest ? node.closest(".adm-pblock") : node); }
+        box.querySelectorAll("[data-bkind]").forEach(function(s){ s.onchange = function(){ syncPset(); renderPset(); }; });
+        box.querySelectorAll("[data-brm]").forEach(function(b){ b.onclick = function(){ var i = Array.prototype.indexOf.call(box.querySelectorAll(".adm-pblock"), b.closest(".adm-pblock")); syncPset(); PSET.splice(i,1); if (!PSET.length) PSET = [newBlock("choice")]; renderPset(); }; });
+        box.querySelectorAll("[data-iadd]").forEach(function(b){ b.onclick = function(){ var i = Array.prototype.indexOf.call(box.querySelectorAll(".adm-pblock"), b.closest(".adm-pblock")); syncPset(); var bl = PSET[i]; bl.items.push(bl.kind==="choice" ? {prompt:"",opts:["","","",""],ans:0} : {prompt:"",answer:""}); renderPset(); }; });
+        box.querySelectorAll("[data-irm]").forEach(function(x){ x.onclick = function(){
+          var blockNode = x.closest(".adm-pblock");
+          var i = Array.prototype.indexOf.call(box.querySelectorAll(".adm-pblock"), blockNode);
+          var itemNodes = Array.prototype.slice.call(blockNode.querySelectorAll(".adm-birow, .adm-mcq"));
+          var j = itemNodes.indexOf(x.closest(".adm-birow") || x.closest(".adm-mcq"));
+          syncPset(); if (PSET[i].items.length > 1) PSET[i].items.splice(j,1); renderPset();
+        }; });
+      }
+
       function wireEditor(t){
+        if (t.fmt === "passage") {
+          PSET = [newBlock("choice")];
+          renderPset();
+          var addBlock = document.getElementById("d-addblock");
+          if (addBlock) addBlock.onclick = function(){ syncPset(); PSET.push(newBlock("choice")); renderPset(); };
+          return;
+        }
         if (t.fmt === "cloze") {
           var ta = document.getElementById("d-cloze"), prev = document.getElementById("d-cloze-prev");
           if (ta && prev) {
@@ -364,13 +458,52 @@ document.addEventListener("DOMContentLoaded", function () {
           var pc = parseCloze(val("d-cloze"));
           if (!pc.blanks) return err("Wrap the missing letters in [brackets], e.g. eleph[ant].");
           q.parts = pc.parts; q.format = "complete-the-words";
+        } else if (t.fmt === "passage") {
+          var pp = val("d-prompt"); if (pp) q.prompt = pp;   // top prompt optional — each block has its own
         } else {
           var prompt = val("d-prompt"); if (!prompt) return err("Add a prompt.");
           q.prompt = prompt;
         }
         if (t.fmt === "cloze") { var cp=val("d-prompt"); q.prompt = cp || "Complete the missing letters to finish each word."; }
 
-        if (t.fmt === "matching") {
+        if (t.fmt === "passage") {
+          if (!val("d-passage")) return err("Paste the passage in the Reading text box above.");
+          syncPset();
+          var outBlocks = [];
+          for (var bi2 = 0; bi2 < PSET.length; bi2++) {
+            var bl = PSET[bi2], bp = (bl.prompt || "").trim(), bn = "Block " + (bi2 + 1) + ": ";
+            if (bl.kind === "matching") {
+              var mopts = (bl.options || "").split(",").map(function (s){ return s.trim(); }).filter(Boolean);
+              if (mopts.length < 2) return err(bn + "add options (e.g. A, B, C).");
+              var mlo = mopts.map(function (o){ return o.toLowerCase(); }), mits = [];
+              for (var a1 = 0; a1 < bl.items.length; a1++) { var i1 = bl.items[a1], p1 = (i1.prompt||"").trim(), an1 = (i1.answer||"").trim();
+                if (!p1 && !an1) continue; if (!p1 || !an1) return err(bn + "fill each statement and its letter.");
+                if (mlo.indexOf(an1.toLowerCase()) < 0) return err(bn + "answer must be one of " + mopts.join(", ") + ".");
+                mits.push({ prompt: p1, answer: an1 }); }
+              if (!mits.length) return err(bn + "add at least one item.");
+              outBlocks.push({ kind:"matching", prompt: bp, options: mopts, items: mits });
+            } else if (bl.kind === "completion") {
+              var cits = [];
+              for (var a2 = 0; a2 < bl.items.length; a2++) { var i2 = bl.items[a2], p2 = (i2.prompt||"").trim(), an2 = (i2.answer||"").trim();
+                if (!p2 && !an2) continue; if (!p2 || !an2) return err(bn + "fill each sentence and its answer."); cits.push({ prompt: p2, answer: an2 }); }
+              if (!cits.length) return err(bn + "add at least one sentence.");
+              outBlocks.push({ kind:"completion", prompt: bp, items: cits });
+            } else {
+              var mcs = [];
+              for (var a3 = 0; a3 < bl.items.length; a3++) { var i3 = bl.items[a3], p3 = (i3.prompt||"").trim();
+                var raw = i3.opts || [], filt = raw.map(function (s){ return (s||"").trim(); }).filter(Boolean);
+                if (!p3 && !filt.length) continue;
+                if (!p3) return err(bn + "add the question text.");
+                if (filt.length < 2) return err(bn + "each question needs at least two options.");
+                var chosen = (raw[i3.ans] || "").trim(), ci = filt.indexOf(chosen); if (ci < 0) ci = 0;
+                mcs.push({ prompt: p3, choices: filt, answer: ci }); }
+              if (!mcs.length) return err(bn + "add at least one question.");
+              outBlocks.push({ kind:"choice", prompt: bp, items: mcs });
+            }
+          }
+          if (!outBlocks.length) return err("Add at least one question block.");
+          q.format = "passage"; q.blocks = outBlocks;
+        } else if (t.fmt === "matching") {
           var options = val("d-options").split(",").map(function (s){ return s.trim(); }).filter(Boolean);
           if (options.length < 2) return err("Add the options (e.g. A, B, C …).");
           var lowerOpts = options.map(function (o){ return o.toLowerCase(); });
