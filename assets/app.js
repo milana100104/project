@@ -725,6 +725,8 @@
       var fmt = q.format || q.type;
       if (fmt === 'complete-the-words' || fmt === 'cloze') {
         card.appendChild(clozeBlock(q, feedback, onResolved, reveal));
+      } else if (q.items && q.items.length) {
+        card.appendChild(groupBlock(q, feedback, onResolved, reveal));   // matching / multi-blank completion
       } else if (fmt === 'text') {
         card.appendChild(textBlock(q, feedback, onResolved, reveal));
       } else {
@@ -801,7 +803,7 @@
       var pct = total ? Math.round(correct / total * 100) : 0;
       var rows = pool.map(function (q, i) {
         var ok = !!answers[q.id];
-        var ans = q.choices ? q.choices[q.answer] : q.answer;
+        var ans = q.choices ? q.choices[q.answer] : (q.items ? q.items.map(function (it) { return it.answer; }).join(', ') : q.answer);
         return '<div class="pr-rev ' + (ok ? 'ok' : 'no') + '">' +
           '<span class="pr-rev-n">' + (i + 1) + '</span>' +
           '<div class="pr-rev-main"><div class="pr-rev-q">' + esc(shortenPrompt(q.prompt)) + '</div>' +
@@ -1231,6 +1233,45 @@
       if (reveal) { inp.classList.add(ok ? 'correct' : 'wrong'); showFeedback(feedback, ok, q.explanation || ('Answer: ' + q.answer)); }
       done(ok);
     });
+    return wrap;
+  }
+
+  // grouped question: one passage + several sub-items answered together.
+  // matching → each item picks a letter/heading from q.options; completion → each item is a typed blank.
+  function groupBlock(q, feedback, done, reveal) {
+    var wrap = el('div', 'pr-group');
+    var opts = (q.options && q.options.length) ? q.options : null;
+    var controls = [];
+    (q.items || []).forEach(function (it, i) {
+      var row = el('div', 'pr-gitem');
+      row.appendChild(el('div', 'pr-gq', '<span class="pr-gn">' + (i + 1) + '.</span> ' + esc(it.prompt || '')));
+      var ctrl;
+      if (opts) {
+        ctrl = document.createElement('select'); ctrl.className = 'pr-gsel';
+        ctrl.innerHTML = '<option value="">—</option>' + opts.map(function (o) { return '<option value="' + esc(o) + '">' + esc(o) + '</option>'; }).join('');
+      } else {
+        ctrl = document.createElement('input'); ctrl.type = 'text'; ctrl.className = 'pr-gin'; ctrl.placeholder = 'Your answer';
+      }
+      ctrl.setAttribute('data-answer', String(it.answer == null ? '' : it.answer));
+      row.appendChild(ctrl); controls.push(ctrl); wrap.appendChild(row);
+    });
+    var actions = el('div', 'cloze-actions');
+    var check = el('button', 'btn btn-navy', 'Check'); check.type = 'button';
+    check.addEventListener('click', function () {
+      if (wrap.dataset.done) return; wrap.dataset.done = '1';
+      var all = true, nOk = 0;
+      controls.forEach(function (c) {
+        var got = String(c.value || '').trim().toLowerCase();
+        var want = String(c.getAttribute('data-answer') || '').trim().toLowerCase();
+        var ok = got === want; if (ok) nOk++; else all = false;
+        c.disabled = true; if (c.tagName === 'INPUT') c.readOnly = true;
+        if (reveal) { c.classList.add(ok ? 'correct' : 'wrong'); if (!ok) c.title = 'Answer: ' + c.getAttribute('data-answer'); }
+      });
+      check.style.display = 'none';
+      if (reveal) showFeedback(feedback, all, q.explanation || (nOk + ' / ' + controls.length + ' correct'));
+      done(all);
+    });
+    actions.appendChild(check); wrap.appendChild(actions);
     return wrap;
   }
 

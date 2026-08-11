@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=57">
-<script src="assets/app.js?v=57" defer></script>
-<script src="assets/config.js?v=57" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=58">
+<script src="assets/app.js?v=58" defer></script>
+<script src="assets/config.js?v=58" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=57" defer></script>
-<script src="assets/chat.js?v=57" defer></script>
+<script src="assets/auth.js?v=58" defer></script>
+<script src="assets/chat.js?v=58" defer></script>
 <style>
 /* ---- Admin: clean white workspace ---- */
 body.adm-body{background:#eef1f7;font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;}
@@ -133,17 +133,17 @@ document.addEventListener("DOMContentLoaded", function () {
           "multiple-choice":{ label:"Multiple choice", fmt:"choice" },
           "true-false-notgiven":{ label:"True / False / Not Given", fmt:"choice", fixed:["True","False","Not Given"], note:"For statements about FACTS in the passage. Put the statement in the prompt; the passage goes in the text box; tick True / False / Not Given." },
           "yes-no-notgiven":{ label:"Yes / No / Not Given", fmt:"choice", fixed:["Yes","No","Not Given"], note:"Different from True/False/Not Given: this is about the WRITER’S opinions or claims, not facts. Put the claim in the prompt; tick Yes / No / Not Given." },
-          "matching-headings":{ label:"Matching headings", fmt:"choice", note:"One question = one paragraph. Prompt: e.g. “Which heading best fits Paragraph B?”. Type the list of candidate headings as the answer options and tick the correct one." },
-          "matching-information":{ label:"Matching information", fmt:"choice", note:"Prompt: the detail to find (e.g. “Which paragraph mentions the cost of the project?”). Options are the paragraph labels (A, B, C…); tick the correct one." },
-          "sentence-completion":{ label:"Sentence completion", fmt:"text" },
-          "summary-completion":{ label:"Summary completion", fmt:"text" } }},
+          "matching-headings":{ label:"Matching headings", fmt:"matching", note:"Paste the whole passage (with paragraphs A, B, C…) in the text box. Options = the letters A–H. Each item is one heading; type the paragraph letter it matches." },
+          "matching-information":{ label:"Matching information", fmt:"matching", note:"Paste the passage (paragraphs A–H) in the text box. Options = the letters A–H. Each item is a statement; type the paragraph letter that contains it." },
+          "sentence-completion":{ label:"Sentence completion", fmt:"completion", note:"Paste the paragraph in the text box, then add each sentence with a gap (use ______ for the blank) and its answer." },
+          "summary-completion":{ label:"Summary completion", fmt:"completion", note:"Paste the text, then add each gap sentence from the summary and its answer." } }},
         listening:{ label:"Listening", audio:true, image:true, transcript:true, types:{
           "multiple-choice":{ label:"Multiple choice", fmt:"choice" },
-          "form-completion":{ label:"Form / note / table completion", fmt:"text" },
-          "matching":{ label:"Matching", fmt:"choice" },
-          "plan-map-diagram-labelling":{ label:"Plan / map / diagram labelling", fmt:"choice" },
-          "sentence-completion":{ label:"Sentence completion", fmt:"text" },
-          "short-answer":{ label:"Short-answer questions", fmt:"text" } }}
+          "form-completion":{ label:"Form / note / table completion", fmt:"completion", note:"Add each line with a gap (e.g. “Name: ______”) and its answer." },
+          "matching":{ label:"Matching", fmt:"matching", note:"Options = the choices they match to. Each item is a person/thing; type which option it matches." },
+          "plan-map-diagram-labelling":{ label:"Plan / map / diagram labelling", fmt:"choice", note:"Upload the map/plan image below. Prompt: which label. Options are the letters/places; tick the correct one." },
+          "sentence-completion":{ label:"Sentence completion", fmt:"completion", note:"Add each sentence with a gap and its answer." },
+          "short-answer":{ label:"Short-answer questions", fmt:"completion", note:"Add each question and its short answer." } }}
       }},
       sat: { label:"SAT", skills:{
         math:    { label:"Math", image:true, types:{
@@ -219,15 +219,23 @@ document.addEventListener("DOMContentLoaded", function () {
         if (sk.image)   h += field('Image <span class="hint">(optional — graph, map or diagram)</span>', '<input class="adm-input" type="file" id="d-image" accept="image/*">');
         if (sk.audio)   h += field('Audio file <span class="hint">(upload the listening clip — mp3 / m4a)</span>', '<input class="adm-input" type="file" id="d-audio" accept="audio/*">');
         // 3) the answers
-        if (t.fmt === "cloze")      h += clozeEditor();
-        else if (t.fmt === "text")  h += textEditor(t);
-        else                        h += choiceEditor(t.fixed);
+        if (t.fmt === "cloze")          h += clozeEditor();
+        else if (t.fmt === "matching")  h += matchingEditor();
+        else if (t.fmt === "completion")h += completionEditor();
+        else if (t.fmt === "text")      h += textEditor(t);
+        else                            h += choiceEditor(t.fixed);
 
         if (sk.transcript) h += field('Transcript <span class="hint">(optional, revealed after answering)</span>', '<textarea class="adm-textarea" id="d-transcript"></textarea>');
         h += field('Explanation <span class="hint">(optional, shown after answering)</span>', '<textarea class="adm-textarea" id="d-exp"></textarea>');
 
         document.getElementById("a-dyn").innerHTML = h;
-        if (t.fmt === "cloze") { var p=document.getElementById("d-prompt"); if (p && !p.value) p.value = "Complete the missing letters to finish each word."; }
+        var p0 = document.getElementById("d-prompt");
+        if (p0 && !p0.value) {
+          if (t.fmt === "cloze") p0.value = "Complete the missing letters to finish each word.";
+          else if (typeSel.value === "matching-headings") p0.value = "Choose the correct heading for each paragraph.";
+          else if (typeSel.value === "matching-information") p0.value = "Which paragraph contains the following information?";
+          else if (t.fmt === "completion") p0.value = "Complete each sentence with a word from the text.";
+        }
         wireEditor(t);
         setMsg("");
       }
@@ -260,6 +268,33 @@ document.addEventListener("DOMContentLoaded", function () {
           '<p class="adm-note">The letters <b>before</b> the brackets are shown to the student; the letters <b>inside</b> [ ] are the blank they fill. Example: <code>eleph[ant]</code> → the student sees <b>eleph___</b> and must type <b>ant</b>. Add as many [brackets] as you like.</p>' +
           '<div class="adm-prev" id="d-cloze-prev"><span class="adm-prev-empty">Type above to preview what the student will see…</span></div>';
       }
+      // matching: a shared set of options (e.g. A–H) + a list of items, each answered by one option
+      function matchingEditor(){
+        return field('Options <span class="hint">— what the student picks from (e.g. paragraph letters)</span>',
+            '<input class="adm-input" id="d-options" value="A, B, C, D, E, F, G, H">') +
+          '<div class="adm-field"><label>Items <span class="hint">— each row: the statement/heading, and the option it matches</span></label>' +
+          '<div id="d-items">' + matchRow("") + matchRow("") + matchRow("") + '</div>' +
+          '<button type="button" class="adm-btn sec" id="d-additem">+ Add item</button></div>';
+      }
+      function matchRow(){
+        return '<div class="adm-row adm-itemrow">' +
+          '<input class="adm-input" data-iprompt placeholder="Statement / heading" style="flex:1">' +
+          '<input class="adm-input" data-ianswer placeholder="A" style="width:70px;text-align:center">' +
+          '<button type="button" class="adm-x" title="Remove item">✕</button></div>';
+      }
+      // completion: a list of gapped sentences, each with a typed answer
+      function completionEditor(){
+        return '<div class="adm-field"><label>Sentences with a gap <span class="hint">— use ______ for the blank; give the answer for each</span></label>' +
+          '<div id="d-items">' + compRow() + compRow() + '</div>' +
+          '<button type="button" class="adm-btn sec" id="d-additem">+ Add sentence</button>' +
+          '<p class="adm-note">Answers are checked ignoring case and spaces. Example — sentence: <code>The movement is called ______.</code> answer: <code>Brownian motion</code>.</p></div>';
+      }
+      function compRow(){
+        return '<div class="adm-row adm-itemrow">' +
+          '<input class="adm-input" data-iprompt placeholder="Sentence with a ______ gap" style="flex:1">' +
+          '<input class="adm-input" data-ianswer placeholder="answer" style="width:150px">' +
+          '<button type="button" class="adm-x" title="Remove">✕</button></div>';
+      }
 
       function wireEditor(t){
         if (t.fmt === "cloze") {
@@ -278,6 +313,22 @@ document.addEventListener("DOMContentLoaded", function () {
                                '<div class="adm-prev-line"><b>Correct answer(s):</b> ' + (answers || "—") + '</div>';
             };
             ta.addEventListener("input", upd); upd();
+          }
+          return;
+        }
+        if (t.fmt === "matching" || t.fmt === "completion") {
+          var mk = (t.fmt === "matching") ? matchRow : compRow;
+          var addItem = document.getElementById("d-additem");
+          if (addItem) addItem.onclick = function(){ document.getElementById("d-items").insertAdjacentHTML("beforeend", mk()); wireItemX(); };
+          wireItemX();
+          function wireItemX(){
+            document.querySelectorAll("#d-items .adm-x").forEach(function (x){
+              x.onclick = function(){
+                var c = document.getElementById("d-items");
+                if (c.querySelectorAll(".adm-itemrow").length <= 1) return;
+                var row = x.parentNode; row.parentNode.removeChild(row);
+              };
+            });
           }
           return;
         }
@@ -319,7 +370,36 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         if (t.fmt === "cloze") { var cp=val("d-prompt"); q.prompt = cp || "Complete the missing letters to finish each word."; }
 
-        if (t.fmt === "text") {
+        if (t.fmt === "matching") {
+          var options = val("d-options").split(",").map(function (s){ return s.trim(); }).filter(Boolean);
+          if (options.length < 2) return err("Add the options (e.g. A, B, C …).");
+          var lowerOpts = options.map(function (o){ return o.toLowerCase(); });
+          var mitems = [], mbad = false;
+          Array.prototype.slice.call(document.querySelectorAll("#d-items .adm-itemrow")).forEach(function (row){
+            var pr = (row.querySelector("[data-iprompt]").value || "").trim();
+            var an = (row.querySelector("[data-ianswer]").value || "").trim();
+            if (!pr && !an) return;
+            if (!pr || !an) { mbad = true; return; }
+            if (lowerOpts.indexOf(an.toLowerCase()) < 0) { mbad = "opt"; return; }
+            mitems.push({ prompt: pr, answer: an });
+          });
+          if (mbad === "opt") return err("Each answer must be one of the options (" + options.join(", ") + ").");
+          if (mbad) return err("Fill both the statement and its answer for each item.");
+          if (!mitems.length) return err("Add at least one item.");
+          q.format = "matching"; q.options = options; q.items = mitems;
+        } else if (t.fmt === "completion") {
+          var citems = [], cbad = false;
+          Array.prototype.slice.call(document.querySelectorAll("#d-items .adm-itemrow")).forEach(function (row){
+            var pr = (row.querySelector("[data-iprompt]").value || "").trim();
+            var an = (row.querySelector("[data-ianswer]").value || "").trim();
+            if (!pr && !an) return;
+            if (!pr || !an) { cbad = true; return; }
+            citems.push({ prompt: pr, answer: an });
+          });
+          if (cbad) return err("Fill both the sentence and its answer for each row.");
+          if (!citems.length) return err("Add at least one sentence.");
+          q.format = "completion"; q.items = citems;
+        } else if (t.fmt === "text") {
           var a = val("d-answer"); if (!a) return err("Enter the correct answer.");
           q.format = "text"; q.answer = a;
           var acc = val("d-accept");
