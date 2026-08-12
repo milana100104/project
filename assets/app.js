@@ -671,6 +671,7 @@
     document.body.classList.add('ws-white');
 
     if (qs('mode') === 'adaptive') { renderAdaptiveSAT(root); return; }
+    if (qs('mode') === 'readingtest') { renderReadingExam(root, qs('exam') || 'ielts'); return; }
     if (qs('mode') === 'full') {
       var fx = qs('exam');
       if (fx === 'toefl' || fx === 'ielts') { renderFullExam(root, fx); return; }
@@ -1695,6 +1696,256 @@
         '<div class="fin-actions">' +
         '<a class="btn btn-white" href="' + home + '">Back to ' + NAME + '</a>' +
         '<a class="btn btn-wire" href="practice.html?mode=full&exam=' + examId + '">Retake test</a>' +
+        '</div></div></div>';
+    }
+  }
+
+  /* ===================== full IELTS Reading test (3 texts, one clock) =====================
+   * Three passages (easy → medium → hard), each with mixed question blocks, a
+   * single 60-minute timer, no feedback until you submit, then a Reading band. */
+  function renderReadingExam(root, examId) {
+    document.body.classList.add('ws-white');
+    var home = examId + '.html';
+    var NAME = examId === 'toefl' ? 'TOEFL' : 'IELTS';
+
+    var all = BeaconStore.allQuestions().filter(function (q) {
+      return q.exam === examId && q.skill === 'reading' && q.blocks && q.blocks.length;
+    });
+    // one passage per difficulty, ordered easy → medium → hard
+    var texts = [];
+    ['easy', 'medium', 'hard'].forEach(function (d) {
+      var first = all.filter(function (q) { return (q.difficulty || 'medium') === d; })[0];
+      if (first) texts.push(first);
+    });
+    if (texts.length < Math.min(3, all.length)) texts = all.slice(0, 3);
+    if (!texts.length) {
+      root.innerHTML = errorCard('This test isn’t ready yet.', 'Add IELTS Reading passages (★ Full passage) in the admin panel first.');
+      return;
+    }
+
+    var MIN = 60;
+    var state = texts.map(function () { return {}; });   // state[ti]['bi-ii'] = value
+    var ti = 0, remaining = MIN * 60, timerId = null;
+
+    function qCount(q) { return (q.blocks || []).reduce(function (a, b) { return a + ((b.items || []).length); }, 0); }
+    function answeredIn(i) {
+      var q = texts[i], st = state[i], a = 0, t = 0;
+      (q.blocks || []).forEach(function (bl, bi) {
+        (bl.items || []).forEach(function (it, ii) { t++; var v = st[bi + '-' + ii]; if (v != null && v !== '') a++; });
+      });
+      return { a: a, t: t };
+    }
+
+    function startClock() {
+      if (timerId) return;
+      timerId = setInterval(function () {
+        remaining--;
+        var t = root.querySelector('.pr-timer');
+        if (t) { t.textContent = '⏱ ' + fmtTime(remaining); if (remaining <= 60) t.classList.add('low'); }
+        if (remaining <= 0) { clearInterval(timerId); timerId = null; submit(); }
+      }, 1000);
+    }
+    function stopClock() { if (timerId) { clearInterval(timerId); timerId = null; } }
+
+    intro();
+
+    function intro() {
+      root.innerHTML = '';
+      var c = el('div', 'pr-stage'); var card = el('div', 'pr-card');
+      var totalQ = texts.reduce(function (a, q) { return a + qCount(q); }, 0);
+      card.innerHTML =
+        '<span class="pr-kicker">' + NAME + ' · full Reading test</span>' +
+        '<h2 class="pr-prompt" style="margin-top:8px">' + texts.length + ' texts · ' + totalQ + ' questions · ' + MIN + ' minutes</h2>' +
+        '<div class="pr-passage" style="border:0;padding-left:0">Exam conditions: the passages get harder (Text 1 → Text ' + texts.length + '), the clock runs across all of them, and there is <b>no feedback until you submit</b>. Move between texts and questions freely — your answers are kept. At the end you get an overall <b>Reading band</b>.</div>' +
+        '<div class="pr-nav"><a class="btn btn-wire" href="' + home + '">← Back</a>' +
+        '<div class="pr-navbtns"><button type="button" class="btn btn-white" id="rx-start">Start the test →</button></div></div>';
+      c.appendChild(card); root.appendChild(c);
+      document.getElementById('rx-start').onclick = function () { ti = 0; startClock(); draw(); };
+    }
+
+    function draw() {
+      var q = texts[ti];
+      root.innerHTML = '';
+      var last0 = ti === texts.length - 1;
+      var top = el('div', 'pr-exam-top');
+      top.innerHTML =
+        '<a class="pr-exit-x" href="' + esc(home) + '" title="Leave the test">Exit ✕</a>' +
+        '<span class="pr-timer' + (remaining <= 60 ? ' low' : '') + '">⏱ ' + fmtTime(remaining) + '</span>' +
+        '<span class="pr-exam-jump">' +
+          '<button type="button" class="pr-arrow" data-prev' + (ti === 0 ? ' disabled' : '') + '>◀</button>' +
+          '<span class="pr-exam-qn">Text ' + (ti + 1) + ' / ' + texts.length + '</span>' +
+          '<button type="button" class="pr-arrow" data-next>' + (last0 ? '✔' : '▶') + '</button>' +
+        '</span>';
+      top.querySelector('.pr-exit-x').addEventListener('click', stopClock);
+      var pv = top.querySelector('[data-prev]'); if (pv) pv.addEventListener('click', function () { if (ti > 0) { ti--; draw(); } });
+      var nx = top.querySelector('[data-next]'); nx.addEventListener('click', function () { if (last0) review(); else { ti++; draw(); } });
+      root.appendChild(top);
+
+      var stage = el('div', 'pr-stage');
+      var card = el('div', 'pr-card');
+      card.innerHTML = '<span class="pr-kicker">Text ' + (ti + 1) + (q.difficulty ? ' · ' + q.difficulty : '') + '</span>';
+
+      var split = el('div', 'pr-split');
+      var left = el('div', 'pr-split-left');
+      if (q.title) left.appendChild(el('div', 'pr-prompt', esc(q.title)));
+      left.appendChild(el('div', 'pr-passage', esc(q.passage || '')));
+      if (q.image) { var fig = el('div', 'pr-image'); fig.innerHTML = '<img src="' + esc(q.image) + '" alt="Reading figure" loading="lazy">'; left.appendChild(fig); }
+      var right = el('div', 'pr-split-right');
+      right.appendChild(examBlocks(q, ti));
+      split.appendChild(left); split.appendChild(right);
+      card.appendChild(split);
+      stage.appendChild(card); root.appendChild(stage);
+
+      var n = el('div', 'pr-nav');
+      var back = el('button', 'btn btn-wire', '← Previous text'); back.type = 'button';
+      if (ti === 0) back.setAttribute('disabled', '');
+      back.addEventListener('click', function () { if (ti > 0) { ti--; draw(); } });
+      var btns = el('div', 'pr-navbtns');
+      var nextBtn = el('button', 'btn btn-white', last0 ? 'Review & submit' : 'Next text →'); nextBtn.type = 'button';
+      nextBtn.addEventListener('click', function () { if (last0) review(); else { ti++; draw(); } });
+      btns.appendChild(nextBtn);
+      n.appendChild(back); n.appendChild(btns);
+      root.appendChild(n);
+      root.appendChild(palette(false));
+    }
+
+    // render one text's blocks with inputs bound to state (no checking, no reveal)
+    function examBlocks(q, i) {
+      var wrap = el('div', 'pr-pset');
+      var st = state[i], num = 1;
+      (q.blocks || []).forEach(function (bl, bi) {
+        var sec = el('div', 'pr-pblock');
+        if (bl.prompt) sec.appendChild(el('div', 'pr-bprompt', esc(bl.prompt)));
+        var opts = (bl.kind === 'matching' && bl.options && bl.options.length) ? bl.options : null;
+        (bl.items || []).forEach(function (it, ii) {
+          var key = bi + '-' + ii, n = num++;
+          var row = el('div', 'pr-gitem' + (bl.kind === 'choice' ? ' pr-mcitem' : ''));
+          row.appendChild(el('div', 'pr-gq', '<span class="pr-gn">' + n + '.</span> ' + esc(it.prompt || '')));
+          if (bl.kind === 'choice') {
+            var ch = el('div', 'pr-choices pr-mcchoices');
+            (it.choices || []).forEach(function (c, ci) {
+              var b = el('button', 'pr-choice' + (st[key] === ci ? ' picked' : '')); b.type = 'button';
+              b.innerHTML = '<span class="mark">' + String.fromCharCode(65 + ci) + '</span><span>' + esc(c) + '</span>';
+              b.addEventListener('click', function () {
+                st[key] = ci;
+                ch.querySelectorAll('.pr-choice').forEach(function (k) { k.classList.remove('picked'); });
+                b.classList.add('picked'); syncPalette();
+              });
+              ch.appendChild(b);
+            });
+            row.appendChild(ch);
+          } else if (opts) {
+            var s = document.createElement('select'); s.className = 'pr-gsel';
+            s.innerHTML = '<option value="">—</option>' + opts.map(function (o) { return '<option value="' + esc(o) + '"' + (st[key] === o ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('');
+            s.addEventListener('change', function () { st[key] = s.value; syncPalette(); });
+            row.appendChild(s);
+          } else {
+            var inp = document.createElement('input'); inp.type = 'text'; inp.className = 'pr-gin'; inp.placeholder = 'Your answer';
+            inp.value = st[key] == null ? '' : st[key];
+            inp.addEventListener('input', function () { st[key] = inp.value; syncPalette(); });
+            row.appendChild(inp);
+          }
+          sec.appendChild(row);
+        });
+        wrap.appendChild(sec);
+      });
+      return wrap;
+    }
+
+    function palette(inReview) {
+      var p = el('div', 'pr-palette');
+      var totA = 0, totT = 0;
+      texts.forEach(function (_, i) { var r = answeredIn(i); totA += r.a; totT += r.t; });
+      p.appendChild(el('div', 'pr-palette-label', 'Answered ' + totA + ' / ' + totT + ' · tap a text to jump'));
+      var grid = el('div', 'pr-palette-grid');
+      texts.forEach(function (_, i) {
+        var r = answeredIn(i);
+        var b = el('button', 'pr-dot' + (!inReview && i === ti ? ' current' : '') + (r.t > 0 && r.a === r.t ? ' done' : ''));
+        b.type = 'button'; b.textContent = 'T' + (i + 1); b.setAttribute('data-i', i);
+        b.addEventListener('click', function () { ti = i; draw(); });
+        grid.appendChild(b);
+      });
+      p.appendChild(grid);
+      return p;
+    }
+
+    function syncPalette() {
+      var totA = 0, totT = 0;
+      texts.forEach(function (_, i) {
+        var r = answeredIn(i); totA += r.a; totT += r.t;
+        var dot = root.querySelector('.pr-dot[data-i="' + i + '"]');
+        if (dot) dot.classList.toggle('done', r.t > 0 && r.a === r.t);
+      });
+      var lbl = root.querySelector('.pr-palette-label');
+      if (lbl) lbl.textContent = 'Answered ' + totA + ' / ' + totT + ' · tap a text to jump';
+    }
+
+    function review() {
+      var totA = 0, totT = 0;
+      texts.forEach(function (_, i) { var r = answeredIn(i); totA += r.a; totT += r.t; });
+      var un = totT - totA;
+      root.innerHTML = '';
+      var top = el('div', 'pr-exam-top');
+      top.innerHTML = '<span class="pr-exit-x" style="visibility:hidden">Exit ✕</span><span class="pr-timer">⏱ ' + fmtTime(remaining) + '</span><span></span>';
+      root.appendChild(top);
+      var stage = el('div', 'pr-stage'); var card = el('div', 'pr-card');
+      card.innerHTML =
+        '<span class="pr-kicker">Before you submit</span>' +
+        '<h2 class="pr-prompt" style="margin-top:8px">Review</h2>' +
+        '<div class="pr-passage" style="border:0;padding-left:0">You answered <b>' + totA + '</b> of <b>' + totT + '</b>. ' +
+        (un ? 'Still unanswered: <b>' + un + '</b> — tap a text below to go back.' : 'All answered. You can still change anything before submitting.') +
+        ' Once you submit, the test locks and is scored.</div>';
+      card.appendChild(palette(true));
+      stage.appendChild(card); root.appendChild(stage);
+      var n = el('div', 'pr-nav');
+      var backBtn = el('button', 'btn btn-wire', '← Keep working'); backBtn.type = 'button';
+      backBtn.addEventListener('click', function () { draw(); });
+      var btns = el('div', 'pr-navbtns');
+      var sb = el('button', 'btn btn-white', 'Submit →'); sb.type = 'button';
+      sb.addEventListener('click', submit);
+      btns.appendChild(sb);
+      n.appendChild(backBtn); n.appendChild(btns);
+      root.appendChild(n);
+    }
+
+    function submit() {
+      stopClock();
+      var correct = 0, total = 0, perText = [];
+      texts.forEach(function (q, i) {
+        var st = state[i], c = 0, t = 0;
+        (q.blocks || []).forEach(function (bl, bi) {
+          (bl.items || []).forEach(function (it, ii) {
+            t++; total++;
+            var v = st[bi + '-' + ii], ok = false;
+            if (bl.kind === 'choice') ok = (v === it.answer);
+            else if (bl.kind === 'matching') ok = (v != null && String(v).trim().toUpperCase() === String(it.answer == null ? '' : it.answer).trim().toUpperCase());
+            else ok = (v != null && String(v).trim().toLowerCase() === String(it.answer == null ? '' : it.answer).trim().toLowerCase());
+            if (ok) { c++; correct++; }
+          });
+        });
+        perText.push({ name: 'Text ' + (i + 1) + (q.difficulty ? ' · ' + q.difficulty : ''), correct: c, total: t });
+      });
+      var pct = total ? Math.round(correct / total * 100) : 0;
+      var sc = examScore(examId, 'reading', correct, total);
+      if (BeaconStore.recordScore) BeaconStore.recordScore(examId, examId === 'ielts' ? ieltsBand(pct) : pct);
+
+      var rows = perText.map(function (r, i) {
+        var p = r.total ? Math.round(r.correct / r.total * 100) : 0;
+        var mark = examId === 'ielts' ? ieltsBand(p).toFixed(1) : p + '%';
+        return '<div class="pr-rev ok"><span class="pr-rev-n">' + (i + 1) + '</span>' +
+          '<div class="pr-rev-main"><div class="pr-rev-q">' + esc(r.name) + '</div>' +
+          '<div class="pr-rev-a"><b>' + mark + '</b> · ' + r.correct + '/' + r.total + ' correct</div></div>' +
+          '<span class="pr-rev-mark">' + mark + '</span></div>';
+      }).join('');
+
+      root.innerHTML =
+        '<div class="pr-stage"><div class="pr-result">' +
+        '<div class="pr-score ' + (sc.pass ? 'pass' : 'fail') + '"><span class="pct">' + sc.big + '</span><span class="frac">' + esc(sc.sub) + '</span></div>' +
+        '<div class="pr-review">' + rows + '</div>' +
+        '<div class="pr-passage" style="border:0;padding-left:0;font-size:.9rem;color:#7c88a3">An estimate from the band tables — a study guide, not an official score. Saved to your profile average.</div>' +
+        '<div class="fin-actions">' +
+        '<a class="btn btn-white" href="' + home + '">Back to ' + NAME + '</a>' +
+        '<a class="btn btn-wire" href="practice.html?mode=readingtest&exam=' + examId + '">Retake test</a>' +
         '</div></div></div>';
     }
   }

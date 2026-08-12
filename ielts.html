@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/workspace.css?v=62">
-<script src="assets/config.js?v=62" defer></script>
+<link rel="stylesheet" href="assets/workspace.css?v=63">
+<script src="assets/config.js?v=63" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=62" defer></script>
-<script src="assets/chat.js?v=62" defer></script>
-<script src="assets/app.js?v=62" defer></script>
+<script src="assets/auth.js?v=63" defer></script>
+<script src="assets/chat.js?v=63" defer></script>
+<script src="assets/app.js?v=63" defer></script>
 </head>
 <body class="ws-white">
 <header class="ws-topbar">
@@ -64,6 +64,7 @@ function renderReadingTests() {
     });
   });
   h += '</div>';
+  if (all.length) h += '<div class="rt-full"><div class="rt-full-txt"><b>Take the whole thing as one timed test.</b><span>All ' + all.length + ' texts back to back · 60 minutes on one clock · scored as an overall Reading band — just like exam day.</span></div><a class="rt-full-go" href="practice.html?mode=readingtest&exam=ielts">Start the full test →</a></div>';
   if (!all.length) h += '<div class="rt-empty">No reading tests yet. Add them in the admin: <b>IELTS → Reading → ★ Full passage (mixed types)</b>, and set the difficulty (easy / medium / hard).</div>';
   host.innerHTML = h;
 }
