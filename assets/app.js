@@ -22,6 +22,46 @@
      'cloze' (complete the words — fill missing letters). */
   function Q(o) { return o; }
   var CONTENT = [
+    /* ---------------- IELTS · Reading — sample full tests (passage sets) ---------------- */
+    Q({ id:'i-r-full-easy', exam:'ielts', skill:'reading', type:'full-passage', format:'passage', difficulty:'easy',
+      title:'The Honey Bee',
+      passage:"The Honey Bee\n\nHoney bees live together in large colonies. A single hive can hold up to 60,000 bees. Inside, every bee has a job. The queen lays all the eggs, sometimes more than a thousand a day. Worker bees, which are all female, gather nectar from flowers and turn it into honey. Male bees, called drones, exist mainly to mate with a new queen.\n\nBees are famous for the way they share information. When a worker finds a good patch of flowers, it returns to the hive and performs a 'waggle dance'. The direction and length of the dance tell the other bees exactly where to fly. Because bees carry pollen from flower to flower, many of the world's food crops depend on them to reproduce.",
+      blocks:[
+        { kind:'choice', prompt:'Questions 1–2 — Choose the correct letter, A, B, C or D.', items:[
+          { prompt:'A single hive can contain up to', choices:['6,000 bees','16,000 bees','60,000 bees','600,000 bees'], answer:2 },
+          { prompt:'Worker bees are mainly responsible for', choices:['laying the eggs','gathering nectar and making honey','mating with the queen','leading the colony'], answer:1 } ]},
+        { kind:'completion', prompt:'Questions 3–4 — Complete the sentences with ONE word from the text.', items:[
+          { prompt:'Bees show others where flowers are by doing a special ______ dance.', answer:'waggle' },
+          { prompt:'All the eggs in a colony are laid by the ______.', answer:'queen' } ]}
+      ] }),
+    Q({ id:'i-r-full-medium', exam:'ielts', skill:'reading', type:'full-passage', format:'passage', difficulty:'medium',
+      title:'The Printing Press',
+      passage:"The Printing Press\n\n(A) Before the printing press, books in Europe were copied out by hand, mostly by monks in monasteries. The work was slow, so books were rare and very expensive, and few people could read.\n\n(B) In the 1450s, Johannes Gutenberg introduced movable metal type. Individual letters could be arranged, inked and pressed onto paper, then rearranged for the next page. A single workshop could now produce hundreds of copies in the time it once took to hand-copy one.\n\n(C) As printing spread, the price of books fell sharply. Reading was no longer limited to the wealthy and the clergy, and literacy began to rise across Europe.\n\n(D) Some historians argue that the press mattered less for creating new ideas than for the speed with which it spread ideas that already existed.",
+      blocks:[
+        { kind:'matching', prompt:'Questions 1–3 — Which paragraph (A–D) contains the following information?', options:['A','B','C','D'], items:[
+          { prompt:'a claim about what the press was really important for', answer:'D' },
+          { prompt:'who produced books before printing existed', answer:'A' },
+          { prompt:'the effect of cheaper books on ordinary people', answer:'C' } ]},
+        { kind:'completion', prompt:'Questions 4–5 — Complete the summary. Choose NO MORE THAN TWO WORDS from the text.', items:[
+          { prompt:"Gutenberg's key invention was movable metal ______.", answer:'type' },
+          { prompt:'As printing spread, ______ rose across Europe.', answer:'literacy' } ]}
+      ] }),
+    Q({ id:'i-r-full-hard', exam:'ielts', skill:'reading', type:'full-passage', format:'passage', difficulty:'hard',
+      title:'Mapping the World',
+      passage:"Mapping the World\n\nToday the mapmaker's vision is no longer confined to what the human eye can see. Radar, which bounces microwave signals off a surface, can see through jungle foliage and has even produced the first maps of the mountains of Venus. Combined with sonar, it has charted much of the seafloor for the first time.\n\nMeasuring the spherical Earth was the first great milestone in scientific cartography. In the 3rd century BC, the Greek scholar Eratosthenes, working at the Library of Alexandria in Egypt, calculated the Earth's circumference remarkably accurately. In the 2nd century AD, Ptolemy set out a system of latitude and longitude that still underlies our modern time zones.\n\nIn the 16th century Gerardus Mercator devised a way of drawing the map so that sailors could plot a straight compass course, though it badly distorted the size of far-northern lands. Later, the Cassini family spent four generations surveying France, which in 1793 became the first country to be mapped completely by scientific methods. Modern surveyors now rarely work without satellites.",
+      blocks:[
+        { kind:'choice', prompt:'Questions 1–2 — Choose the correct letter, A, B, C or D.', items:[
+          { prompt:'According to the passage, modern mapmakers', choices:['rely only on what the eye can see','use radar and sonar to map hidden places','have stopped using satellites','can map only the ocean floor'], answer:1 },
+          { prompt:'Mercator’s method was useful because it', choices:['showed every country at its true size','let sailors steer a straight compass course','was the first map of France','measured the Earth’s circumference'], answer:1 } ]},
+        { kind:'matching', prompt:'Questions 3–5 — Match each achievement with the correct mapmaker.  A Mercator · B Ptolemy · C the Cassini family · D Eratosthenes.', options:['A','B','C','D'], items:[
+          { prompt:'came very close to measuring the distance round the Earth', answer:'D' },
+          { prompt:'laid the foundation for our modern time zones', answer:'B' },
+          { prompt:'produced the first complete scientific map of a country', answer:'C' } ]},
+        { kind:'completion', prompt:'Questions 6–7 — Complete the summary. Choose NO MORE THAN TWO WORDS from the text.', items:[
+          { prompt:'The first great step in mapmaking took place in ______ in the 3rd century BC.', answer:'Egypt' },
+          { prompt:'Today, ______ are vital to the work of surveyors.', answer:'satellites' } ]}
+      ] }),
+
     /* ---------------- TOEFL · Reading ---------------- */
     Q({ id:'t-r-mc-1', exam:'toefl', skill:'reading', type:'multiple-choice', difficulty:'medium',
       passage:'The lighthouse at Portland Head has guided ships since 1791. Its keepers once lived on site year-round, trimming the wick each dusk and logging every passing vessel. Automation arrived in 1989, and the last keeper left — but the light still turns.',
