@@ -233,6 +233,12 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 .rt-full-txt span{color:#c4d0e6;font-size:.86rem;line-height:1.45;}
 .rt-full-go{flex-shrink:0;background:#d4a72c;color:#14233f;font-weight:700;font-size:.9rem;text-decoration:none;padding:11px 18px;border-radius:10px;transition:background .14s,transform .14s;}
 .rt-full-go:hover{background:#e6bd45;transform:translateY(-1px);}
+/* reading subsection headers inside the Reading accordion (easy / medium / hard) */
+.ws-subhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:16px 4px 6px;margin-top:4px;border-bottom:1px solid #eef1f7;}
+.ws-subhead:first-child{padding-top:4px;}
+.ws-subhead h4{margin:0;font-size:.98rem;font-weight:700;color:#14233f;}
+.ws-subhead span{font-size:.76rem;color:#8a97b0;font-family:var(--mono);}
+.ws-sub-easy h4{color:#2f9e6f;}.ws-sub-medium h4{color:#b0851b;}.ws-sub-hard h4{color:#d9534f;}
 
 /* reading layout: passage on the left, questions on the right */
 .pr-split{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}

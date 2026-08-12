@@ -614,6 +614,50 @@
   function qs(name) { var m = new RegExp('[?&]' + name + '=([^&]*)').exec(location.search); return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : null; }
   var CHEV = '<span class="acc-chev"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span>';
 
+  /* Reading section body: full-passage tests grouped into easy / medium / hard
+   * subsections — the same accordion shell as Listening, split by difficulty. */
+  function buildReadingBody(body, exam) {
+    var rall = BeaconStore.allQuestions().filter(function (q) {
+      return q.exam === exam && q.skill === 'reading' && q.blocks && q.blocks.length;
+    });
+    function rtitle(q) { var first = String(q.passage || '').split('\n').find(function (l) { return l.trim(); }) || ''; return (q.title || first).slice(0, 60) || 'Reading passage'; }
+    function rcount(q) { return (q.blocks || []).reduce(function (a, b) { return a + ((b.items || []).length); }, 0); }
+    var byd = { easy: [], medium: [], hard: [] };
+    rall.forEach(function (q) { var d = q.difficulty || 'medium'; if (!byd[d]) d = 'medium'; byd[d].push(q); });
+    var levels = [
+      ['easy', 'Easy texts', 'A gentle start'],
+      ['medium', 'Medium texts', 'A step up'],
+      ['hard', 'Hard texts', 'Exam-level difficulty']
+    ];
+    levels.forEach(function (lv) {
+      var list = byd[lv[0]];
+      body.appendChild(el('div', 'ws-subhead ws-sub-' + lv[0], '<h4>' + esc(lv[1]) + '</h4><span>' + list.length + ' text' + (list.length === 1 ? '' : 's') + '</span>'));
+      if (!list.length) {
+        var none = el('div', 'ws-item is-locked');
+        none.innerHTML = '<div class="ws-item-main"><h3>Nothing here yet</h3><p>Add a ' + esc(lv[0]) + ' text in the admin.</p></div><span class="ws-count empty">—</span>';
+        body.appendChild(none);
+        return;
+      }
+      list.forEach(function (q) {
+        var item = el('a', 'ws-item');
+        item.href = 'practice.html?one=' + encodeURIComponent(q.id);
+        item.innerHTML =
+          '<div class="ws-item-main"><h3>' + esc(rtitle(q)) + '</h3><p>' + esc(lv[2]) + '</p></div>' +
+          '<span class="ws-count">' + rcount(q) + ' Qs</span>' +
+          '<span class="ws-go">Read →</span>';
+        body.appendChild(item);
+      });
+    });
+    if (rall.length) {
+      var full = el('a', 'ws-item ws-item-full');
+      full.href = 'practice.html?mode=readingtest&exam=' + exam;
+      full.innerHTML =
+        '<div class="ws-item-main"><h3>Take the full Reading test</h3><p>All texts back to back · 60 minutes on one clock · scored as an overall Reading band.</p></div>' +
+        '<span class="ws-count">' + rall.length + ' texts</span><span class="ws-go">Start test →</span>';
+      body.appendChild(full);
+    }
+  }
+
   /* ============================ workspace ============================ */
   function renderWorkspace(sel, config) {
     var root = document.querySelector(sel);
@@ -649,6 +693,8 @@
       acc.appendChild(head);
 
       var body = el('div', 'acc-body');
+      if (skill.reading) { buildReadingBody(body, exam); }
+      else {
       (skill.types || []).forEach(function (t) {
         var c = BeaconStore.counts(exam, skill.id, t.id);
         if (dev) {
@@ -681,6 +727,7 @@
           '<span class="ws-count">' + (tot ? tot + ' Qs' : 'no questions yet') + '</span>' +
           '<span class="ws-go">Start test →</span>';
         body.appendChild(tItem);
+      }
       }
 
       acc.appendChild(body);

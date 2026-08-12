@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/workspace.css?v=66">
-<script src="assets/config.js?v=66" defer></script>
+<link rel="stylesheet" href="assets/workspace.css?v=67">
+<script src="assets/config.js?v=67" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=66" defer></script>
-<script src="assets/chat.js?v=66" defer></script>
-<script src="assets/app.js?v=66" defer></script>
+<script src="assets/auth.js?v=67" defer></script>
+<script src="assets/chat.js?v=67" defer></script>
+<script src="assets/app.js?v=67" defer></script>
 </head>
 <body class="ws-white">
 <header class="ws-topbar">
@@ -30,8 +30,7 @@
   <div class="ws-eyebrow">IELTS workspace · academic &amp; general</div>
   <div class="ws-panel">
     <h1 class="ws-h1">IELTS</h1>
-    <p class="ws-sub">Reading is done as full tests — real passages with mixed question types, the text on the left and the questions on the right. Listening is drilled by type. Writing and Speaking are being built.</p>
-    <div id="reading-tests" class="rt-wrap"></div>
+    <p class="ws-sub">Reading is split by level — easy, medium and hard texts — each a real passage with mixed question types, the text on the left and the questions on the right. Listening is drilled by type. Writing and Speaking are being built.</p>
     <div id="workspace"></div>
   </div>
 </main>
@@ -42,39 +41,12 @@
   </div>
 </footer>
 <script>
-function escR(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
-function renderReadingTests() {
-  var host = document.getElementById("reading-tests"); if (!host || !window.BeaconStore) return;
-  var all = BeaconStore.allQuestions().filter(function (q) { return q.exam === "ielts" && q.skill === "reading" && q.blocks && q.blocks.length; });
-  var order = [["easy","Text 1 · Easy"], ["medium","Text 2 · Medium"], ["hard","Text 3 · Hard"]];
-  var by = { easy: [], medium: [], hard: [] };
-  all.forEach(function (q) { var d = (q.difficulty || "medium"); if (!by[d]) d = "medium"; by[d].push(q); });
-  function titleOf(q) { var first = String(q.passage || "").split("\n").find(function (l) { return l.trim(); }) || ""; return (q.title || first).slice(0, 70) || "Reading passage"; }
-  function qcount(q) { return (q.blocks || []).reduce(function (a, b) { return a + ((b.items || []).length); }, 0); }
-  var h = '<h2 class="rt-title">Reading tests</h2><p class="rt-sub">Pick a passage by level — the full text on the left, mixed question types on the right, just like the real exam.</p><div class="rt-grid">';
-  order.forEach(function (pair) {
-    var d = pair[0], label = pair[1], list = by[d];
-    list.forEach(function (q, i) {
-      var snip = String(q.passage || "").replace(/\s+/g, " ").trim().slice(0, 120);
-      h += '<a class="rt-card rt-' + d + '" href="practice.html?one=' + encodeURIComponent(q.id) + '">' +
-        '<span class="rt-badge">' + escR(label) + (list.length > 1 ? " · #" + (i + 1) : "") + '</span>' +
-        '<h3>' + escR(titleOf(q)) + '</h3>' +
-        '<p>' + escR(snip) + (snip.length >= 120 ? "…" : "") + '</p>' +
-        '<span class="rt-foot"><span class="rt-count">' + qcount(q) + ' questions</span><span class="rt-go">Start →</span></span></a>';
-    });
-  });
-  h += '</div>';
-  if (all.length) h += '<div class="rt-full"><div class="rt-full-txt"><b>Take the whole thing as one timed test.</b><span>All ' + all.length + ' texts back to back · 60 minutes on one clock · scored as an overall Reading band — just like exam day.</span></div><a class="rt-full-go" href="practice.html?mode=readingtest&exam=ielts">Start the full test →</a></div>';
-  if (!all.length) h += '<div class="rt-empty">No reading tests yet. Add them in the admin: <b>IELTS → Reading → ★ Full passage (mixed types)</b>, and set the difficulty (easy / medium / hard).</div>';
-  host.innerHTML = h;
-}
-
 document.addEventListener("DOMContentLoaded", function () {
   if (window.BEACON_SAMPLE) BeaconStore.seedIfEmpty(window.BEACON_SAMPLE);
-  BeaconStore.ready().then(renderReadingTests);
   renderWorkspace("#workspace", {
     examId: "ielts",
     skills: [
+      { id: "reading", name: "Reading", status: "free", reading: true, blurb: "Full texts, split easy → medium → hard" },
       { id: "listening", name: "Listening", status: "free", skillTest: true, blurb: "", types: [
         { id: "multiple-choice", name: "Multiple choice", desc: "Choose the correct option from what you hear." },
         { id: "form-completion", name: "Form / note / table completion", desc: "Fill in a form, note or table as you listen." },
