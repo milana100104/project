@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=64">
-<script src="assets/app.js?v=64" defer></script>
-<script src="assets/config.js?v=64" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=65">
+<script src="assets/app.js?v=65" defer></script>
+<script src="assets/config.js?v=65" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=64" defer></script>
-<script src="assets/chat.js?v=64" defer></script>
+<script src="assets/auth.js?v=65" defer></script>
+<script src="assets/chat.js?v=65" defer></script>
 <style>
 /* ---- Admin: clean white workspace ---- */
 body.adm-body{background:#eef1f7;font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;}
@@ -220,6 +220,8 @@ document.addEventListener("DOMContentLoaded", function () {
       function buildDyn(){
         var sk = curSkill(), t = curType(), h = "";
         if (t.note) h += '<div class="adm-typenote">' + t.note + '</div>';
+        // 0) title (full reading passages only) — shown on the test card and above the text
+        if (t.fmt === "passage") h += field('Passage title <span class="hint">(shown on the test card — e.g. The Honey Bee)</span>', '<input class="adm-input" id="d-title" placeholder="The Honey Bee">');
         // 1) the question
         h += field('Question' + (t.fmt==="cloze" ? ' <span class="hint">(instruction line shown above the words)</span>' : ''),
                    '<input class="adm-input" id="d-prompt" placeholder="' + (t.fmt==="cloze" ? "e.g. Complete the missing letters to finish each word." : "The question the student answers") + '">');
@@ -460,6 +462,7 @@ document.addEventListener("DOMContentLoaded", function () {
           q.parts = pc.parts; q.format = "complete-the-words";
         } else if (t.fmt === "passage") {
           var pp = val("d-prompt"); if (pp) q.prompt = pp;   // top prompt optional — each block has its own
+          var tt = val("d-title"); if (tt) q.title = tt;     // shown on the reading-test card
         } else {
           var prompt = val("d-prompt"); if (!prompt) return err("Add a prompt.");
           q.prompt = prompt;
