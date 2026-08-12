@@ -313,14 +313,24 @@
     _isAdmin: false,  // true when the signed-in account's email is a configured admin
     _ready: null,
 
-    /** Merge: built-in seed + admin's locally-added + Supabase-shared questions. */
+    /** Merge: built-in seed + admin's locally-added + Supabase-shared questions.
+     *  The built-in seed (CONTENT) is layered fresh at runtime — that way returning
+     *  visitors pick up newly added seed questions instead of being stuck with an
+     *  old copy that was written into localStorage on their first visit. */
     _bank: function () {
       var d = this._load();
+      var hidden = d.hiddenSeed || {};
       var out = {};
-      Object.keys(d.questions).forEach(function (k) { out[k] = d.questions[k]; });
+      CONTENT.forEach(function (q) { if (!hidden[q.id]) out[q.id] = q; });   // always-fresh built-in seed
+      Object.keys(d.questions).forEach(function (k) { out[k] = d.questions[k]; });  // admin's local adds
       var r = this._remote;
-      Object.keys(r).forEach(function (k) { out[k] = r[k]; });
+      Object.keys(r).forEach(function (k) { out[k] = r[k]; });               // Supabase-shared
       return out;
+    },
+    /** id set of the built-in seed, so we can keep it out of the persisted store. */
+    _seedIds: function () {
+      if (!this.__cids) { var m = {}; CONTENT.forEach(function (q) { m[q.id] = 1; }); this.__cids = m; }
+      return this.__cids;
     },
 
     /** Load shared questions AND the signed-in student's progress once.
@@ -423,7 +433,12 @@
       try { raw = JSON.parse(localStorage.getItem(nowKey())); } catch (e) { raw = null; }
       if (!raw || !raw.questions) {
         raw = { questions: {}, favorites: [], solved: {}, webinars: defaultWebinars() };
-        CONTENT.forEach(function (q) { raw.questions[q.id] = q; });
+      } else {
+        // migration: the built-in seed now lives in CONTENT at runtime, not in the
+        // store. Drop any persisted copies of seed ids so fresh seed content always
+        // wins for returning visitors (their user-added questions are untouched).
+        var seed = this._seedIds();
+        Object.keys(raw.questions).forEach(function (k) { if (seed[k]) delete raw.questions[k]; });
       }
       // refresh webinars for older stores that predate the dated list
       if (!raw.webinars || !raw.webinars.length || !raw.webinars[0].iso) raw.webinars = defaultWebinars();
@@ -520,7 +535,10 @@
           return { ok: true };
         });
       }
-      var d = this._load(); delete d.questions[id]; this._save();
+      var d = this._load();
+      if (d.questions[id]) { delete d.questions[id]; }
+      else if (this._seedIds()[id]) { d.hiddenSeed = d.hiddenSeed || {}; d.hiddenSeed[id] = 1; }  // hide a built-in sample
+      this._save();
       return Promise.resolve({ ok: true, local: true });
     },
     /** Upload a question image to Supabase Storage. Returns a Promise → {ok,url?,error?}. */
