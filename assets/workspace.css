@@ -17,7 +17,7 @@
   --display:'Space Grotesk',system-ui,sans-serif;
   --mono:'IBM Plex Mono',ui-monospace,monospace;
   --hand:'Caveat',ui-rounded,cursive;
-  --wrap:940px;
+  --wrap:1080px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
@@ -75,7 +75,7 @@ h1,h2,h3,h4{font-family:var(--display);letter-spacing:-.02em;}
 .ws-badge.dev{color:var(--muted);background:var(--surface-2);border:1px solid var(--border-strong);}
 
 /* ---- page ---- */
-.ws-page{max-width:var(--wrap);margin:0 auto;padding:40px 26px 90px;}
+.ws-page{width:100%;max-width:var(--wrap);margin:0 auto;padding:40px 26px 90px;}
 .ws-eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);}
 .ws-h1{font-family:var(--display);font-size:2.2rem;font-weight:600;letter-spacing:-.02em;margin-top:10px;}
 .ws-sub{color:var(--ink-2);margin-top:10px;max-width:64ch;font-size:1.06rem;}
@@ -263,6 +263,10 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 .ws-panel-head h2{margin:0;font-size:1.3rem;color:#14233f;}
 .ws-panel-blurb{font-size:.86rem;color:#7c88a3;}
 .acc-body.open{display:block;padding:2px 0 4px;}
+/* reading level accordions inside the Reading panel */
+.rd-acc{border-left-width:4px;}
+.rd-easy{border-left-color:#4bcf94;}.rd-medium{border-left-color:#d4a72c;}.rd-hard{border-left-color:#ef7d7d;}
+.rd-easy .acc-title{color:#2f9e6f;}.rd-medium .acc-title{color:#b0851b;}.rd-hard .acc-title{color:#d9534f;}
 
 /* reading layout: passage on the left, questions on the right */
 .pr-split{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}

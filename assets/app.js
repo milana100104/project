@@ -631,22 +631,33 @@
     ];
     levels.forEach(function (lv) {
       var list = byd[lv[0]];
-      body.appendChild(el('div', 'ws-subhead ws-sub-' + lv[0], '<h4>' + esc(lv[1]) + '</h4><span>' + list.length + ' text' + (list.length === 1 ? '' : 's') + '</span>'));
+      // each level is its own collapsible row — click to open the texts inside
+      var acc = el('div', 'acc rd-acc rd-' + lv[0]);
+      var head = el('button', 'acc-head'); head.type = 'button';
+      head.innerHTML =
+        '<span class="acc-title">' + esc(lv[1]) + '</span>' +
+        '<span class="ws-badge free">' + list.length + ' text' + (list.length === 1 ? '' : 's') + '</span>' +
+        '<span class="acc-meta"></span>' + CHEV;
+      acc.appendChild(head);
+      var ab = el('div', 'acc-body');
       if (!list.length) {
         var none = el('div', 'ws-item is-locked');
         none.innerHTML = '<div class="ws-item-main"><h3>Nothing here yet</h3><p>Add a ' + esc(lv[0]) + ' text in the admin.</p></div><span class="ws-count empty">—</span>';
-        body.appendChild(none);
-        return;
+        ab.appendChild(none);
+      } else {
+        list.forEach(function (q) {
+          var item = el('a', 'ws-item');
+          item.href = 'practice.html?one=' + encodeURIComponent(q.id);
+          item.innerHTML =
+            '<div class="ws-item-main"><h3>' + esc(rtitle(q)) + '</h3><p>' + esc(lv[2]) + '</p></div>' +
+            '<span class="ws-count">' + rcount(q) + ' Qs</span>' +
+            '<span class="ws-go">Read →</span>';
+          ab.appendChild(item);
+        });
       }
-      list.forEach(function (q) {
-        var item = el('a', 'ws-item');
-        item.href = 'practice.html?one=' + encodeURIComponent(q.id);
-        item.innerHTML =
-          '<div class="ws-item-main"><h3>' + esc(rtitle(q)) + '</h3><p>' + esc(lv[2]) + '</p></div>' +
-          '<span class="ws-count">' + rcount(q) + ' Qs</span>' +
-          '<span class="ws-go">Read →</span>';
-        body.appendChild(item);
-      });
+      acc.appendChild(ab);
+      head.addEventListener('click', function () { acc.classList.toggle('open'); });
+      body.appendChild(acc);
     });
     if (rall.length) {
       var full = el('a', 'ws-item ws-item-full');
