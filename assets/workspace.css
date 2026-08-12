@@ -81,7 +81,7 @@ h1,h2,h3,h4{font-family:var(--display);letter-spacing:-.02em;}
 .ws-sub{color:var(--ink-2);margin-top:10px;max-width:64ch;font-size:1.06rem;}
 
 /* ---- favorites card ---- */
-.saved-card{display:flex;align-items:center;gap:14px;padding:16px 20px;border-radius:14px;background:var(--surface);border:1px solid var(--border);margin-top:24px;transition:border-color .15s;}
+.saved-card{display:flex;align-items:center;gap:14px;padding:16px 20px;border-radius:14px;background:var(--surface);border:1px solid var(--border);margin-top:14px;transition:border-color .15s;}
 a.saved-card:hover{border-color:var(--gold-line);}
 .saved-card .star{font-size:1.35rem;color:var(--gold-line);line-height:1;}
 .saved-card.is-empty .star{color:var(--muted);}
@@ -133,7 +133,7 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 
 /* ================= PRACTICE ================= */
 .pr-bar{position:sticky;top:0;z-index:40;background:rgba(11,26,56,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);}
-.pr-bar-inner{max-width:820px;margin:0 auto;height:58px;padding:0 20px;display:flex;align-items:center;gap:16px;}
+.pr-bar-inner{max-width:940px;margin:0 auto;height:58px;padding:0 20px;display:flex;align-items:center;gap:16px;}
 .pr-crumb{font-family:var(--mono);font-size:.78rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .pr-progress-wrap{flex:1;max-width:280px;margin:0 auto;}
 .pr-progress-track{height:7px;border-radius:99px;background:var(--bg-2);overflow:hidden;}
@@ -161,7 +161,7 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 .brk-clock .brk-time{font-family:var(--mono);font-size:2.4rem;font-weight:600;color:var(--gold);}
 
 /* question palette (jump to any question) */
-.pr-palette{max-width:820px;margin:14px auto 30px;padding:0 20px;}
+.pr-palette{max-width:940px;margin:14px auto 30px;padding:0 20px;}
 .pr-palette-label{font-family:var(--mono);font-size:.74rem;color:var(--muted);margin-bottom:10px;text-align:center;}
 .pr-palette-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
 .pr-dot{width:38px;height:38px;border-radius:9px;border:1px solid var(--border-strong);background:var(--surface);
@@ -170,7 +170,7 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 .pr-dot.done{background:var(--good-bg);border-color:var(--good-line);color:var(--good);}
 .pr-dot.current{outline:2px solid var(--gold);outline-offset:1px;border-color:var(--gold);color:var(--ink);}
 
-.pr-stage{max-width:820px;margin:0 auto;padding:34px 20px 8px;}
+.pr-stage{width:100%;max-width:940px;margin:0 auto;padding:34px 20px 8px;}
 .pr-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 32px;box-shadow:0 12px 34px rgba(0,0,0,.24);}
 .pr-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;}
 .pr-kicker{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);}
@@ -258,7 +258,10 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 .ws-tile.is-dev.active{border-color:#d4a72c;background:#fdf8ec;box-shadow:0 8px 22px rgba(212,167,44,.13);}
 .ws-tile.is-dev.active .ws-tile-ico,.ws-tile.is-dev.active .ws-tile-name{color:#b0851b;}
 /* the selected-skill panel */
-.ws-skillpanel{margin-bottom:16px;}
+.ws-skillpanel{margin-bottom:0;}
+/* the full-reading-test row sits the same distance below the level accordions
+   as the accordions sit from each other */
+.acc + .ws-item-full{margin-top:14px;}
 .ws-panel-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 2px 8px;}
 .ws-panel-head h2{margin:0;font-size:1.3rem;color:#14233f;}
 .ws-panel-blurb{font-size:.86rem;color:#7c88a3;}

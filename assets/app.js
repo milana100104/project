@@ -648,7 +648,7 @@
           var item = el('a', 'ws-item');
           item.href = 'practice.html?one=' + encodeURIComponent(q.id);
           item.innerHTML =
-            '<div class="ws-item-main"><h3>' + esc(rtitle(q)) + '</h3><p>' + esc(lv[2]) + '</p></div>' +
+            '<div class="ws-item-main"><h3>' + esc(rtitle(q)) + '</h3></div>' +
             '<span class="ws-count">' + rcount(q) + ' Qs</span>' +
             '<span class="ws-go">Read →</span>';
           ab.appendChild(item);
