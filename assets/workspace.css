@@ -240,6 +240,30 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 .ws-subhead span{font-size:.76rem;color:#8a97b0;font-family:var(--mono);}
 .ws-sub-easy h4{color:#2f9e6f;}.ws-sub-medium h4{color:#b0851b;}.ws-sub-hard h4{color:#d9534f;}
 
+/* skill tiles — the Listening / Reading / Writing / Speaking selector at the top */
+.ws-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:6px 0 22px;}
+@media(max-width:560px){.ws-tiles{grid-template-columns:repeat(2,1fr);}}
+.ws-tile{display:flex;flex-direction:column;align-items:center;gap:9px;padding:20px 10px 15px;background:#fff;border:1.5px solid #e6eaf2;border-radius:16px;cursor:pointer;position:relative;transition:border-color .15s,box-shadow .15s,transform .15s,background .15s;}
+.ws-tile:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,40,80,.08);}
+.ws-tile-ico{width:44px;height:44px;color:#9aa6bd;transition:color .15s;}
+.ws-tile-ico svg{width:100%;height:100%;display:block;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}
+.ws-tile-name{font-size:1rem;font-weight:700;color:#7c88a0;transition:color .15s;}
+.ws-tile-tag{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.06em;color:#aeb8ca;}
+.ws-tile.active{border-color:#2f9e6f;background:#f2fbf6;box-shadow:0 8px 22px rgba(47,158,111,.13);}
+.ws-tile.active .ws-tile-ico{color:#2f9e6f;}
+.ws-tile.active .ws-tile-name{color:#1f7a52;}
+.ws-tile.active .ws-tile-tag{color:#2f9e6f;}
+.ws-tile.is-dev{opacity:.7;}
+.ws-tile.is-dev .ws-tile-tag{color:#c0a24b;}
+.ws-tile.is-dev.active{border-color:#d4a72c;background:#fdf8ec;box-shadow:0 8px 22px rgba(212,167,44,.13);}
+.ws-tile.is-dev.active .ws-tile-ico,.ws-tile.is-dev.active .ws-tile-name{color:#b0851b;}
+/* the selected-skill panel */
+.ws-skillpanel{margin-bottom:16px;}
+.ws-panel-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 2px 8px;}
+.ws-panel-head h2{margin:0;font-size:1.3rem;color:#14233f;}
+.ws-panel-blurb{font-size:.86rem;color:#7c88a3;}
+.acc-body.open{display:block;padding:2px 0 4px;}
+
 /* reading layout: passage on the left, questions on the right */
 .pr-split{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}
 .pr-split-left{position:sticky;top:78px;max-height:calc(100vh - 150px);overflow:auto;padding-right:6px;}

@@ -667,8 +667,87 @@
   function _renderWorkspace(root, config) {
     root.innerHTML = '';
     var exam = config.examId;
+    var skills = config.skills || [];
 
-    // favorites shortcut
+    // ---- skill tiles: the big Listening / Reading / Writing / Speaking selector ----
+    var tiles = el('div', 'ws-tiles');
+    var panel = el('div', 'ws-skillpanel');
+
+    function setActive(id) {
+      Array.prototype.forEach.call(tiles.children, function (t) {
+        t.classList.toggle('active', t.getAttribute('data-skill') === id);
+      });
+      renderPanel(id);
+      try { history.replaceState(null, '', '#' + id); } catch (e) {}
+    }
+
+    skills.forEach(function (skill) {
+      var dev = skill.status === 'dev';
+      var tile = el('button', 'ws-tile' + (dev ? ' is-dev' : ''));
+      tile.type = 'button';
+      tile.setAttribute('data-skill', skill.id);
+      tile.innerHTML =
+        '<span class="ws-tile-ico">' + skillIcon(skill.id) + '</span>' +
+        '<span class="ws-tile-name">' + esc(skill.name) + '</span>' +
+        '<span class="ws-tile-tag">' + (dev ? 'soon' : 'free') + '</span>';
+      tile.addEventListener('click', function () { setActive(skill.id); });
+      tiles.appendChild(tile);
+    });
+    root.appendChild(tiles);
+    root.appendChild(panel);
+
+    // ---- the panel body for the selected skill ----
+    function renderPanel(id) {
+      var skill = null;
+      skills.forEach(function (s) { if (s.id === id) skill = s; });
+      panel.innerHTML = '';
+      if (!skill) return;
+      var dev = skill.status === 'dev';
+      panel.appendChild(el('div', 'ws-panel-head',
+        '<h2>' + esc(skill.name) + '</h2>' +
+        '<span class="ws-badge ' + (dev ? 'dev' : 'free') + '">' + (dev ? 'In development' : 'Free') + '</span>' +
+        (skill.blurb ? '<span class="ws-panel-blurb">' + esc(skill.blurb) + '</span>' : '')));
+
+      var body = el('div', 'acc-body open');
+      if (skill.reading) { buildReadingBody(body, exam); }
+      else {
+        (skill.types || []).forEach(function (t) {
+          var c = BeaconStore.counts(exam, skill.id, t.id);
+          if (dev) {
+            var locked = el('div', 'ws-item is-locked');
+            locked.innerHTML =
+              '<div class="ws-item-main"><h3>' + esc(t.name) + '</h3><p>' + esc(t.desc || '') + '</p></div>' +
+              '<span class="ws-count empty">soon</span>';
+            body.appendChild(locked);
+          } else {
+            var item = el('a', 'ws-item');
+            item.href = 'practice.html?exam=' + exam + '&skill=' + skill.id + '&type=' + t.id;
+            var pct = c.total ? Math.round((c.solved / c.total) * 100) : 0;
+            item.innerHTML =
+              '<div class="ws-item-main"><h3>' + esc(t.name) + '</h3><p>' + esc(t.desc || '') + '</p></div>' +
+              '<span class="ws-count' + (c.total ? '' : ' empty') + '">' + (c.total ? c.solved + '/' + c.total : 'no questions yet') + '</span>' +
+              (c.total ? '<span class="ws-progress-track"><span class="ws-progress-fill" style="width:' + pct + '%"></span></span>' : '') +
+              '<span class="ws-go">Practice →</span>';
+            body.appendChild(item);
+          }
+        });
+        // optional: assemble a full, exam-style test from every question in this skill
+        if (!dev && skill.skillTest) {
+          var tot = BeaconStore.questionsFor(exam, skill.id, null).length;
+          var tItem = el('a', 'ws-item ws-item-full');
+          tItem.href = 'practice.html?mode=test&exam=' + exam + '&skill=' + skill.id;
+          tItem.innerHTML =
+            '<div class="ws-item-main"><h3>Take a full ' + esc(skill.name) + ' test</h3>' +
+            '<p>A timed, exam-style test built from every ' + esc(skill.name) + ' question — scored at the end, no hints along the way.</p></div>' +
+            '<span class="ws-count">' + (tot ? tot + ' Qs' : 'no questions yet') + '</span>' +
+            '<span class="ws-go">Start test →</span>';
+          body.appendChild(tItem);
+        }
+      }
+      panel.appendChild(body);
+    }
+
+    // ---- saved shortcut + full-exam CTA below the panel ----
     var favN = BeaconStore.favCount();
     var saved = el('a', 'saved-card' + (favN ? '' : ' is-empty'));
     saved.href = 'account.html?tab=favorites';
@@ -680,64 +759,6 @@
       '<span class="saved-count">' + favN + '</span>';
     root.appendChild(saved);
 
-    // skills
-    config.skills.forEach(function (skill) {
-      var dev = skill.status === 'dev';
-      var acc = el('div', 'acc' + (dev ? ' is-dev' : ''));
-      var head = el('button', 'acc-head');
-      head.type = 'button';
-      head.innerHTML =
-        '<span class="acc-title">' + esc(skill.name) + '</span>' +
-        '<span class="ws-badge ' + (dev ? 'dev' : 'free') + '">' + (dev ? 'In development' : 'Free') + '</span>' +
-        '<span class="acc-meta">' + esc(skill.blurb || '') + '</span>' + CHEV;
-      acc.appendChild(head);
-
-      var body = el('div', 'acc-body');
-      if (skill.reading) { buildReadingBody(body, exam); }
-      else {
-      (skill.types || []).forEach(function (t) {
-        var c = BeaconStore.counts(exam, skill.id, t.id);
-        if (dev) {
-          var locked = el('div', 'ws-item is-locked');
-          locked.innerHTML =
-            '<div class="ws-item-main"><h3>' + esc(t.name) + '</h3><p>' + esc(t.desc || '') + '</p></div>' +
-            '<span class="ws-count empty">soon</span>';
-          body.appendChild(locked);
-        } else {
-          var item = el('a', 'ws-item');
-          item.href = 'practice.html?exam=' + exam + '&skill=' + skill.id + '&type=' + t.id;
-          var pct = c.total ? Math.round((c.solved / c.total) * 100) : 0;
-          item.innerHTML =
-            '<div class="ws-item-main"><h3>' + esc(t.name) + '</h3><p>' + esc(t.desc || '') + '</p></div>' +
-            '<span class="ws-count' + (c.total ? '' : ' empty') + '">' + (c.total ? c.solved + '/' + c.total : 'no questions yet') + '</span>' +
-            (c.total ? '<span class="ws-progress-track"><span class="ws-progress-fill" style="width:' + pct + '%"></span></span>' : '') +
-            '<span class="ws-go">Practice →</span>';
-          body.appendChild(item);
-        }
-      });
-
-      // optional: assemble a full, exam-style test from every question in this skill
-      if (!dev && skill.skillTest) {
-        var tot = BeaconStore.questionsFor(exam, skill.id, null).length;
-        var tItem = el('a', 'ws-item ws-item-full');
-        tItem.href = 'practice.html?mode=test&exam=' + exam + '&skill=' + skill.id;
-        tItem.innerHTML =
-          '<div class="ws-item-main"><h3>Take a full ' + esc(skill.name) + ' test</h3>' +
-          '<p>A timed, exam-style test built from every ' + esc(skill.name) + ' question — scored at the end, no hints along the way.</p></div>' +
-          '<span class="ws-count">' + (tot ? tot + ' Qs' : 'no questions yet') + '</span>' +
-          '<span class="ws-go">Start test →</span>';
-        body.appendChild(tItem);
-      }
-      }
-
-      acc.appendChild(body);
-      head.addEventListener('click', function () { acc.classList.toggle('open'); });
-      root.appendChild(acc);
-    });
-
-    // accordions start collapsed — the user opens the skill they want
-
-    // full test panel
     if (config.fullTest) {
       var ready = !!config.fullTest.href;
       var ft = el('div', 'ws-fulltest' + (ready ? ' is-ready' : ''));
@@ -745,9 +766,30 @@
         '<span class="ws-badge ' + (ready ? 'free' : 'dev') + '">' + (ready ? 'New · live' : 'In development') + '</span>' +
         '<h2>' + esc(config.fullTest.title) + '</h2>' +
         '<p>' + esc(config.fullTest.desc) + '</p>' +
-        (ready ? '<a class="btn-white ws-fulltest-cta" href="' + esc(config.fullTest.href) + '">Start the adaptive test →</a>' : '');
+        (ready ? '<a class="btn-white ws-fulltest-cta" href="' + esc(config.fullTest.href) + '">Start the full test →</a>' : '');
       root.appendChild(ft);
     }
+
+    // ---- pick the initial skill: from the URL hash, else the first free one ----
+    var want = (location.hash || '').replace(/^#/, '');
+    var initial = null;
+    skills.forEach(function (s) { if (s.id === want) initial = s.id; });
+    if (!initial) { for (var i = 0; i < skills.length; i++) { if (skills[i].status !== 'dev') { initial = skills[i].id; break; } } }
+    if (!initial && skills.length) initial = skills[0].id;
+    if (initial) setActive(initial);
+  }
+
+  // line-art icons for the skill tiles (headphones / open book / pencil / mic)
+  function skillIcon(id) {
+    var I = {
+      listening: '<svg viewBox="0 0 48 48"><path d="M10 27v-3a14 14 0 0 1 28 0v3"/><rect x="6" y="27" width="8" height="13" rx="4"/><rect x="34" y="27" width="8" height="13" rx="4"/></svg>',
+      reading:   '<svg viewBox="0 0 48 48"><path d="M24 13v26"/><path d="M24 13c-4-3-11-3-16-1v25c5-2 12-2 16 1"/><path d="M24 13c4-3 11-3 16-1v25c-5-2-12-2-16 1"/></svg>',
+      writing:   '<svg viewBox="0 0 48 48"><path d="M31 9l8 8-22 22-10 2 2-10z"/><path d="M27 13l8 8"/></svg>',
+      speaking:  '<svg viewBox="0 0 48 48"><rect x="18" y="6" width="12" height="22" rx="6"/><path d="M12 22a12 12 0 0 0 24 0"/><path d="M24 34v6"/><path d="M17 40h14"/></svg>',
+      math:      '<svg viewBox="0 0 48 48"><path d="M11 12h13l-9 24"/><path d="M28 20l12 16"/><path d="M40 20L28 36"/></svg>',
+      english:   '<svg viewBox="0 0 48 48"><path d="M24 13v26"/><path d="M24 13c-4-3-11-3-16-1v25c5-2 12-2 16 1"/><path d="M24 13c4-3 11-3 16-1v25c-5-2-12-2-16 1"/></svg>'
+    };
+    return I[id] || '<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="14"/></svg>';
   }
 
   /* ============================ practice ============================ */
