@@ -396,8 +396,8 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
    14px spacing — so every exam/section looks identical */
 .acc-body.open > .ws-item{margin-top:14px;padding:18px 20px;border-radius:14px;}
 .acc-body.open > .ws-item + .ws-item{margin-top:14px;}
-.ws-white .acc-body.open > .ws-item:not(.ws-item-full){background:#fff;border:1px solid #e3e7f0;box-shadow:0 10px 30px rgba(0,0,0,.22);}
-.ws-white .acc-body.open > a.ws-item:not(.ws-item-full):hover{background:#f7f9fd;border-color:#d4a72c;}
+.ws-white .acc-body.open > .ws-item:not(.ws-item-full){background:#f6f8fc;border:1px solid #e4e9f2;box-shadow:none;}
+.ws-white .acc-body.open > a.ws-item:not(.ws-item-full):hover{background:#eef2f9;border-color:#e4e9f2;}
 .ws-white a.saved-card:hover{background:#fdefc8;border-color:#d9b03a;}
 .ws-white .saved-card .star{color:#d4a72c;}
 .ws-white .ws-progress-track{background:#e6ebf4;}
