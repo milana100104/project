@@ -266,6 +266,8 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 /* reading level accordions inside the Reading panel */
 .rd-acc{border-left-width:4px;}
 .rd-easy{border-left-color:#4bcf94;}.rd-medium{border-left-color:#d4a72c;}.rd-hard{border-left-color:#ef7d7d;}
+.rd-acc .acc-title{font-size:.95rem;font-weight:700;letter-spacing:.01em;}
+.rd-acc .acc-head{padding:14px 20px;}
 .rd-easy .acc-title{color:#2f9e6f;}.rd-medium .acc-title{color:#b0851b;}.rd-hard .acc-title{color:#d9534f;}
 
 /* reading layout: passage on the left, questions on the right */

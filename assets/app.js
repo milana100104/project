@@ -636,7 +636,6 @@
       var head = el('button', 'acc-head'); head.type = 'button';
       head.innerHTML =
         '<span class="acc-title">' + esc(lv[1]) + '</span>' +
-        '<span class="ws-badge free">' + list.length + ' text' + (list.length === 1 ? '' : 's') + '</span>' +
         '<span class="acc-meta"></span>' + CHEV;
       acc.appendChild(head);
       var ab = el('div', 'acc-body');
