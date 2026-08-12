@@ -390,6 +390,14 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 
 /* the Saved card gets a warm gold tint so it stands out from the white task cards */
 .ws-white .saved-card{background:#fff6e0;border:1.5px solid #e6c65a;box-shadow:0 8px 24px rgba(180,140,20,.18);}
+
+/* type rows that sit straight in a panel (TOEFL Reading, all Listening) become
+   the same boxed containers as the IELTS reading accordions, with the same
+   14px spacing — so every exam/section looks identical */
+.acc-body.open > .ws-item{margin-top:14px;padding:18px 20px;border-radius:14px;}
+.acc-body.open > .ws-item + .ws-item{margin-top:14px;}
+.ws-white .acc-body.open > .ws-item:not(.ws-item-full){background:#fff;border:1px solid #e3e7f0;box-shadow:0 10px 30px rgba(0,0,0,.22);}
+.ws-white .acc-body.open > a.ws-item:not(.ws-item-full):hover{background:#f7f9fd;border-color:#d4a72c;}
 .ws-white a.saved-card:hover{background:#fdefc8;border-color:#d9b03a;}
 .ws-white .saved-card .star{color:#d4a72c;}
 .ws-white .ws-progress-track{background:#e6ebf4;}
