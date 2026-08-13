@@ -44,12 +44,15 @@ h1,h2,h3,h4{font-family:var(--display);letter-spacing:-.02em;}
 .ws-nav a{color:var(--ink-2);font-weight:500;font-size:.95rem;padding:8px 12px;border-radius:8px;transition:background .15s,color .15s;}
 .ws-nav a:hover{background:var(--surface);color:var(--ink);}
 .ws-nav a.active{color:var(--gold);font-weight:600;background:var(--gold-soft);}
-/* Saved star — sits right next to the exam's own nav link, always clearly visible */
-.ws-nav a.ws-saved{display:inline-flex;align-items:center;gap:5px;color:var(--gold);background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:999px;padding:6px 11px;margin:0 2px;}
-.ws-nav a.ws-saved:hover{background:var(--gold-btn);color:#241a04;}
-.ws-nav a.ws-saved.has{background:var(--gold-btn);color:#241a04;box-shadow:0 0 0 1px var(--gold-line);}
+/* Saved star — sits right next to the big exam heading (TOEFL/IELTS/SAT) */
+.ws-h1 a.ws-saved{display:inline-flex;vertical-align:middle;align-items:center;gap:5px;
+  font-family:var(--font);color:#2f6fed;background:#eaf1ff;border:1.5px solid #b9d4ff;
+  border-radius:999px;padding:5px 12px;margin-left:14px;transition:background .15s,color .15s,transform .15s;}
+.ws-h1 a.ws-saved:hover{background:#2f6fed;color:#fff;transform:translateY(-1px);}
+.ws-h1 a.ws-saved.has{background:#2f6fed;color:#fff;box-shadow:0 4px 14px rgba(47,111,237,.35);}
 .ws-saved-star{font-size:1.05rem;line-height:1;}
 .ws-saved-n{font-family:var(--mono);font-size:.72rem;font-weight:700;}
+@media(max-width:560px){.ws-h1 a.ws-saved{display:flex;width:fit-content;margin:10px 0 0;}}
 .header-actions{display:flex;align-items:center;gap:12px;flex-shrink:0;}
 
 /* ---- buttons ---- */
