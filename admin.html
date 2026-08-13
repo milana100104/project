@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=79">
-<script src="assets/app.js?v=79" defer></script>
-<script src="assets/config.js?v=79" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=80">
+<script src="assets/app.js?v=80" defer></script>
+<script src="assets/config.js?v=80" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=79" defer></script>
-<script src="assets/chat.js?v=79" defer></script>
+<script src="assets/auth.js?v=80" defer></script>
+<script src="assets/chat.js?v=80" defer></script>
 <style>
 /* ---- Admin: clean white workspace ---- */
 body.adm-body{background:#eef1f7;font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;}
@@ -138,14 +138,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }},
       ielts: { label:"IELTS", skills:{
         reading:  { label:"Reading", passage:true, types:{
-          "multiple-choice":{ label:"Multiple choice", fmt:"choice" },
-          "true-false-notgiven":{ label:"True / False / Not Given", fmt:"choice", fixed:["True","False","Not Given"], note:"For statements about FACTS in the passage. Put the statement in the prompt; the passage goes in the text box; tick True / False / Not Given." },
-          "yes-no-notgiven":{ label:"Yes / No / Not Given", fmt:"choice", fixed:["Yes","No","Not Given"], note:"Different from True/False/Not Given: this is about the WRITER’S opinions or claims, not facts. Put the claim in the prompt; tick Yes / No / Not Given." },
-          "matching-headings":{ label:"Matching headings", fmt:"matching", note:"Paste the whole passage (with paragraphs A, B, C…) in the text box. Options = the letters A–H. Each item is one heading; type the paragraph letter it matches." },
-          "matching-information":{ label:"Matching information", fmt:"matching", note:"Paste the passage (paragraphs A–H) in the text box. Options = the letters A–H. Each item is a statement; type the paragraph letter that contains it." },
-          "sentence-completion":{ label:"Sentence completion", fmt:"completion", note:"Paste the paragraph in the text box, then add each sentence with a gap (use ______ for the blank) and its answer." },
-          "summary-completion":{ label:"Summary completion", fmt:"completion", note:"Paste the text, then add each gap sentence from the summary and its answer." },
-          "full-passage":{ label:"★ Full passage (mixed types)", fmt:"passage", note:"One text with several question blocks of different types (multiple choice + matching + completion), like a real IELTS Reading passage. Paste the whole passage in the text box above, then add blocks — numbering (14, 15, 16 …) runs automatically." } }},
+          "full-passage":{ label:"Full passage (mixed question types)", fmt:"passage", note:"This is now the only way to add IELTS Reading — the site shows Reading as full texts (Easy / Medium / Hard), not individual questions. Paste the whole passage above, set its Difficulty to easy/medium/hard, then add blocks below. Block kinds: Multiple choice (also use this for True/False/Not Given or Yes/No/Not Given — just type those as the answer options), Matching (letters — for matching headings/information), Completion (typed — for sentence/summary completion). Numbering runs automatically." } }},
         listening:{ label:"Listening", audio:true, image:true, transcript:true, types:{
           "multiple-choice":{ label:"Multiple choice", fmt:"choice" },
           "form-completion":{ label:"Form / note / table completion", fmt:"completion", note:"Add each line with a gap (e.g. “Name: ______”) and its answer." },
