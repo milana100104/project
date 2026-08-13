@@ -1,16 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" width="640" height="400">
-  <defs>
-    <radialGradient id="ieltsGlow" cx="50%" cy="14%" r="80%">
-      <stop offset="0" stop-color="#d4a72c" stop-opacity="0.16"/>
-      <stop offset="1" stop-color="#d4a72c" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="cardInk" x="-20%" y="-20%" width="140%" height="140%">
-      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="11" result="n"/>
-      <feDisplacementMap in="SourceGraphic" in2="n" scale="3.2"/>
-    </filter>
-  </defs>
   <rect width="640" height="400" fill="#f2f5fa"/>
-  <rect width="640" height="400" fill="url(#ieltsGlow)"/>
 
   <!-- shared nautical-chart corner motif, same on every card -->
   <g fill="none" stroke="#0b1a38" stroke-opacity="0.07" stroke-width="1.4">
@@ -19,21 +8,32 @@
     <path d="M-20 320 A 220 220 0 0 1 200 100"/>
   </g>
 
-  <g filter="url(#cardInk)">
-    <!-- globe -->
-    <circle cx="300" cy="205" r="92" fill="none" stroke="#0b1a38" stroke-width="3.4"/>
-    <g stroke="#0b1a38" stroke-width="2.4" fill="none" opacity=".85">
-      <ellipse cx="300" cy="205" rx="40" ry="92"/>
-      <ellipse cx="300" cy="205" rx="92" ry="40"/>
-      <line x1="208" y1="205" x2="392" y2="205"/>
+  <!-- globe, hand-sketched: ghost pass + crisp pass -->
+  <g transform="translate(220,105)">
+    <g fill="none" stroke="#0b1a38" stroke-opacity=".22" stroke-width="4" transform="translate(1.6,1.2)">
+      <circle cx="90" cy="100" r="88"/>
     </g>
+    <circle cx="90" cy="100" r="88" fill="none" stroke="#0b1a38" stroke-width="2"/>
+    <g fill="none" stroke="#0b1a38" stroke-width="1.5" opacity=".85">
+      <path d="M90 12c-24 22-24 154 0 176"/>
+      <path d="M90 12c24 22 24 154 0 176"/>
+      <path d="M4 76c50-14 132-14 172 0" opacity=".8"/>
+      <path d="M2 100h176"/>
+      <path d="M4 124c50 14 132 14 172 0" opacity=".8"/>
+    </g>
+  </g>
 
-    <!-- flight path -->
-    <path d="M230 130 Q 340 40 460 95" fill="none" stroke="#b0851b" stroke-width="2.8" stroke-dasharray="2 10" stroke-linecap="round"/>
-    <path d="M460 95 l22 6 -8 6 3 9 -8-4 -8 4 2-9 -9-6 z" fill="#b0851b" stroke="none" transform="rotate(18 460 95)"/>
+  <!-- flight path + plane -->
+  <path d="M225 95 Q 330 8 465 68" fill="none" stroke="#b0851b" stroke-width="2.4" stroke-dasharray="1 11" stroke-linecap="round"/>
+  <g transform="translate(465,68) rotate(24)" fill="#b0851b">
+    <path d="M0 0 l24 6 -9 6 3 10 -8-4 -9 4 3-10 -10-6z"/>
+  </g>
 
-    <!-- checkmark badge -->
-    <circle cx="440" cy="290" r="34" fill="none" stroke="#b0851b" stroke-width="3.4"/>
-    <path d="M425 291 l11 11 20-24" fill="none" stroke="#0b1a38" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- hand-drawn "passed" stamp -->
+  <g transform="translate(430,255)">
+    <path d="M40 2c21-3 41 14 41 37 0 22-18 39-40 38-22 -1-39-19-38-40C4 15 20-1 40 2Z" fill="none" stroke="#b0851b" stroke-width="2.2" stroke-opacity=".22" transform="translate(1,1)"/>
+    <path d="M40 2c21-3 41 14 41 37 0 22-18 39-40 38-22 -1-39-19-38-40C4 15 20-1 40 2Z" fill="none" stroke="#b0851b" stroke-width="1.4"/>
+    <path d="M20 38l13 13 26-30" fill="none" stroke="#0b1a38" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".22" transform="translate(1,1)"/>
+    <path d="M20 38l13 13 26-30" fill="none" stroke="#0b1a38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
 </svg>

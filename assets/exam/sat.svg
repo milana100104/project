@@ -1,16 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" width="640" height="400">
-  <defs>
-    <radialGradient id="satGlow" cx="50%" cy="14%" r="80%">
-      <stop offset="0" stop-color="#d4a72c" stop-opacity="0.16"/>
-      <stop offset="1" stop-color="#d4a72c" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="cardInk" x="-20%" y="-20%" width="140%" height="140%">
-      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="11" result="n"/>
-      <feDisplacementMap in="SourceGraphic" in2="n" scale="3.2"/>
-    </filter>
-  </defs>
   <rect width="640" height="400" fill="#f2f5fa"/>
-  <rect width="640" height="400" fill="url(#satGlow)"/>
 
   <!-- shared nautical-chart corner motif, same on every card -->
   <g fill="none" stroke="#0b1a38" stroke-opacity="0.07" stroke-width="1.4">
@@ -19,27 +8,34 @@
     <path d="M-20 320 A 220 220 0 0 1 200 100"/>
   </g>
 
-  <g filter="url(#cardInk)">
-    <!-- graduation cap -->
-    <g stroke="#0b1a38" stroke-width="3.4" fill="none" stroke-linejoin="round" stroke-linecap="round">
-      <path d="M230 116 L300 90 L370 116 L300 142 Z"/>
-      <path d="M265 130 L265 156 C265 168 335 168 335 156 L335 130"/>
+  <!-- graduation cap, hand-sketched -->
+  <g transform="translate(215,90)">
+    <g fill="none" stroke="#0b1a38" stroke-opacity=".22" stroke-width="2.2" stroke-linejoin="round" transform="translate(1.4,1)">
+      <path d="M0 27 L72 0 L144 27 L72 54 Z"/>
+      <path d="M36 41 L36 66 C36 78 108 78 108 66 L108 41"/>
     </g>
-    <line x1="370" y1="116" x2="370" y2="152" stroke="#b0851b" stroke-width="2.8" stroke-linecap="round"/>
-    <circle cx="370" cy="160" r="5.2" fill="#b0851b"/>
+    <g fill="none" stroke="#0b1a38" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M0 27 L72 0 L144 27 L72 54 Z"/>
+      <path d="M36 41 L36 66 C36 78 108 78 108 66 L108 41"/>
+    </g>
+    <path d="M144 27v34" stroke="#b0851b" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+    <circle cx="144" cy="65" r="4.6" fill="#b0851b"/>
+  </g>
 
-    <!-- rising score chart -->
-    <g stroke="#0b1a38" stroke-width="3.4" stroke-linecap="round">
-      <line x1="180" y1="320" x2="460" y2="320"/>
-      <line x1="180" y1="320" x2="180" y2="200"/>
-    </g>
-    <g fill="none" stroke="#b0851b" stroke-width="3.4" stroke-linejoin="round">
-      <rect x="210" y="280" width="26" height="40"/>
-      <rect x="260" y="250" width="26" height="70"/>
-      <rect x="310" y="215" width="26" height="105"/>
-      <rect x="360" y="180" width="26" height="140"/>
-    </g>
-    <path d="M212 275 L272 245 L322 208 L372 172" fill="none" stroke="#0b1a38" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M356 172 L372 172 L372 188" fill="none" stroke="#0b1a38" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- rising score, one confident hand-drawn stroke -->
+  <g fill="none" stroke="#0b1a38" stroke-width="1.4" stroke-linecap="round" opacity=".8">
+    <path d="M178 322h270"/>
+    <path d="M178 322v-140"/>
+  </g>
+  <path d="M195 300c34-6 55-30 78-56 25-28 55-48 92-58" fill="none" stroke="#b0851b" stroke-width="2" stroke-opacity=".22" stroke-linecap="round" transform="translate(1.3,1.2)"/>
+  <path d="M195 300c34-6 55-30 78-56 25-28 55-48 92-58" fill="none" stroke="#b0851b" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M347 188l19-4 3 19" fill="none" stroke="#b0851b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- a few hand-set ticks along the baseline -->
+  <g stroke="#0b1a38" stroke-width="1.4" opacity=".55">
+    <path d="M220 322v8"/>
+    <path d="M275 322v8"/>
+    <path d="M330 322v8"/>
+    <path d="M385 322v8"/>
   </g>
 </svg>
