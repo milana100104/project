@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=80">
-<script src="assets/app.js?v=80" defer></script>
-<script src="assets/config.js?v=80" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=81">
+<script src="assets/app.js?v=81" defer></script>
+<script src="assets/config.js?v=81" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=80" defer></script>
-<script src="assets/chat.js?v=80" defer></script>
+<script src="assets/auth.js?v=81" defer></script>
+<script src="assets/chat.js?v=81" defer></script>
 <style>
 /* ---- Admin: clean white workspace ---- */
 body.adm-body{background:#eef1f7;font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;}
@@ -624,8 +624,8 @@ document.addEventListener("DOMContentLoaded", function () {
           '<div class="adm-field"><label>Shown date / time <span class="hint">(optional; auto-filled from the date)</span></label><input class="adm-input" id="w-date" placeholder="Aug 23 · 6:00 PM"></div>' +
           '<div class="adm-field"><label>Title</label><input class="adm-input" id="w-title"></div>' +
           '<div class="adm-field"><label>Description</label><textarea class="adm-textarea" id="w-desc"></textarea></div>' +
-          '<div class="adm-field"><label>Link</label><input class="adm-input" id="w-url" placeholder="https://…"></div>' +
-          '<div class="adm-field"><label>Cover image URL <span class="hint">(optional)</span></label><input class="adm-input" id="w-cover" placeholder="assets/webinars/…"></div>' +
+          '<div class="adm-field"><label>Group link <span class="hint">(students land here after "Join the group")</span></label><input class="adm-input" id="w-url" placeholder="https://…"></div>' +
+          '<div class="adm-field"><label>Cover image <span class="hint">(optional — shown on the card, full image visible, not cropped)</span></label><input class="adm-input" type="file" id="w-cover" accept="image/*"></div>' +
           '<button class="adm-btn" id="wadd">Add webinar</button>' +
           '<div class="adm-msg" id="wm"></div>' +
         '</div>' +
@@ -639,16 +639,25 @@ document.addEventListener("DOMContentLoaded", function () {
         var iso = when ? when + "T18:00" : new Date().toISOString().slice(0,16);
         var shown = val("w-date");
         if (!shown && when) { var d=new Date(when+"T18:00"); shown = d.toLocaleDateString("en-US",{month:"short",day:"2-digit"}) + " · 6:00 PM"; }
+        var coverFile = fileOf("w-cover");
         btn.disabled = true; wmsg("Saving…");
-        Promise.resolve(BeaconStore.addWebinar({
-          id: "w-" + Date.now().toString(36), iso: iso, date: shown,
-          title: title, desc: val("w-desc"), url: val("w-url") || "#", cover: val("w-cover")
-        })).then(function (res){
+        var chain = Promise.resolve({ ok: true, url: "" });
+        if (coverFile) { wmsg("Uploading image…"); chain = BeaconStore.uploadImage(coverFile); }
+        chain.then(function (up){
+          if (!up.ok) throw new Error(up.error || "Image upload failed.");
+          wmsg("Saving…");
+          return BeaconStore.addWebinar({
+            id: "w-" + Date.now().toString(36), iso: iso, date: shown,
+            title: title, desc: val("w-desc"), url: val("w-url") || "#", cover: up.url || ""
+          });
+        }).then(function (res){
           btn.disabled = false;
           if (res && res.ok === false) return wmsg(res.error || "Could not add.","bad");
           wmsg((res && res.local) ? "Added on this device only — check the Supabase webinars setup." : "Added — everyone can see it now.","good");
           ["w-when","w-date","w-title","w-desc","w-url","w-cover"].forEach(function (id){ document.getElementById(id).value=""; });
           listWebinars();
+        }).catch(function (e){
+          btn.disabled = false; wmsg(e.message || "Could not add.","bad");
         });
       };
       BeaconStore.ready().then(listWebinars);

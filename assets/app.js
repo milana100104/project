@@ -516,6 +516,11 @@
       });
     },
     allQuestions: function () { var bank = this._bank(); return Object.keys(bank).map(function (k) { return bank[k]; }); },
+    getWebinarById: function (id) {
+      var m = null;
+      this.webinars().forEach(function (w) { if (w.id === id) m = w; });
+      return m;
+    },
     webinars: function () {
       var self = this;
       function k(w) { return w.iso || '9999-12-31'; } // newest first; undated go on top
