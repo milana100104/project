@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=84">
-<script src="assets/app.js?v=84" defer></script>
-<script src="assets/config.js?v=84" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=85">
+<script src="assets/app.js?v=85" defer></script>
+<script src="assets/config.js?v=85" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=84" defer></script>
-<script src="assets/chat.js?v=84" defer></script>
+<script src="assets/auth.js?v=85" defer></script>
+<script src="assets/chat.js?v=85" defer></script>
 <style>
 /* ---- Admin: clean white workspace ---- */
 body.adm-body{background:#eef1f7;font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;}
@@ -625,7 +625,8 @@ document.addEventListener("DOMContentLoaded", function () {
           '<div class="adm-field"><label>Title</label><input class="adm-input" id="w-title"></div>' +
           '<div class="adm-field"><label>Description</label><textarea class="adm-textarea" id="w-desc"></textarea></div>' +
           '<div class="adm-field"><label>Group link <span class="hint">(students land here after "Join the group")</span></label><input class="adm-input" id="w-url" placeholder="https://…"></div>' +
-          '<div class="adm-field"><label>Cover image <span class="hint">(optional — shown on the card, full image visible, not cropped)</span></label><input class="adm-input" type="file" id="w-cover" accept="image/*"></div>' +
+          '<div class="adm-field"><label>Cover image <span class="hint">(recommended size 1080 &times; 1350px — full image visible, not cropped)</span></label><input class="adm-input" type="file" id="w-cover" accept="image/*"></div>' +
+          '<div class="adm-field"><label>Status</label><select class="adm-select" id="w-status"><option value="open">Open — Join button active</option><option value="finished">Finished — webinar already happened</option></select></div>' +
           '<button class="adm-btn" id="wadd">Add webinar</button>' +
           '<div class="adm-msg" id="wm"></div>' +
         '</div>' +
@@ -648,13 +649,15 @@ document.addEventListener("DOMContentLoaded", function () {
           wmsg("Saving…");
           return BeaconStore.addWebinar({
             id: "w-" + Date.now().toString(36), iso: iso, date: shown,
-            title: title, desc: val("w-desc"), url: val("w-url") || "#", cover: up.url || ""
+            title: title, desc: val("w-desc"), url: val("w-url") || "#", cover: up.url || "",
+            status: val("w-status") || "open"
           });
         }).then(function (res){
           btn.disabled = false;
           if (res && res.ok === false) return wmsg(res.error || "Could not add.","bad");
           wmsg((res && res.local) ? "Added on this device only — check the Supabase webinars setup." : "Added — everyone can see it now.","good");
           ["w-when","w-date","w-title","w-desc","w-url","w-cover"].forEach(function (id){ document.getElementById(id).value=""; });
+          document.getElementById("w-status").value = "open";
           listWebinars();
         }).catch(function (e){
           btn.disabled = false; wmsg(e.message || "Could not add.","bad");
@@ -663,11 +666,25 @@ document.addEventListener("DOMContentLoaded", function () {
       BeaconStore.ready().then(listWebinars);
       function listWebinars(){
         var list = document.getElementById("wlist");
-        list.innerHTML = BeaconStore.webinars().map(function (w){
-          return '<div class="adm-item"><div class="adm-item-main"><b>' + esc(w.title) + '</b><span>' + esc(w.date) + '</span></div>' +
+        var all = BeaconStore.webinars();
+        list.innerHTML = all.map(function (w){
+          var finished = w.status === "finished";
+          return '<div class="adm-item"><div class="adm-item-main"><b>' + esc(w.title) + '</b><span>' + esc(w.date) +
+            (finished ? ' · <span style="color:#c23b3b;font-weight:600">finished</span>' : ' · <span style="color:#1a8f5a;font-weight:600">open</span>') + '</span></div>' +
+            '<button type="button" class="adm-btn sec" data-toggle="' + esc(w.id) + '">' + (finished ? "Mark open" : "Mark finished") + '</button>' +
             '<button class="adm-del" data-id="' + esc(w.id) + '">Delete</button></div>';
         }).join("") || '<div class="adm-empty">No webinars yet.</div>';
         list.querySelectorAll(".adm-del").forEach(function (b){ b.onclick = function(){ b.disabled = true; Promise.resolve(BeaconStore.removeWebinar(b.dataset.id)).then(listWebinars); }; });
+        list.querySelectorAll("[data-toggle]").forEach(function (b){
+          b.onclick = function(){
+            b.disabled = true;
+            var w = all.filter(function (x){ return x.id === b.dataset.toggle; })[0];
+            if (!w) return;
+            var updated = {}; for (var k in w) updated[k] = w[k];
+            updated.status = (w.status === "finished") ? "open" : "finished";
+            Promise.resolve(BeaconStore.addWebinar(updated)).then(listWebinars);
+          };
+        });
       }
     }
   });

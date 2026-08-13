@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=84">
-<script src="assets/app.js?v=84" defer></script>
-<script src="assets/config.js?v=84" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=85">
+<script src="assets/app.js?v=85" defer></script>
+<script src="assets/config.js?v=85" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=84" defer></script>
-<script src="assets/chat.js?v=84" defer></script>
+<script src="assets/auth.js?v=85" defer></script>
+<script src="assets/chat.js?v=85" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -50,6 +50,12 @@
       <div class="footer-links">
         <div><h5>Exams</h5><ul><li><a href="toefl.html">TOEFL</a></li><li><a href="ielts.html">IELTS</a></li><li><a href="sat.html">SAT</a></li></ul></div>
         <div><h5>More</h5><ul><li><a href="webinars.html">Webinars</a></li><li><a href="auth.html?view=login">Log in</a></li><li><a href="auth.html?view=register">Sign up</a></li></ul></div>
+        <div><h5>Contact</h5><ul>
+          <li><a href="mailto:beacon.exams@gmail.com">Email</a></li>
+          <li><a href="https://t.me/beaconedux" target="_blank" rel="noopener">Telegram</a></li>
+          <li><a href="https://www.instagram.com/beaconedux?igsh=b2xvZHR0eW5rand4&amp;utm_source=qr" target="_blank" rel="noopener">Instagram</a></li>
+          <li><a href="https://www.tiktok.com/@beacon_edu?_r=1&amp;_t=ZS-98jnqu0Nmpp" target="_blank" rel="noopener">TikTok</a></li>
+        </ul></div>
       </div>
     </div>
     <div class="footer-bottom"><p>&copy; 2026 Beacon</p><p>Reading &amp; Listening, free &mdash; and we mean it.</p></div>
@@ -70,15 +76,19 @@ document.addEventListener("DOMContentLoaded", function () {
         '<p style="margin-bottom:60px"><a class="link-arrow" href="webinars.html">&#8592; Back to all webinars</a></p>';
       return;
     }
+    var finished = w.status === "finished";
     var thumb = w.cover ? '<img src="' + esc(w.cover) + '" alt="' + esc(w.title) + '">' : glyph;
+    var cta = finished
+      ? '<span class="btn wd-join wd-ended">This webinar has ended</span>'
+      : '<a class="btn btn-gold wd-join" href="' + esc(w.url || '#') + '" target="_blank" rel="noopener">Join the group &#8594;</a>';
     host.innerHTML =
       '<div class="wd-panel"><div class="wd-grid">' +
-        '<div class="wd-media">' + thumb + '</div>' +
+        '<div class="wd-media">' + thumb + (finished ? '<span class="webinar-badge">Finished</span>' : '') + '</div>' +
         '<div class="wd-info">' +
-          '<div class="webinar-date">' + esc(w.date) + '</div>' +
+          '<div class="webinar-date">' + esc(w.date) + (finished ? ' <span class="wd-finished-tag">· Finished</span>' : '') + '</div>' +
           '<h1>' + esc(w.title) + '</h1>' +
           '<p class="wd-desc">' + esc(w.desc || "") + '</p>' +
-          '<a class="btn btn-gold wd-join" href="' + esc(w.url || '#') + '" target="_blank" rel="noopener">Join the group &#8594;</a>' +
+          cta +
         '</div>' +
       '</div></div>';
   }

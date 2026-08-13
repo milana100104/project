@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=84">
-<script src="assets/app.js?v=84" defer></script>
-<script src="assets/config.js?v=84" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=85">
+<script src="assets/app.js?v=85" defer></script>
+<script src="assets/config.js?v=85" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=84" defer></script>
-<script src="assets/chat.js?v=84" defer></script>
+<script src="assets/auth.js?v=85" defer></script>
+<script src="assets/chat.js?v=85" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -53,6 +53,12 @@
       <div class="footer-links">
         <div><h5>Exams</h5><ul><li><a href="toefl.html">TOEFL</a></li><li><a href="ielts.html">IELTS</a></li><li><a href="sat.html">SAT</a></li></ul></div>
         <div><h5>More</h5><ul><li><a href="webinars.html">Webinars</a></li><li><a href="auth.html?view=login">Log in</a></li><li><a href="auth.html?view=register">Sign up</a></li></ul></div>
+        <div><h5>Contact</h5><ul>
+          <li><a href="mailto:beacon.exams@gmail.com">Email</a></li>
+          <li><a href="https://t.me/beaconedux" target="_blank" rel="noopener">Telegram</a></li>
+          <li><a href="https://www.instagram.com/beaconedux?igsh=b2xvZHR0eW5rand4&amp;utm_source=qr" target="_blank" rel="noopener">Instagram</a></li>
+          <li><a href="https://www.tiktok.com/@beacon_edu?_r=1&amp;_t=ZS-98jnqu0Nmpp" target="_blank" rel="noopener">TikTok</a></li>
+        </ul></div>
       </div>
     </div>
     <div class="footer-bottom"><p>&copy; 2026 Beacon</p><p>Reading &amp; Listening, free &mdash; and we mean it.</p></div>
@@ -67,11 +73,13 @@ document.addEventListener("DOMContentLoaded", function () {
   function render() {
     var items = (window.BeaconStore ? BeaconStore.webinars() : []);
     list.innerHTML = items.map(function (w) {
+      var finished = w.status === "finished";
       var thumb = w.cover ? '<img class="webinar-cover" src="' + esc(w.cover) + '" alt="' + esc(w.title) + '">' : glyph;
-      return '<div class="webinar-card"><div class="webinar-thumb">' + thumb + '</div>' +
+      return '<div class="webinar-card">' +
+        '<div class="webinar-thumb">' + thumb + (finished ? '<span class="webinar-badge">Finished</span>' : '') + '</div>' +
         '<div class="webinar-body"><div class="webinar-date">' + esc(w.date) + '</div>' +
         '<h4>' + esc(w.title) + '</h4><p>' + esc(w.desc) + '</p>' +
-        '<a href="webinar.html?id=' + encodeURIComponent(w.id) + '" class="link-arrow">Join &#8594;</a></div></div>';
+        '<a href="webinar.html?id=' + encodeURIComponent(w.id) + '" class="link-arrow">' + (finished ? 'View' : 'Join') + ' &#8594;</a></div></div>';
     }).join("");
     if (!items.length) list.innerHTML = '<p style="color:var(--muted)">No webinars scheduled right now — check back soon.</p>';
   }
