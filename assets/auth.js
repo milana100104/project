@@ -1,4 +1,4 @@
-/* Beacon — authentication via Supabase (real accounts + real confirmation emails).
+/* Beacon - authentication via Supabase (real accounts + real confirmation emails).
  *
  * Requires (loaded before this file):
  *   assets/config.js      -> window.BEACON_SUPABASE = { url, key }
@@ -72,8 +72,8 @@
       return sb.auth.verifyOtp({ email: email, token: code, type: 'signup' }).then(function (res) {
         if (res.error) {
           var m = res.error.message || 'That code didn’t work.';
-          if (/expired/i.test(m)) return { ok: false, error: 'That code has expired — request a new one.' };
-          if (/invalid/i.test(m)) return { ok: false, error: 'Wrong code — check the email and try again.' };
+          if (/expired/i.test(m)) return { ok: false, error: 'That code has expired - request a new one.' };
+          if (/invalid/i.test(m)) return { ok: false, error: 'Wrong code - check the email and try again.' };
           return { ok: false, error: m };
         }
         return { ok: true };
@@ -104,7 +104,7 @@
       return sb.auth.signInWithPassword({ email: id, password: pass }).then(function (res) {
         if (res.error) {
           var m = res.error.message || 'Wrong email or password.';
-          if (/confirm/i.test(m)) return { ok: false, needVerify: true, error: 'Confirm your email first — check your inbox for the link.' };
+          if (/confirm/i.test(m)) return { ok: false, needVerify: true, error: 'Confirm your email first - check your inbox for the link.' };
           return { ok: false, error: m };
         }
         return { ok: true };

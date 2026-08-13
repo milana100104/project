@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Webinars — Beacon</title>
+<title>Webinars - Beacon</title>
 <link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=88">
-<script src="assets/app.js?v=88" defer></script>
-<script src="assets/config.js?v=88" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=89">
+<script src="assets/app.js?v=89" defer></script>
+<script src="assets/config.js?v=89" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=88" defer></script>
-<script src="assets/chat.js?v=88" defer></script>
+<script src="assets/auth.js?v=89" defer></script>
+<script src="assets/chat.js?v=89" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -34,7 +34,7 @@
     <div class="page-head">
       <span class="mono-label">// this week &amp; beyond, live</span>
       <h1>Webinars</h1>
-      <p>Short live sessions on the parts of these exams that are easier shown than read. Free to join &mdash; bring questions.</p>
+      <p>Short live sessions on the parts of these exams that are easier shown than read. Free to join - bring questions.</p>
     </div>
     <section style="padding-top:8px">
       <div class="webinar-grid" id="webinar-list"></div>
@@ -47,7 +47,7 @@
     <div class="footer-inner">
       <div class="footer-brand">
         <a href="index.html" class="brand"><span class="logo-mark" role="img" aria-label="Beacon"></span><span class="brand-name">Beacon</span></a>
-        <p>A study workspace for the TOEFL, IELTS and SAT &mdash; real questions, marked the moment you answer.</p>
+        <p>A study workspace for the TOEFL, IELTS and SAT - real questions, marked the moment you answer.</p>
         <span class="hand-note">made by a small team, mostly by hand</span>
       </div>
       <div class="footer-links">
@@ -61,7 +61,7 @@
         </ul></div>
       </div>
     </div>
-    <div class="footer-bottom"><p>&copy; 2026 Beacon</p><p>Reading &amp; Listening, free &mdash; and we mean it.</p></div>
+    <div class="footer-bottom"><p>&copy; 2026 Beacon</p><p>Reading &amp; Listening, free - and we mean it.</p></div>
   </div>
 </footer>
 
@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
         '<h4>' + esc(w.title) + '</h4><p>' + esc(w.desc) + '</p>' +
         '<a href="webinar.html?id=' + encodeURIComponent(w.id) + '" class="link-arrow">' + (finished ? 'View' : 'Join') + ' &#8594;</a></div></div>';
     }).join("");
-    if (!items.length) list.innerHTML = '<p style="color:var(--muted)">No webinars scheduled right now — check back soon.</p>';
+    if (!items.length) list.innerHTML = '<p style="color:var(--muted)">No webinars scheduled right now - check back soon.</p>';
   }
   if (window.BeaconStore && BeaconStore.ready) BeaconStore.ready().then(render); else render();
 });

@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign in — Beacon</title>
+<title>Sign in - Beacon</title>
 <link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=88">
-<script src="assets/config.js?v=88" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=89">
+<script src="assets/config.js?v=89" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=88" defer></script>
-<script src="assets/chat.js?v=88" defer></script>
+<script src="assets/auth.js?v=89" defer></script>
+<script src="assets/chat.js?v=89" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -32,7 +32,7 @@
   <div class="wrap">
     <section class="narrow" style="padding-top:56px">
       <div class="card" id="auth-card"></div>
-      <p class="hand-note" style="display:block;text-align:center;margin-top:20px">reading &amp; listening are free — no card needed &#8599;</p>
+      <p class="hand-note" style="display:block;text-align:center;margin-top:20px">reading &amp; listening are free - no card needed &#8599;</p>
     </section>
   </div>
 </main>
@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function renderLogin() {
     card.innerHTML =
       '<h1>Welcome back</h1><p class="sub">Log in to keep your saved questions and progress.</p>' +
-      (qs("confirmed") ? '<div class="form-msg good show">Email confirmed — you can log in now.</div>' : '') +
+      (qs("confirmed") ? '<div class="form-msg good show">Email confirmed - you can log in now.</div>' : '') +
       googleBlock("Continue with Google") +
       '<div class="field"><label>Email or admin login</label><input id="id" type="text" autocomplete="username" placeholder="you@example.com"></div>' +
       '<div class="field"><label>Password</label><input id="pw" type="password" autocomplete="current-password" placeholder="••••••••"></div>' +
@@ -112,10 +112,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function renderRegister() {
     card.innerHTML =
-      '<h1>Create your account</h1><p class="sub">Free to start — Reading and Listening, no card.</p>' +
+      '<h1>Create your account</h1><p class="sub">Free to start - Reading and Listening, no card.</p>' +
       googleBlock("Sign up with Google") +
       '<div class="field"><label>Name</label><input id="nm" type="text" autocomplete="name" placeholder="Your name"></div>' +
-      '<div class="field"><label>Nickname <span class="hint">shown in the chat — must be unique</span></label><input id="nick" type="text" autocomplete="off" placeholder="e.g. star_reader" maxlength="20"><span class="hint" id="nickmsg"></span></div>' +
+      '<div class="field"><label>Nickname <span class="hint">shown in the chat - must be unique</span></label><input id="nick" type="text" autocomplete="off" placeholder="e.g. star_reader" maxlength="20"><span class="hint" id="nickmsg"></span></div>' +
       '<div class="field"><label>Email</label><input id="em" type="email" autocomplete="email" placeholder="you@example.com"></div>' +
       '<div class="field"><label>Password</label><input id="pw" type="password" autocomplete="new-password" placeholder="At least 6 characters"><span class="hint">Minimum 6 characters.</span></div>' +
       '<div class="goal-block"><label class="goal-title">Which exams are you preparing for? <span class="hint">tick any, add a target score</span></label>' +
@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var v=nickInput.value.trim(), nm=document.getElementById("nickmsg");
       if (!v){ nm.textContent=""; return; }
       if (window.sb) sb.from("profiles").select("user_id").eq("nickname", v).maybeSingle().then(function(r){
-        if (r && r.data){ nm.textContent="that nickname is taken — try another"; nm.style.color="#ef7d7d"; }
+        if (r && r.data){ nm.textContent="that nickname is taken - try another"; nm.style.color="#ef7d7d"; }
         else { nm.textContent="available ✓"; nm.style.color="#4bcf94"; }
       });
     });
@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", function () {
       BeaconAuth.verifyCode(val("vem"), val("code")).then(function (r) {
         busy(vgo, false);
         if (!r.ok) return msg(m, false, r.error);
-        msg(m, true, "Verified — signing you in…");
+        msg(m, true, "Verified - signing you in…");
         setTimeout(function () { location.href = "index.html"; }, 800);
       });
     };
@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", function () {
       e.preventDefault();
       var m = document.getElementById("m");
       BeaconAuth.resendCode(val("vem")).then(function (r) {
-        if (r.ok) msg(m, true, "Sent — check your inbox (and spam).");
+        if (r.ok) msg(m, true, "Sent - check your inbox (and spam).");
         else msg(m, false, r.error);
       });
     };
@@ -188,7 +188,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var m=document.getElementById("m"); busy(go,true);
       BeaconAuth.resetRequest(val("em")).then(function(r){
         busy(go,false);
-        if (r.ok) msg(m, true, "Done — check your inbox for the reset link.");
+        if (r.ok) msg(m, true, "Done - check your inbox for the reset link.");
         else msg(m, false, r.error);
       });
     };
@@ -205,7 +205,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var m=document.getElementById("m"); busy(go,true);
       BeaconAuth.setNewPassword(val("pw")).then(function(r){
         busy(go,false);
-        if (r.ok){ msg(m, true, "Password updated — taking you to log in…"); setTimeout(function(){ location.href="auth.html?view=login"; }, 1200); }
+        if (r.ok){ msg(m, true, "Password updated - taking you to log in…"); setTimeout(function(){ location.href="auth.html?view=login"; }, 1200); }
         else msg(m, false, r.error);
       });
     };

@@ -1,4 +1,4 @@
-/* Beacon — community chat (bottom-right), real-time via Supabase.
+/* Beacon - community chat (bottom-right), real-time via Supabase.
  *
  * Needs (already loaded on the page):
  *   assets/config.js, @supabase/supabase-js, assets/auth.js  →  window.sb
@@ -33,7 +33,7 @@
     return '<img class="' + cls + '" src="' + AV_BASE + '_default.svg" alt="">';
   }
   // current nickname + avatar per author (user_id → {nickname, avatar}), so every
-  // message shows the author's up-to-date picture & name — even for logged-out guests
+  // message shows the author's up-to-date picture & name - even for logged-out guests
   var profCache = {};
   function ensureProfiles(ids) {
     var need = [];
@@ -44,7 +44,7 @@
       need.forEach(function (id) { if (!(id in profCache)) profCache[id] = {}; });  // remember misses so we don't refetch
     }).catch(function () { need.forEach(function (id) { if (!(id in profCache)) profCache[id] = {}; }); });
   }
-  // push my current avatar into the top-right account chip(s) — used after onboarding/first load
+  // push my current avatar into the top-right account chip(s) - used after onboarding/first load
   function paintChipAvatar() {
     if (!myAvatar) return;
     try { document.querySelectorAll('.acct-av').forEach(function (img) { img.src = AV_BASE + myAvatar + '.svg'; }); } catch (e) {}
@@ -94,13 +94,13 @@
       }
       var presetNick = nick || (u.user_metadata && u.user_metadata.nickname) || '';
       var dismissed = false; try { dismissed = sessionStorage.getItem('beacon:onboClosed') === '1'; } catch (e) {}
-      if (dismissed) {                                           // they closed it earlier this session — don't nag/redirect
+      if (dismissed) {                                           // they closed it earlier this session - don't nag/redirect
         var fb = cleanNick(presetNick || (u.email || 'you').split('@')[0]);
         return { nick: nick || fb, avatar: av || '' };
       }
       return runOnboarding(u, presetNick, av || '');             // otherwise show the setup screen
     }).catch(function () {
-      // fail open — a query hiccup must never lock someone out of the whole site
+      // fail open - a query hiccup must never lock someone out of the whole site
       var fb = (u.user_metadata && (u.user_metadata.nickname || u.user_metadata.name)) || (u.email || 'you').split('@')[0];
       return { nick: fb, avatar: '' };
     });
@@ -108,7 +108,7 @@
 
   // Blocking welcome screen: a unique nickname AND an avatar are required to continue.
   function runOnboarding(u, presetNick, presetAv) {
-    // the setup window belongs on the home page — if we're anywhere else, go there and show it
+    // the setup window belongs on the home page - if we're anywhere else, go there and show it
     var file = location.pathname.split('/').pop() || '';
     if (file !== '' && file !== 'index.html') { location.href = 'index.html'; return new Promise(function () {}); }
     return new Promise(function (resolve) {
@@ -118,7 +118,7 @@
         '<div class="bc-onbo-card">' +
           '<button id="bc-onbo-x" class="bc-onbo-x" aria-label="Close" title="Close">✕</button>' +
           '<h2>Welcome to Beacon 👋</h2>' +
-          '<p>Pick a nickname and a picture to finish setting up — they appear next to your messages in the community chat.</p>' +
+          '<p>Pick a nickname and a picture to finish setting up - they appear next to your messages in the community chat.</p>' +
           '<label class="bc-onbo-lbl">Nickname</label>' +
           '<input id="bc-onbo-nick" maxlength="20" placeholder="e.g. star_reader" autocomplete="off" value="' + esc(presetNick) + '">' +
           '<div id="bc-onbo-msg" class="bc-onbo-msg"></div>' +
@@ -155,13 +155,13 @@
         if (!selected) { setMsg('Pick an avatar too.', false); return; }
         go.disabled = true; setMsg('Saving…', true);
         sb.from('profiles').select('user_id').eq('nickname', v).maybeSingle().then(function (chk) {
-          if (chk && chk.data && chk.data.user_id && chk.data.user_id !== u.id) { setMsg('“' + v + '” is already taken — pick another.', false); refresh(); return; }
+          if (chk && chk.data && chk.data.user_id && chk.data.user_id !== u.id) { setMsg('“' + v + '” is already taken - pick another.', false); refresh(); return; }
           return sb.from('profiles').upsert({ user_id: u.id, nickname: v, avatar: selected }, { onConflict: 'user_id' }).then(function (r) {
-            if (r.error) { setMsg(/duplicate|unique/i.test(r.error.message || '') ? 'That nickname is taken — pick another.' : r.error.message, false); refresh(); return; }
+            if (r.error) { setMsg(/duplicate|unique/i.test(r.error.message || '') ? 'That nickname is taken - pick another.' : r.error.message, false); refresh(); return; }
             overlay.remove();
             resolve({ nick: v, avatar: selected });
           });
-        }).catch(function () { setMsg('Something went wrong — please try again.', false); refresh(); });
+        }).catch(function () { setMsg('Something went wrong - please try again.', false); refresh(); });
       };
       setTimeout(function () { try { nickI.focus(); } catch (e) {} }, 60);
     });
@@ -282,7 +282,7 @@
     sb.from('messages').select('*').order('created_at', { ascending: false }).limit(60).then(function (r) {
       var rows = (r.data || []).reverse();
       ensureProfiles(rows.map(function (m) { return m.user_id; })).then(function () {
-        body.innerHTML = rows.length ? '' : '<div class="bc-empty">No messages yet — say hi 👋</div>';
+        body.innerHTML = rows.length ? '' : '<div class="bc-empty">No messages yet - say hi 👋</div>';
         rows.forEach(function (m) { body.appendChild(msgEl(m)); });
         scrollDown();
       });

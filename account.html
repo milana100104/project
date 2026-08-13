@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Account — Beacon</title>
+<title>Account - Beacon</title>
 <link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=88">
-<script src="assets/app.js?v=88" defer></script>
-<script src="assets/config.js?v=88" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=89">
+<script src="assets/app.js?v=89" defer></script>
+<script src="assets/config.js?v=89" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=88" defer></script>
-<script src="assets/chat.js?v=88" defer></script>
+<script src="assets/auth.js?v=89" defer></script>
+<script src="assets/chat.js?v=89" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
              ielts:{name:"IELTS", scale:"band", ph:"target band, e.g. 7.0"},
              sat:{name:"SAT", scale:"/1600", ph:"target /1600, e.g. 1400"} };
   var AVATARS = ['fox','panda','cat','bear','penguin','rabbit','frog','koala','tiger','pig','owl','dog'];
-  function fmtScore(exam, v){ if (v==null) return "—"; return exam==="ielts" ? Number(v).toFixed(1) : String(Math.round(v)); }
+  function fmtScore(exam, v){ if (v==null) return "-"; return exam==="ielts" ? Number(v).toFixed(1) : String(Math.round(v)); }
 
   function renderProfile() {
     var goals = BeaconStore.getGoals ? BeaconStore.getGoals() : {};
@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var goalsCard = (user.role === "admin") ? "" :
       '<div class="card" style="margin-top:16px;margin-bottom:48px"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px">' +
       '<h2 style="font-size:1.1rem">Your exams &amp; goals</h2><button class="icon-btn go" id="edit-goals">Edit</button></div>' +
-      (goalRows || '<p class="sub">No exams chosen yet — tap Edit to pick what you’re preparing for and set a target.</p>') +
+      (goalRows || '<p class="sub">No exams chosen yet - tap Edit to pick what you’re preparing for and set a target.</p>') +
       '<div id="goals-editor"></div></div>';
 
     panel.innerHTML =
@@ -149,7 +149,7 @@ document.addEventListener("DOMContentLoaded", function () {
       saveBtn.disabled = true; setMsg("Saving…", true);
       sb.from("profiles").upsert(payload, { onConflict: "user_id" }).then(function(r){
         saveBtn.disabled = false;
-        if (r.error) { setMsg(/duplicate|unique/i.test(r.error.message) ? "That nickname is taken — try another." : r.error.message, false); return; }
+        if (r.error) { setMsg(/duplicate|unique/i.test(r.error.message) ? "That nickname is taken - try another." : r.error.message, false); return; }
         setMsg("Saved ✓", true);
         if (window.BeaconChat) {
           if (BeaconChat.setNick) BeaconChat.setNick(v);

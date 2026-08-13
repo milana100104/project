@@ -1,16 +1,16 @@
-/* Beacon — workspace + practice engine (client-side, no backend).
+/* Beacon - workspace + practice engine (client-side, no backend).
  *
  * Responsibilities:
  *   - BeaconStore: localStorage-backed bank of questions, favorites, solved
  *     progress and webinars. Ships with a starter content bank; admins add more.
- *   - renderWorkspace(sel, config): the "working" exam pages (TOEFL, SAT) — a
+ *   - renderWorkspace(sel, config): the "working" exam pages (TOEFL, SAT) - a
  *     calm, predictable list of skills -> question types, no marketing.
  *   - practice.html: a focused one-question-at-a-time runner with instant
  *     checking, explanations, favorites, and the "solved stays out of the flow
  *     until the pool is cleared" rule.
  *
  * Content note: audio for Listening is a placeholder until an admin uploads
- * real files — the transcript stands in so the questions are still answerable.
+ * real files - the transcript stands in so the questions are still answerable.
  */
 (function () {
   'use strict';
@@ -19,26 +19,26 @@
 
   /* ============================ starter content ============================ */
   /* Types: 'choice' (multiple choice / best response / T-F-NG rendered as choice),
-     'cloze' (complete the words — fill missing letters). */
+     'cloze' (complete the words - fill missing letters). */
   function Q(o) { return o; }
   var CONTENT = [
-    /* ---------------- IELTS · Reading — sample full tests (passage sets) ---------------- */
+    /* ---------------- IELTS · Reading - sample full tests (passage sets) ---------------- */
     Q({ id:'i-r-full-easy', exam:'ielts', skill:'reading', type:'full-passage', format:'passage', difficulty:'easy',
       title:'The Honey Bee',
-      passage:"The Honey Bee\n\nHoney bees are among the most important insects on Earth. They live together in large groups called colonies, and a single hive can hold as many as sixty thousand bees during the summer months. Each colony works as one team, and every bee has a job to do.\n\nThere are three kinds of bee in a colony. The queen is the largest bee, and there is only one queen in each hive. Her single task is to lay eggs — on a good day she can lay up to two thousand of them. The male bees are called drones. They do no work in the hive; their only role is to mate with a new queen. The vast majority of the colony is made up of female worker bees. Workers clean the hive, feed the young, guard the entrance and, most famously, collect nectar from flowers to make honey.\n\nWhen a worker finds a good source of food, she flies back to the hive and tells the others where it is. She does this by performing a special movement known as the waggle dance. The direction of the dance shows the direction of the flowers, and the length of the dance shows how far away they are. In this way, thousands of bees can be guided to the same field of flowers.\n\nBees make honey from nectar, a sweet liquid produced by flowers. A worker sucks up the nectar and stores it in a special stomach. Back at the hive, the nectar is passed from bee to bee and slowly loses its water until it becomes thick honey. The bees store the honey in wax cells and seal it so that it will keep for the winter, when no flowers are in bloom.\n\nAs they move from flower to flower, bees also carry a fine yellow powder called pollen on their bodies. Without meaning to, they spread this pollen from one plant to another. This process, called pollination, allows the plants to produce seeds and fruit. Many of the fruits and vegetables that people eat every day depend on bees, which is why scientists are so worried about the recent fall in bee numbers around the world.",
+      passage:"The Honey Bee\n\nHoney bees are among the most important insects on Earth. They live together in large groups called colonies, and a single hive can hold as many as sixty thousand bees during the summer months. Each colony works as one team, and every bee has a job to do.\n\nThere are three kinds of bee in a colony. The queen is the largest bee, and there is only one queen in each hive. Her single task is to lay eggs - on a good day she can lay up to two thousand of them. The male bees are called drones. They do no work in the hive; their only role is to mate with a new queen. The vast majority of the colony is made up of female worker bees. Workers clean the hive, feed the young, guard the entrance and, most famously, collect nectar from flowers to make honey.\n\nWhen a worker finds a good source of food, she flies back to the hive and tells the others where it is. She does this by performing a special movement known as the waggle dance. The direction of the dance shows the direction of the flowers, and the length of the dance shows how far away they are. In this way, thousands of bees can be guided to the same field of flowers.\n\nBees make honey from nectar, a sweet liquid produced by flowers. A worker sucks up the nectar and stores it in a special stomach. Back at the hive, the nectar is passed from bee to bee and slowly loses its water until it becomes thick honey. The bees store the honey in wax cells and seal it so that it will keep for the winter, when no flowers are in bloom.\n\nAs they move from flower to flower, bees also carry a fine yellow powder called pollen on their bodies. Without meaning to, they spread this pollen from one plant to another. This process, called pollination, allows the plants to produce seeds and fruit. Many of the fruits and vegetables that people eat every day depend on bees, which is why scientists are so worried about the recent fall in bee numbers around the world.",
       blocks:[
-        { kind:'choice', prompt:'Questions 1–4 — Choose the correct letter, A, B, C or D.', items:[
+        { kind:'choice', prompt:'Questions 1–4 - Choose the correct letter, A, B, C or D.', items:[
           { prompt:'A single hive can hold as many as', choices:['six thousand bees','sixteen thousand bees','sixty thousand bees','six hundred thousand bees'], answer:2 },
           { prompt:'The only job of the queen bee is to', choices:['guard the hive','lay eggs','collect nectar','clean the cells'], answer:1 },
           { prompt:'Drones are bees that', choices:['clean the hive','make the honey','mate with a new queen','feed the young'], answer:2 },
           { prompt:'The waggle dance tells the other bees', choices:['when winter is coming','where the flowers are','which bee is the queen','how to make wax'], answer:1 } ]},
-        { kind:'completion', prompt:'Questions 5–9 — Complete the sentences with ONE word from the text.', items:[
+        { kind:'completion', prompt:'Questions 5–9 - Complete the sentences with ONE word from the text.', items:[
           { prompt:'Most of the bees in a colony are female ______ bees.', answer:'worker' },
           { prompt:'A worker stores nectar in a special ______ inside her body.', answer:'stomach' },
           { prompt:'Honey is stored and sealed in cells made of ______.', answer:'wax' },
           { prompt:'Bees carry a yellow powder called ______ from flower to flower.', answer:'pollen' },
           { prompt:'The spreading of this powder between plants is called ______.', answer:'pollination' } ]},
-        { kind:'matching', prompt:'Questions 10–13 — Match each description with the correct bee. Choose A, B or C.  A Queen · B Drone · C Worker.', options:['Queen','Drone','Worker'], items:[
+        { kind:'matching', prompt:'Questions 10–13 - Match each description with the correct bee. Choose A, B or C.  A Queen · B Drone · C Worker.', options:['Queen','Drone','Worker'], items:[
           { prompt:'lays all the eggs in the hive', answer:'Queen' },
           { prompt:'mates with a new queen but does no work', answer:'Drone' },
           { prompt:'collects nectar and guards the entrance', answer:'Worker' },
@@ -46,20 +46,20 @@
       ] }),
     Q({ id:'i-r-full-medium', exam:'ielts', skill:'reading', type:'full-passage', format:'passage', difficulty:'medium',
       title:'The Printing Press',
-      passage:"The Printing Press\n\nA. Before the middle of the fifteenth century, almost every book in Europe was written out by hand. This work was usually done by monks, who could spend months or even years copying a single volume. Because each book took so long to produce, books were extremely rare and expensive. Only the very rich, the church and a handful of universities owned more than a few of them, and most ordinary people never held a book in their lives.\n\nB. This situation changed dramatically thanks to a German craftsman named Johannes Gutenberg. Around 1440, in the city of Mainz, Gutenberg developed a printing press that used movable type. Instead of carving a whole page from a single block of wood, he made small metal pieces, each carrying one letter. These pieces could be arranged to form any page, locked into a frame, covered with ink and pressed onto paper. When the page was finished, the letters could be taken apart and used again for a completely different text.\n\nC. The effect of this invention was enormous. A single press could produce hundreds of copies of a book in the time it had once taken to copy one by hand. The price of books fell quickly, and for the first time ordinary merchants and craftsmen could afford to own them. Gutenberg's most famous product, a printed Bible completed around 1455, showed that printed books could be just as beautiful as handwritten ones.\n\nD. As presses spread across Europe, the number of books grew at an astonishing rate. Historians estimate that by the year 1500 — less than fifty years after Gutenberg — more than twenty million books had been printed. New ideas could now travel faster and further than ever before. Scientists in different countries could read one another's work, and discoveries were shared and built upon instead of being lost.\n\nE. The printing press also changed society in ways Gutenberg could never have imagined. As books became cheap and common, more and more people learned to read, and levels of literacy rose steadily. Ideas that governments and churches disliked were now almost impossible to stop, because they could be printed and copied endlessly.",
+      passage:"The Printing Press\n\nA. Before the middle of the fifteenth century, almost every book in Europe was written out by hand. This work was usually done by monks, who could spend months or even years copying a single volume. Because each book took so long to produce, books were extremely rare and expensive. Only the very rich, the church and a handful of universities owned more than a few of them, and most ordinary people never held a book in their lives.\n\nB. This situation changed dramatically thanks to a German craftsman named Johannes Gutenberg. Around 1440, in the city of Mainz, Gutenberg developed a printing press that used movable type. Instead of carving a whole page from a single block of wood, he made small metal pieces, each carrying one letter. These pieces could be arranged to form any page, locked into a frame, covered with ink and pressed onto paper. When the page was finished, the letters could be taken apart and used again for a completely different text.\n\nC. The effect of this invention was enormous. A single press could produce hundreds of copies of a book in the time it had once taken to copy one by hand. The price of books fell quickly, and for the first time ordinary merchants and craftsmen could afford to own them. Gutenberg's most famous product, a printed Bible completed around 1455, showed that printed books could be just as beautiful as handwritten ones.\n\nD. As presses spread across Europe, the number of books grew at an astonishing rate. Historians estimate that by the year 1500 - less than fifty years after Gutenberg - more than twenty million books had been printed. New ideas could now travel faster and further than ever before. Scientists in different countries could read one another's work, and discoveries were shared and built upon instead of being lost.\n\nE. The printing press also changed society in ways Gutenberg could never have imagined. As books became cheap and common, more and more people learned to read, and levels of literacy rose steadily. Ideas that governments and churches disliked were now almost impossible to stop, because they could be printed and copied endlessly.",
       blocks:[
-        { kind:'matching', prompt:'Questions 1–5 — Which paragraph (A–E) contains the following information?', options:['A','B','C','D','E'], items:[
+        { kind:'matching', prompt:'Questions 1–5 - Which paragraph (A–E) contains the following information?', options:['A','B','C','D','E'], items:[
           { prompt:'an estimate of how many books existed by 1500', answer:'D' },
           { prompt:'a description of who copied books before printing', answer:'A' },
           { prompt:'the effect of printing on how many people could read', answer:'E' },
           { prompt:'an explanation of how the metal type could be reused', answer:'B' },
           { prompt:'a mention of Gutenberg’s most famous printed work', answer:'C' } ]},
-        { kind:'choice', prompt:'Questions 6–9 — Choose the correct letter, A, B, C or D.', items:[
+        { kind:'choice', prompt:'Questions 6–9 - Choose the correct letter, A, B, C or D.', items:[
           { prompt:'Before printing, most books in Europe were', choices:['printed in Mainz','written out by hand','owned by merchants','made of metal'], answer:1 },
           { prompt:'Gutenberg’s movable type was made of', choices:['wood','metal','paper','stone'], answer:1 },
           { prompt:'Gutenberg developed his press in about', choices:['1350','1440','1500','1600'], answer:1 },
           { prompt:'According to the text, one result of printing was that ideas', choices:['were easily stopped','stayed within one country','spread faster and further','became more expensive'], answer:2 } ]},
-        { kind:'completion', prompt:'Questions 10–13 — Complete the sentences with ONE word from the text.', items:[
+        { kind:'completion', prompt:'Questions 10–13 - Complete the sentences with ONE word from the text.', items:[
           { prompt:'Before printing, books were usually copied by ______.', answer:'monks' },
           { prompt:'Gutenberg worked in the German city of ______.', answer:'Mainz' },
           { prompt:'Each small metal piece carried a single ______.', answer:'letter' },
@@ -67,20 +67,20 @@
       ] }),
     Q({ id:'i-r-full-hard', exam:'ielts', skill:'reading', type:'full-passage', format:'passage', difficulty:'hard',
       title:'Mapping the World',
-      passage:"Mapping the World\n\nFor most of human history, maps were as much works of imagination as records of fact. Early mapmakers filled the blank spaces beyond the known world with sea monsters, mythical kingdoms and warnings that 'here be dragons'. A map was often a statement of belief — about where paradise lay, or where the centre of the world could be found — rather than an accurate guide for a traveller.\n\nThe first great step towards scientific cartography was the realisation that the Earth is a sphere. In the third century BC, the Greek scholar Eratosthenes, working at the famous Library of Alexandria in Egypt, went further still. By comparing the length of shadows in two different cities on the same day, he calculated the circumference of the Earth. His result was remarkably close to the figure accepted today, an extraordinary achievement for a man with no instruments beyond sticks and a knowledge of geometry.\n\nSeveral centuries later, the astronomer Ptolemy set out a system of lines of latitude and longitude that allowed any place to be described by a pair of coordinates. Although much of the geographical detail in Ptolemy's work was inaccurate, the framework he created proved so useful that it still underlies our modern system of time zones and satellite navigation.\n\nThe next revolution came in the sixteenth century, when the Flemish mapmaker Gerardus Mercator devised a new way of drawing the round Earth on a flat sheet of paper. On a Mercator map, a straight line represents a constant compass bearing, which made the map invaluable to sailors plotting a long voyage. The price of this convenience, however, was serious distortion: lands far from the equator, such as Greenland, appear vastly larger than they really are.\n\nBy the eighteenth century, governments had begun to see accurate maps as a matter of national importance. In France, four generations of the Cassini family devoted themselves to surveying the entire country, measuring it triangle by triangle with painstaking care. Their work, completed after the Revolution, made France the first nation to be mapped completely by scientific methods.\n\nToday the mapmaker's vision is no longer limited to what the human eye can see. Radar, which bounces microwave signals off a surface, can peer through cloud and forest and has even produced the first maps of the mountains of Venus. Combined with sonar, it has charted much of the ocean floor for the first time. Above all, satellites now fix any point on the planet to within a few centimetres, so that modern surveyors rarely work without them.",
+      passage:"Mapping the World\n\nFor most of human history, maps were as much works of imagination as records of fact. Early mapmakers filled the blank spaces beyond the known world with sea monsters, mythical kingdoms and warnings that 'here be dragons'. A map was often a statement of belief - about where paradise lay, or where the centre of the world could be found - rather than an accurate guide for a traveller.\n\nThe first great step towards scientific cartography was the realisation that the Earth is a sphere. In the third century BC, the Greek scholar Eratosthenes, working at the famous Library of Alexandria in Egypt, went further still. By comparing the length of shadows in two different cities on the same day, he calculated the circumference of the Earth. His result was remarkably close to the figure accepted today, an extraordinary achievement for a man with no instruments beyond sticks and a knowledge of geometry.\n\nSeveral centuries later, the astronomer Ptolemy set out a system of lines of latitude and longitude that allowed any place to be described by a pair of coordinates. Although much of the geographical detail in Ptolemy's work was inaccurate, the framework he created proved so useful that it still underlies our modern system of time zones and satellite navigation.\n\nThe next revolution came in the sixteenth century, when the Flemish mapmaker Gerardus Mercator devised a new way of drawing the round Earth on a flat sheet of paper. On a Mercator map, a straight line represents a constant compass bearing, which made the map invaluable to sailors plotting a long voyage. The price of this convenience, however, was serious distortion: lands far from the equator, such as Greenland, appear vastly larger than they really are.\n\nBy the eighteenth century, governments had begun to see accurate maps as a matter of national importance. In France, four generations of the Cassini family devoted themselves to surveying the entire country, measuring it triangle by triangle with painstaking care. Their work, completed after the Revolution, made France the first nation to be mapped completely by scientific methods.\n\nToday the mapmaker's vision is no longer limited to what the human eye can see. Radar, which bounces microwave signals off a surface, can peer through cloud and forest and has even produced the first maps of the mountains of Venus. Combined with sonar, it has charted much of the ocean floor for the first time. Above all, satellites now fix any point on the planet to within a few centimetres, so that modern surveyors rarely work without them.",
       blocks:[
-        { kind:'choice', prompt:'Questions 1–4 — Choose the correct letter, A, B, C or D.', items:[
+        { kind:'choice', prompt:'Questions 1–4 - Choose the correct letter, A, B, C or D.', items:[
           { prompt:'The writer says that early maps were often', choices:['perfectly accurate','statements of belief as much as fact','drawn only by sailors','made using instruments'], answer:1 },
           { prompt:'Eratosthenes calculated the size of the Earth by studying', choices:['the movement of ships','shadows in two cities','the mountains of Venus','lines of longitude'], answer:1 },
           { prompt:'The main disadvantage of a Mercator map is that it', choices:['cannot show the sea','distorts the size of distant lands','has no compass bearings','was too expensive for sailors'], answer:1 },
           { prompt:'France was the first country to be', choices:['drawn on a Mercator map','mapped completely by scientific methods','measured using radar','described by Ptolemy'], answer:1 } ]},
-        { kind:'matching', prompt:'Questions 5–9 — Match each achievement with the correct person or tool. Choose from A–E.  A Eratosthenes · B Ptolemy · C Mercator · D the Cassini family · E Radar.', options:['Eratosthenes','Ptolemy','Mercator','The Cassini family','Radar'], items:[
+        { kind:'matching', prompt:'Questions 5–9 - Match each achievement with the correct person or tool. Choose from A–E.  A Eratosthenes · B Ptolemy · C Mercator · D the Cassini family · E Radar.', options:['Eratosthenes','Ptolemy','Mercator','The Cassini family','Radar'], items:[
           { prompt:'created a system of latitude and longitude', answer:'Ptolemy' },
           { prompt:'measured the circumference of the Earth', answer:'Eratosthenes' },
           { prompt:'allowed sailors to follow a constant compass bearing', answer:'Mercator' },
           { prompt:'surveyed the whole of France over four generations', answer:'The Cassini family' },
           { prompt:'produced the first maps of the mountains of Venus', answer:'Radar' } ]},
-        { kind:'completion', prompt:'Questions 10–13 — Complete the sentences with ONE word from the text.', items:[
+        { kind:'completion', prompt:'Questions 10–13 - Complete the sentences with ONE word from the text.', items:[
           { prompt:'Eratosthenes worked at the Library of ______.', answer:'Alexandria' },
           { prompt:'On a Mercator map, ______ appears far larger than it really is.', answer:'Greenland' },
           { prompt:'Radar works by bouncing ______ signals off a surface.', answer:'microwave' },
@@ -89,7 +89,7 @@
 
     /* ---------------- TOEFL · Reading ---------------- */
     Q({ id:'t-r-mc-1', exam:'toefl', skill:'reading', type:'multiple-choice', difficulty:'medium',
-      passage:'The lighthouse at Portland Head has guided ships since 1791. Its keepers once lived on site year-round, trimming the wick each dusk and logging every passing vessel. Automation arrived in 1989, and the last keeper left — but the light still turns.',
+      passage:'The lighthouse at Portland Head has guided ships since 1791. Its keepers once lived on site year-round, trimming the wick each dusk and logging every passing vessel. Automation arrived in 1989, and the last keeper left - but the light still turns.',
       prompt:'What can be inferred about the lighthouse keepers before 1989?',
       choices:['They visited only in summer.','They lived at the lighthouse permanently.','They never recorded passing ships.','They controlled the light remotely.'],
       answer:1, explanation:'"Lived on site year-round" and "logging every passing vessel" show they lived there permanently and kept records.' }),
@@ -97,12 +97,12 @@
       passage:'Coral reefs cover less than one percent of the ocean floor, yet they support roughly a quarter of all marine species. This density makes them one of the most productive ecosystems on Earth.',
       prompt:'The word "productive" in the passage is closest in meaning to:',
       choices:['expensive','fertile / full of life','industrial','shrinking'],
-      answer:1, explanation:'"Productive" here describes an ecosystem teeming with life — fertile and biologically rich.' }),
+      answer:1, explanation:'"Productive" here describes an ecosystem teeming with life - fertile and biologically rich.' }),
     Q({ id:'t-r-mc-3', exam:'toefl', skill:'reading', type:'multiple-choice', difficulty:'hard',
       passage:'Some historians argue that the printing press did not so much create new ideas as accelerate the spread of existing ones. On this view, its true power lay not in invention but in circulation.',
       prompt:'Which statement best captures the historians’ argument?',
       choices:['The press invented entirely new ideas.','The press mattered mainly for how fast it spread ideas.','The press slowed the exchange of ideas.','The press had little historical impact.'],
-      answer:1, explanation:'The passage stresses "circulation" over "invention" — the press mattered for accelerating the spread of ideas.' }),
+      answer:1, explanation:'The passage stresses "circulation" over "invention" - the press mattered for accelerating the spread of ideas.' }),
     Q({ id:'t-r-cw-1', exam:'toefl', skill:'reading', type:'complete-the-words', difficulty:'medium',
       prompt:'Complete the missing letters to finish each word.',
       parts:[{text:'A beacon is a light or fire set on a height to '},{stem:'gu',blank:'ide'},{text:' travellers and warn of '},{stem:'dan',blank:'ger'},{text:'.'}],
@@ -120,7 +120,7 @@
       passage:'[1] Early maps often left blank spaces where knowledge ran out. [2] Rather than admit ignorance, some cartographers filled these gaps with imagined coastlines. [3] Later voyages erased many of these inventions. [4] Yet a few phantom islands lingered on charts for centuries.',
       prompt:'The passage is primarily concerned with:',
       choices:['how sailors named islands','how gaps in knowledge shaped early maps','why maps are printed on paper','the cost of ocean voyages'],
-      answer:1, explanation:'Every sentence returns to how missing knowledge — and guesses about it — shaped early maps.' }),
+      answer:1, explanation:'Every sentence returns to how missing knowledge - and guesses about it - shaped early maps.' }),
 
     /* ---------------- TOEFL · Listening ---------------- */
     Q({ id:'t-l-br-1', exam:'toefl', skill:'listening', type:'best-response', difficulty:'easy',
@@ -134,12 +134,12 @@
       choices:['"Yes, they’re now on Thursday at two."','"I love her lectures."','"The office is painted blue."','"I’ll have the salad."'],
       answer:0, explanation:'He asks a yes/no question about a schedule change; the only response that actually answers it is the first.' }),
     Q({ id:'t-l-dl-1', exam:'toefl', skill:'listening', type:'dialogues', difficulty:'medium',
-      audio:true, transcript:'Student: "I’d like to drop the Tuesday lab and switch to Friday." Advisor: "Friday’s full, but I can put you on the waitlist — you’re second in line."',
+      audio:true, transcript:'Student: "I’d like to drop the Tuesday lab and switch to Friday." Advisor: "Friday’s full, but I can put you on the waitlist - you’re second in line."',
       prompt:'What does the advisor offer the student?',
       choices:['A guaranteed Friday spot','A place on the waitlist','A refund for the lab','A different professor'],
       answer:1, explanation:'The advisor says Friday is full but offers the waitlist, second in line.' }),
     Q({ id:'t-l-dl-2', exam:'toefl', skill:'listening', type:'dialogues', difficulty:'easy',
-      audio:true, transcript:'Librarian: "This book is reference-only, so it can’t leave the building." Student: "Could I at least photocopy a few pages?" Librarian: "Of course — the copier’s just around the corner."',
+      audio:true, transcript:'Librarian: "This book is reference-only, so it can’t leave the building." Student: "Could I at least photocopy a few pages?" Librarian: "Of course - the copier’s just around the corner."',
       prompt:'What does the student want to do?',
       choices:['Borrow the book overnight','Copy a few pages','Buy the book','Return a late book'],
       answer:1, explanation:'The student asks to photocopy a few pages once told the book cannot be borrowed.' }),
@@ -161,7 +161,7 @@
       choices:['The main entrance','The north gate','The car park','The gift shop'], answer:1,
       explanation:'The guide says the tour meets "at the north gate, not the main entrance."' }),
     Q({ id:'i-l-1', exam:'ielts', skill:'listening', type:'form-completion', part:1, difficulty:'easy', format:'text',
-      audio:true, transcript:'Receptionist: "Can I take your surname?" Caller: "It’s Okafor — that’s O-K-A-F-O-R."',
+      audio:true, transcript:'Receptionist: "Can I take your surname?" Caller: "It’s Okafor - that’s O-K-A-F-O-R."',
       prompt:'Complete the form. Surname: ______ (type what you hear).',
       answer:'okafor', accept:['Okafor'],
       explanation:'The caller spells the surname aloud: O-K-A-F-O-R.' }),
@@ -226,12 +226,12 @@
       passage:'The city added protected bike lanes in 2019. In the three years that followed, cycling trips doubled while cyclist injuries fell.',
       prompt:'Which conclusion is best supported by the text?',
       choices:['Bike lanes made cycling both more popular and safer.','Cars were banned downtown.','Cycling injuries rose sharply.','The lanes were removed in 2022.'],
-      answer:0, explanation:'Trips doubled and injuries fell — supporting that the lanes made cycling more popular and safer.' }),
+      answer:0, explanation:'Trips doubled and injuries fell - supporting that the lanes made cycling more popular and safer.' }),
     Q({ id:'s-e-cs-1', exam:'sat', skill:'english', type:'craft-structure', difficulty:'medium',
       passage:'As used in the sentence "Her argument was watertight, leaving her critics with nothing to grip," the word "watertight" most nearly means:',
       prompt:'Choose the best meaning of "watertight".',
       choices:['wet','flawless / airtight','waterproof clothing','confusing'],
-      answer:1, explanation:'"Watertight," said of an argument, means it has no weaknesses — flawless.' }),
+      answer:1, explanation:'"Watertight," said of an argument, means it has no weaknesses - flawless.' }),
     Q({ id:'s-e-cs-2', exam:'sat', skill:'english', type:'craft-structure', difficulty:'easy',
       passage:'Text 1 praises solar power as clean and increasingly cheap. Text 2 warns that storing solar energy remains costly.',
       prompt:'How does Text 2 relate to Text 1?',
@@ -272,7 +272,7 @@
     _ready: null,
 
     /** Merge: built-in seed + admin's locally-added + Supabase-shared questions.
-     *  The built-in seed (CONTENT) is layered fresh at runtime — that way returning
+     *  The built-in seed (CONTENT) is layered fresh at runtime - that way returning
      *  visitors pick up newly added seed questions instead of being stuck with an
      *  old copy that was written into localStorage on their first visit. */
     _bank: function () {
@@ -292,7 +292,7 @@
     },
 
     /** Load shared questions AND the signed-in student's progress once.
-     *  Always resolves — the local seed / localStorage is the fallback. */
+     *  Always resolves - the local seed / localStorage is the fallback. */
     ready: function () {
       if (this._ready) return this._ready;
       var self = this;
@@ -561,7 +561,7 @@
   function defaultWebinars() {
     return [
       { id:'w1', iso:'2026-08-02T18:00', date:'Aug 02 · 6:00 PM', title:'The new TOEFL Speaking, decoded',
-        desc:'What Listen-and-Repeat and the interview task actually reward — and how to rehearse for them.', url:'#', cover:'' },
+        desc:'What Listen-and-Repeat and the interview task actually reward - and how to rehearse for them.', url:'#', cover:'' },
       { id:'w2', iso:'2026-08-09T18:00', date:'Aug 09 · 6:00 PM', title:'An IELTS Task 2 that actually scores',
         desc:'A structure examiners recognize, and the mistakes that quietly cost you a band.', url:'#', cover:'' },
       { id:'w3', iso:'2026-08-16T18:00', date:'Aug 16 · 6:00 PM', title:'Digital SAT Math: pacing the two modules',
@@ -582,7 +582,7 @@
   var CHEV = '<span class="acc-chev"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span>';
 
   /* Reading section body: full-passage tests grouped into easy / medium / hard
-   * subsections — the same accordion shell as Listening, split by difficulty. */
+   * subsections - the same accordion shell as Listening, split by difficulty. */
   function buildReadingBody(body, exam) {
     var rall = BeaconStore.allQuestions().filter(function (q) {
       return q.exam === exam && q.skill === 'reading' && q.blocks && q.blocks.length;
@@ -598,7 +598,7 @@
     ];
     levels.forEach(function (lv) {
       var list = byd[lv[0]];
-      // each level is its own collapsible row — click to open the texts inside
+      // each level is its own collapsible row - click to open the texts inside
       var acc = el('div', 'acc rd-acc rd-' + lv[0]);
       var head = el('button', 'acc-head'); head.type = 'button';
       head.innerHTML =
@@ -608,7 +608,7 @@
       var ab = el('div', 'acc-body');
       if (!list.length) {
         var none = el('div', 'ws-item is-locked');
-        none.innerHTML = '<div class="ws-item-main"><h3>Nothing here yet</h3><p>Add a ' + esc(lv[0]) + ' text in the admin.</p></div><span class="ws-count empty">—</span>';
+        none.innerHTML = '<div class="ws-item-main"><h3>Nothing here yet</h3><p>Add a ' + esc(lv[0]) + ' text in the admin.</p></div><span class="ws-count empty">-</span>';
         ab.appendChild(none);
       } else {
         list.forEach(function (q) {
@@ -715,7 +715,7 @@
           tItem.href = 'practice.html?mode=test&exam=' + exam + '&skill=' + skill.id;
           tItem.innerHTML =
             '<div class="ws-item-main"><h3>Take a full ' + esc(skill.name) + ' test</h3>' +
-            '<p>A timed, exam-style test built from every ' + esc(skill.name) + ' question — scored at the end, no hints along the way.</p></div>' +
+            '<p>A timed, exam-style test built from every ' + esc(skill.name) + ' question - scored at the end, no hints along the way.</p></div>' +
             '<span class="ws-count">' + (tot ? tot + ' Qs' : 'no questions yet') + '</span>' +
             '<span class="ws-go">Start test →</span>';
           body.appendChild(tItem);
@@ -870,11 +870,11 @@
         audioEl = el('div', 'pr-audio');
         audioEl.innerHTML = q.audioSrc
           ? '<audio controls src="' + esc(q.audioSrc) + '"></audio>'
-          : '<div class="ph"><span class="ico">▶</span> Audio placeholder' + (reveal ? ' — read the transcript after answering.' : '.') + '</div>';
+          : '<div class="ph"><span class="ico">▶</span> Audio placeholder' + (reveal ? ' - read the transcript after answering.' : '.') + '</div>';
       }
       var promptEl = el('div', 'pr-prompt', esc(q.prompt || ''));
 
-      // transcript for listening (shown after answering — practice only, not during a test)
+      // transcript for listening (shown after answering - practice only, not during a test)
       var transcriptEls = null, tbtn = null, tp = null;
       if (q.transcript && reveal) {
         tbtn = el('button', 'btn btn-navy pr-transcript-btn', 'Show transcript');
@@ -970,7 +970,7 @@
         return '<div class="pr-rev ' + (ok ? 'ok' : 'no') + '">' +
           '<span class="pr-rev-n">' + (i + 1) + '</span>' +
           '<div class="pr-rev-main"><div class="pr-rev-q">' + esc(shortenPrompt(q.prompt)) + '</div>' +
-          '<div class="pr-rev-a">Answer: <b>' + esc(ans) + '</b>' + (q.explanation ? ' — ' + esc(q.explanation) : '') + '</div></div>' +
+          '<div class="pr-rev-a">Answer: <b>' + esc(ans) + '</b>' + (q.explanation ? ' - ' + esc(q.explanation) : '') + '</div></div>' +
           '<span class="pr-rev-mark">' + (ok ? '✓' : '✗') + '</span></div>';
       }).join('');
       var sc = examScore(exam, skill, correct, total);
@@ -992,7 +992,7 @@
    * each split into two modules. Module 1 is a mix; Module 2 turns harder or
    * easier depending on how you did in Module 1 (module-level adaptivity).
    * Scored on the 400–1600 scale (200–800 per section). Built from whatever
-   * SAT questions are in the bank — module sizes shrink to fit a small pool. */
+   * SAT questions are in the bank - module sizes shrink to fit a small pool. */
   function renderAdaptiveSAT(root) {
     document.body.classList.add('ws-white');
 
@@ -1021,10 +1021,10 @@
         '<h2 class="pr-prompt" style="margin-top:8px">Full adaptive SAT</h2>' +
         '<div class="pr-passage" style="border:0;padding-left:0">' +
           'Just like the real Digital SAT: <b>Reading &amp; Writing</b> first, then <b>Math</b>, each in <b>two modules</b>. ' +
-          'Module&nbsp;2 gets <b>harder or easier</b> depending on how you do in Module&nbsp;1. No feedback until the end — ' +
+          'Module&nbsp;2 gets <b>harder or easier</b> depending on how you do in Module&nbsp;1. No feedback until the end - ' +
           'you’re scored on the <b>400–1600</b> scale.' +
           '<br><br>The official test is 98 questions (54 R&amp;W + 44 Math) in 2h14m. This one is built from the ' +
-          'questions currently in the bank, so it may be shorter — the structure and scoring work the same.' +
+          'questions currently in the bank, so it may be shorter - the structure and scoring work the same.' +
         '</div>' +
         '<div class="pr-nav"><a class="btn btn-wire pr-exit" href="sat.html">← Back</a>' +
         '<div class="pr-navbtns"><button type="button" class="btn btn-white" id="ad-start">Start the test →</button></div></div>';
@@ -1058,7 +1058,7 @@
         };
 
         if (!mod2.length) { afterM2(); return; }
-        transition('Module 1 complete', 'Starting Module&nbsp;2 — it has adapted to your Module&nbsp;1 answers. No going back now.', function () {
+        transition('Module 1 complete', 'Starting Module&nbsp;2 - it has adapted to your Module&nbsp;1 answers. No going back now.', function () {
           runModule(sec, 2, mod2, secState, function () { afterM2(); });
         });
       });
@@ -1109,7 +1109,7 @@
         if (q.image) { var fig = el('div', 'pr-image'); fig.innerHTML = '<img src="' + esc(q.image) + '" alt="Question image" loading="lazy">'; card.appendChild(fig); }
         card.appendChild(el('div', 'pr-prompt', esc(q.prompt)));
 
-        // choices: highlight the current pick; clicking (re)selects — no reveal
+        // choices: highlight the current pick; clicking (re)selects - no reveal
         var wrap = el('div', 'pr-choices');
         (q.choices || []).forEach(function (choice, i) {
           var btn = el('button', 'pr-choice' + (picked[q.id] === i ? ' picked' : ''));
@@ -1140,7 +1140,7 @@
         n.appendChild(back); n.appendChild(btns);
         root.appendChild(n);
 
-        // question palette — jump to any question; shows answered vs current
+        // question palette - jump to any question; shows answered vs current
         root.appendChild(palette(false));
       }
 
@@ -1184,7 +1184,7 @@
           '<span class="pr-kicker">Before you submit</span>' +
           '<h2 class="pr-prompt" style="margin-top:8px">Module ' + moduleNo + ' review</h2>' +
           '<div class="pr-passage" style="border:0;padding-left:0">You answered <b>' + (qs_.length - un) + '</b> of <b>' + qs_.length + '</b>. ' +
-          (un ? 'Still unanswered: <b>' + un + '</b> — tap a number below to go back.' : 'All answered. You can still change any answer before submitting.') +
+          (un ? 'Still unanswered: <b>' + un + '</b> - tap a number below to go back.' : 'All answered. You can still change any answer before submitting.') +
           ' Once you submit, this module locks and Module 2 adapts to it.</div>';
         card.appendChild(palette(true));
         stage.appendChild(card); root.appendChild(stage);
@@ -1242,10 +1242,10 @@
           '<span class="pr-kicker">Break</span>' +
           '<h2 class="pr-prompt" style="margin-top:8px">10-minute break</h2>' +
           '<div class="pr-passage" style="border:0;padding-left:0">Reading &amp; Writing is done. On the real SAT you get a 10-minute break here before Math. ' +
-          'Stretch, breathe — <b>' + esc(next.name) + '</b> starts automatically when the timer reaches zero.</div>' +
+          'Stretch, breathe - <b>' + esc(next.name) + '</b> starts automatically when the timer reaches zero.</div>' +
           '<div class="brk-clock"><span class="brk-time">' + fmtTime(left) + '</span></div>' +
           '<div class="pr-nav"><span></span><div class="pr-navbtns">' +
-          '<button type="button" class="btn btn-white" id="brk-skip">Skip break — start ' + esc(next.name) + ' →</button>' +
+          '<button type="button" class="btn btn-white" id="brk-skip">Skip break - start ' + esc(next.name) + ' →</button>' +
           '</div></div>';
         c.appendChild(card); root.appendChild(c);
         document.getElementById('brk-skip').onclick = function () { go(); };
@@ -1289,7 +1289,7 @@
         '<span class="frac">' + esc(sub) + '</span></div>' +
         note +
         '<div class="pr-review">' + secRows + '</div>' +
-        '<div class="pr-passage" style="border:0;padding-left:0;font-size:.9rem;color:#7c88a3">This score is an estimate from your answers and which Module 2 you unlocked — a study guide, not an official SAT score.</div>' +
+        '<div class="pr-passage" style="border:0;padding-left:0;font-size:.9rem;color:#7c88a3">This score is an estimate from your answers and which Module 2 you unlocked - a study guide, not an official SAT score.</div>' +
         '<div class="fin-actions">' +
         '<a class="btn btn-white" href="sat.html">Back to SAT</a>' +
         '<a class="btn btn-wire" href="practice.html?mode=adaptive&exam=sat">Retake test</a>' +
@@ -1411,7 +1411,7 @@
       var ctrl;
       if (opts) {
         ctrl = document.createElement('select'); ctrl.className = 'pr-gsel';
-        ctrl.innerHTML = '<option value="">—</option>' + opts.map(function (o) { return '<option value="' + esc(o) + '">' + esc(o) + '</option>'; }).join('');
+        ctrl.innerHTML = '<option value="">-</option>' + opts.map(function (o) { return '<option value="' + esc(o) + '">' + esc(o) + '</option>'; }).join('');
       } else {
         ctrl = document.createElement('input'); ctrl.type = 'text'; ctrl.className = 'pr-gin'; ctrl.placeholder = 'Your answer';
       }
@@ -1468,7 +1468,7 @@
           row.appendChild(ch); controls.push({ kind: 'mc', node: ch, answer: it.answer });
         } else if (opts) {
           var s = document.createElement('select'); s.className = 'pr-gsel';
-          s.innerHTML = '<option value="">—</option>' + opts.map(function (o) { return '<option value="' + esc(o) + '">' + esc(o) + '</option>'; }).join('');
+          s.innerHTML = '<option value="">-</option>' + opts.map(function (o) { return '<option value="' + esc(o) + '">' + esc(o) + '</option>'; }).join('');
           row.appendChild(s); controls.push({ kind: 'sel', node: s, answer: it.answer });
         } else {
           var inp = document.createElement('input'); inp.type = 'text'; inp.className = 'pr-gin'; inp.placeholder = 'Your answer';
@@ -1521,7 +1521,7 @@
   function clearedCard(b) {
     return '<div class="pr-finished"><div class="fin-mark">✓</div>' +
       '<h2>You’ve cleared this set</h2>' +
-      '<p>You’ve solved every question here. New questions are added over time — or reset to run through them again.</p>' +
+      '<p>You’ve solved every question here. New questions are added over time - or reset to run through them again.</p>' +
       '<div class="fin-actions">' +
       '<button class="btn btn-white" data-reset>Reset and redo</button>' +
       '<a class="btn btn-wire" href="' + b.exam + '.html">Back to ' + b.exam.toUpperCase() + '</a>' +
@@ -1602,7 +1602,7 @@
       if (q.audio) {
         var au = el('div', 'pr-audio');
         au.innerHTML = q.audioSrc ? '<audio controls src="' + esc(q.audioSrc) + '"></audio>'
-          : '<div class="ph"><span class="ico">▶</span> Audio placeholder — use the transcript below.</div>' +
+          : '<div class="ph"><span class="ico">▶</span> Audio placeholder - use the transcript below.</div>' +
             (q.transcript ? '<div class="pr-transcript"><span class="tlabel">Transcript</span>' + esc(q.transcript) + '</div>' : '');
         card.appendChild(au);
       }
@@ -1677,7 +1677,7 @@
         '<span class="pr-kicker">Before you submit</span>' +
         '<h2 class="pr-prompt" style="margin-top:8px">Review</h2>' +
         '<div class="pr-passage" style="border:0;padding-left:0">You answered <b>' + (qs_.length - un) + '</b> of <b>' + qs_.length + '</b>. ' +
-        (un ? 'Still unanswered: <b>' + un + '</b> — tap a number below to go back.' : 'All answered. You can still change any answer before submitting.') +
+        (un ? 'Still unanswered: <b>' + un + '</b> - tap a number below to go back.' : 'All answered. You can still change any answer before submitting.') +
         ' ' + esc(cfg.submitNote || 'Once you submit, this section locks.') + '</div>';
       card.appendChild(palette(true));
       stage.appendChild(card); root.appendChild(stage);
@@ -1728,9 +1728,9 @@
       var c = el('div', 'pr-stage'); var card = el('div', 'pr-card');
       card.innerHTML =
         '<span class="pr-kicker">' + NAME + ' · full test</span>' +
-        '<h2 class="pr-prompt" style="margin-top:8px">Full ' + NAME + ' — Reading &amp; Listening</h2>' +
+        '<h2 class="pr-prompt" style="margin-top:8px">Full ' + NAME + ' - Reading &amp; Listening</h2>' +
         '<div class="pr-passage" style="border:0;padding-left:0">A complete, timed exam: <b>Reading</b> first, then <b>Listening</b>, each on its own clock. ' +
-        'No feedback until the end. ' + struct + ' This one is built from the questions in the bank, so it may be shorter — timing and scoring work the same way.</div>' +
+        'No feedback until the end. ' + struct + ' This one is built from the questions in the bank, so it may be shorter - timing and scoring work the same way.</div>' +
         '<div class="pr-nav"><a class="btn btn-wire pr-exit" href="' + home + '">← Back</a>' +
         '<div class="pr-navbtns"><button type="button" class="btn btn-white" id="fx-start">Start the test →</button></div></div>';
       c.appendChild(card); root.appendChild(c);
@@ -1751,7 +1751,7 @@
           si++;
           if (si < SECTIONS.length) {
             var nx = SECTIONS[si];
-            transition(sec.name + ' complete', 'Next up: <b>' + nx.name + '</b> — ' + nx.minutes + ' minutes on its own clock. Take a second, then continue.', runSec);
+            transition(sec.name + ' complete', 'Next up: <b>' + nx.name + '</b> - ' + nx.minutes + ' minutes on its own clock. Take a second, then continue.', runSec);
           } else finish();
         }
       });
@@ -1800,7 +1800,7 @@
         '<div class="pr-stage"><div class="pr-result">' +
         '<div class="pr-score ' + (pass ? 'pass' : 'fail') + '"><span class="pct">' + big + '</span><span class="frac">' + esc(sub) + '</span></div>' +
         '<div class="pr-review">' + rows + '</div>' +
-        '<div class="pr-passage" style="border:0;padding-left:0;font-size:.9rem;color:#7c88a3">An estimate from your Reading + Listening answers — a study guide, not an official score. Saved to your profile average.</div>' +
+        '<div class="pr-passage" style="border:0;padding-left:0;font-size:.9rem;color:#7c88a3">An estimate from your Reading + Listening answers - a study guide, not an official score. Saved to your profile average.</div>' +
         '<div class="fin-actions">' +
         '<a class="btn btn-white" href="' + home + '">Back to ' + NAME + '</a>' +
         '<a class="btn btn-wire" href="practice.html?mode=full&exam=' + examId + '">Retake test</a>' +
@@ -1864,7 +1864,7 @@
       card.innerHTML =
         '<span class="pr-kicker">' + NAME + ' · full Reading test</span>' +
         '<h2 class="pr-prompt" style="margin-top:8px">' + texts.length + ' texts · ' + totalQ + ' questions · ' + MIN + ' minutes</h2>' +
-        '<div class="pr-passage" style="border:0;padding-left:0">Exam conditions: the passages get harder (Text 1 → Text ' + texts.length + '), the clock runs across all of them, and there is <b>no feedback until you submit</b>. Move between texts and questions freely — your answers are kept. At the end you get an overall <b>Reading band</b>.</div>' +
+        '<div class="pr-passage" style="border:0;padding-left:0">Exam conditions: the passages get harder (Text 1 → Text ' + texts.length + '), the clock runs across all of them, and there is <b>no feedback until you submit</b>. Move between texts and questions freely - your answers are kept. At the end you get an overall <b>Reading band</b>.</div>' +
         '<div class="pr-nav"><a class="btn btn-wire" href="' + home + '">← Back</a>' +
         '<div class="pr-navbtns"><button type="button" class="btn btn-white" id="rx-start">Start the test →</button></div></div>';
       c.appendChild(card); root.appendChild(c);
@@ -1944,7 +1944,7 @@
             row.appendChild(ch);
           } else if (opts) {
             var s = document.createElement('select'); s.className = 'pr-gsel';
-            s.innerHTML = '<option value="">—</option>' + opts.map(function (o) { return '<option value="' + esc(o) + '"' + (st[key] === o ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('');
+            s.innerHTML = '<option value="">-</option>' + opts.map(function (o) { return '<option value="' + esc(o) + '"' + (st[key] === o ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('');
             s.addEventListener('change', function () { st[key] = s.value; syncPalette(); });
             row.appendChild(s);
           } else {
@@ -2001,7 +2001,7 @@
         '<span class="pr-kicker">Before you submit</span>' +
         '<h2 class="pr-prompt" style="margin-top:8px">Review</h2>' +
         '<div class="pr-passage" style="border:0;padding-left:0">You answered <b>' + totA + '</b> of <b>' + totT + '</b>. ' +
-        (un ? 'Still unanswered: <b>' + un + '</b> — tap a text below to go back.' : 'All answered. You can still change anything before submitting.') +
+        (un ? 'Still unanswered: <b>' + un + '</b> - tap a text below to go back.' : 'All answered. You can still change anything before submitting.') +
         ' Once you submit, the test locks and is scored.</div>';
       card.appendChild(palette(true));
       stage.appendChild(card); root.appendChild(stage);
@@ -2050,7 +2050,7 @@
         '<div class="pr-stage"><div class="pr-result">' +
         '<div class="pr-score ' + (sc.pass ? 'pass' : 'fail') + '"><span class="pct">' + sc.big + '</span><span class="frac">' + esc(sc.sub) + '</span></div>' +
         '<div class="pr-review">' + rows + '</div>' +
-        '<div class="pr-passage" style="border:0;padding-left:0;font-size:.9rem;color:#7c88a3">An estimate from the band tables — a study guide, not an official score. Saved to your profile average.</div>' +
+        '<div class="pr-passage" style="border:0;padding-left:0;font-size:.9rem;color:#7c88a3">An estimate from the band tables - a study guide, not an official score. Saved to your profile average.</div>' +
         '<div class="fin-actions">' +
         '<a class="btn btn-white" href="' + home + '">Back to ' + NAME + '</a>' +
         '<a class="btn btn-wire" href="practice.html?mode=readingtest&exam=' + examId + '">Retake test</a>' +

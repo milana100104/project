@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin — Beacon</title>
+<title>Admin - Beacon</title>
 <link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=88">
-<script src="assets/app.js?v=88" defer></script>
-<script src="assets/config.js?v=88" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=89">
+<script src="assets/app.js?v=89" defer></script>
+<script src="assets/config.js?v=89" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=88" defer></script>
-<script src="assets/chat.js?v=88" defer></script>
+<script src="assets/auth.js?v=89" defer></script>
+<script src="assets/chat.js?v=89" defer></script>
 <style>
 /* ---- Admin: clean white workspace ---- */
 body.adm-body{background:#eef1f7;font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;}
@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }},
       ielts: { label:"IELTS", skills:{
         reading:  { label:"Reading", passage:true, types:{
-          "full-passage":{ label:"Full passage (mixed question types)", fmt:"passage", note:"This is now the only way to add IELTS Reading — the site shows Reading as full texts (Easy / Medium / Hard), not individual questions. Paste the whole passage above, set its Difficulty to easy/medium/hard, then add blocks below. Block kinds: Multiple choice (also use this for True/False/Not Given or Yes/No/Not Given — just type those as the answer options), Matching (letters — for matching headings/information), Completion (typed — for sentence/summary completion). Numbering runs automatically." } }},
+          "full-passage":{ label:"Full passage (mixed question types)", fmt:"passage" } }},
         listening:{ label:"Listening", audio:true, image:true, transcript:true, types:{
           "multiple-choice":{ label:"Multiple choice", fmt:"choice" },
           "form-completion":{ label:"Form / note / table completion", fmt:"completion", note:"Add each line with a gap (e.g. “Name: ______”) and its answer." },
@@ -175,7 +175,7 @@ document.addEventListener("DOMContentLoaded", function () {
       panel.innerHTML =
         '<div class="adm-card">' +
           '<h2 class="adm-h">Add a ' + esc(conf.label) + ' question</h2>' +
-          '<p class="adm-sub">Choose the section and type — the form below adapts to how that question is answered, and each one is checked by its own rules.</p>' +
+          '<p class="adm-sub">Choose the section and type - the form below adapts to how that question is answered, and each one is checked by its own rules.</p>' +
           '<div class="adm-grid3">' +
             '<div class="adm-field"><label>Section</label><select class="adm-select" id="a-skill">' +
               skillKeys.map(function (s){ return '<option value="'+s+'">'+esc(conf.skills[s].label)+'</option>'; }).join("") + '</select></div>' +
@@ -213,26 +213,26 @@ document.addEventListener("DOMContentLoaded", function () {
       function buildDyn(){
         var sk = curSkill(), t = curType(), h = "";
         if (t.note) h += '<div class="adm-typenote">' + t.note + '</div>';
-        // 0a) Part (IELTS Listening only) — which of the 4 official parts this belongs to;
+        // 0a) Part (IELTS Listening only) - which of the 4 official parts this belongs to;
         // students see the site grouped by part, not by answer format.
         if (ex === "ielts" && skillSel.value === "listening") {
-          h += field('Part <span class="hint">— which section of the real IELTS Listening test</span>',
+          h += field('Part <span class="hint">- which section of the real IELTS Listening test</span>',
             '<select class="adm-select" id="a-part">' +
-              '<option value="1">Part 1 — two people, everyday conversation</option>' +
-              '<option value="2">Part 2 — one person, everyday monologue</option>' +
-              '<option value="3">Part 3 — up to 4 people, education context (opinions matter)</option>' +
-              '<option value="4">Part 4 — one person, academic lecture</option>' +
+              '<option value="1">Part 1 - two people, everyday conversation</option>' +
+              '<option value="2">Part 2 - one person, everyday monologue</option>' +
+              '<option value="3">Part 3 - up to 4 people, education context (opinions matter)</option>' +
+              '<option value="4">Part 4 - one person, academic lecture</option>' +
             '</select>');
         }
-        // 0) title (full reading passages only) — shown on the test card and above the text
-        if (t.fmt === "passage") h += field('Passage title <span class="hint">(shown on the test card — e.g. The Honey Bee)</span>', '<input class="adm-input" id="d-title" placeholder="The Honey Bee">');
+        // 0) title (full reading passages only) - shown on the test card and above the text
+        if (t.fmt === "passage") h += field('Passage title <span class="hint">(shown on the test card - e.g. The Honey Bee)</span>', '<input class="adm-input" id="d-title" placeholder="The Honey Bee">');
         // 1) the question
         h += field('Question' + (t.fmt==="cloze" ? ' <span class="hint">(instruction line shown above the words)</span>' : ''),
                    '<input class="adm-input" id="d-prompt" placeholder="' + (t.fmt==="cloze" ? "e.g. Complete the missing letters to finish each word." : "The question the student answers") + '">');
         // 2) the text
-        if (sk.passage) h += field('Reading text / passage <span class="hint">(optional — the text the questions are based on)</span>', '<textarea class="adm-textarea" id="d-passage"></textarea>');
-        if (sk.image)   h += field('Image <span class="hint">(optional — graph, map or diagram)</span>', '<input class="adm-input" type="file" id="d-image" accept="image/*">');
-        if (sk.audio)   h += field('Audio file <span class="hint">(upload the listening clip — mp3 / m4a)</span>', '<input class="adm-input" type="file" id="d-audio" accept="audio/*">');
+        if (sk.passage) h += field('Reading text / passage <span class="hint">(optional - the text the questions are based on)</span>', '<textarea class="adm-textarea" id="d-passage"></textarea>');
+        if (sk.image)   h += field('Image <span class="hint">(optional - graph, map or diagram)</span>', '<input class="adm-input" type="file" id="d-image" accept="image/*">');
+        if (sk.audio)   h += field('Audio file <span class="hint">(upload the listening clip - mp3 / m4a)</span>', '<input class="adm-input" type="file" id="d-audio" accept="audio/*">');
         // 3) the answers
         if (t.fmt === "cloze")          h += clozeEditor();
         else if (t.fmt === "passage")   h += passageEditor();
@@ -257,7 +257,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       function choiceEditor(fixed){
-        return '<div class="adm-field"><label>Answer options <span class="hint">— tick the correct one</span></label>' +
+        return '<div class="adm-field"><label>Answer options <span class="hint">- tick the correct one</span></label>' +
           '<div id="d-choices">' + choiceRows(fixed) + '</div>' +
           (fixed ? "" : '<button type="button" class="adm-btn sec" id="d-addopt">+ Add option</button>') +
           '</div>';
@@ -274,21 +274,21 @@ document.addEventListener("DOMContentLoaded", function () {
           '</div>';
       }
       function textEditor(){
-        return field('Correct answer <span class="hint">— what the student must type</span>', '<input class="adm-input" id="d-answer" placeholder="e.g. photosynthesis">') +
-          field('Also accept <span class="hint">(optional — comma-separated variants)</span>', '<input class="adm-input" id="d-accept" placeholder="e.g. photo-synthesis, photosynthesise">') +
+        return field('Correct answer <span class="hint">- what the student must type</span>', '<input class="adm-input" id="d-answer" placeholder="e.g. photosynthesis">') +
+          field('Also accept <span class="hint">(optional - comma-separated variants)</span>', '<input class="adm-input" id="d-accept" placeholder="e.g. photo-synthesis, photosynthesise">') +
           '<p class="adm-note">Answers are checked ignoring case and surrounding spaces.</p>';
       }
       function clozeEditor(){
-        return field('Words with missing letters <span class="hint">— put the letters the student must type in [brackets]</span>',
-            '<textarea class="adm-textarea" id="d-cloze" placeholder="eleph[ant]   —   or a whole sentence: A migrating bird can nav[igate] by the stars."></textarea>') +
+        return field('Words with missing letters <span class="hint">- put the letters the student must type in [brackets]</span>',
+            '<textarea class="adm-textarea" id="d-cloze" placeholder="eleph[ant]   -   or a whole sentence: A migrating bird can nav[igate] by the stars."></textarea>') +
           '<p class="adm-note">The letters <b>before</b> the brackets are shown to the student; the letters <b>inside</b> [ ] are the blank they fill. Example: <code>eleph[ant]</code> → the student sees <b>eleph___</b> and must type <b>ant</b>. Add as many [brackets] as you like.</p>' +
           '<div class="adm-prev" id="d-cloze-prev"><span class="adm-prev-empty">Type above to preview what the student will see…</span></div>';
       }
       // matching: a shared set of options (e.g. A–H) + a list of items, each answered by one option
       function matchingEditor(){
-        return field('Options <span class="hint">— what the student picks from (e.g. paragraph letters)</span>',
+        return field('Options <span class="hint">- what the student picks from (e.g. paragraph letters)</span>',
             '<input class="adm-input" id="d-options" value="A, B, C, D, E, F, G, H">') +
-          '<div class="adm-field"><label>Items <span class="hint">— each row: the statement/heading, and the option it matches</span></label>' +
+          '<div class="adm-field"><label>Items <span class="hint">- each row: the statement/heading, and the option it matches</span></label>' +
           '<div id="d-items">' + matchRow("") + matchRow("") + matchRow("") + '</div>' +
           '<button type="button" class="adm-btn sec" id="d-additem">+ Add item</button></div>';
       }
@@ -300,10 +300,10 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       // completion: a list of gapped sentences, each with a typed answer
       function completionEditor(){
-        return '<div class="adm-field"><label>Sentences with a gap <span class="hint">— use ______ for the blank; give the answer for each</span></label>' +
+        return '<div class="adm-field"><label>Sentences with a gap <span class="hint">- use ______ for the blank; give the answer for each</span></label>' +
           '<div id="d-items">' + compRow() + compRow() + '</div>' +
           '<button type="button" class="adm-btn sec" id="d-additem">+ Add sentence</button>' +
-          '<p class="adm-note">Answers are checked ignoring case and spaces. Example — sentence: <code>The movement is called ______.</code> answer: <code>Brownian motion</code>.</p></div>';
+          '<p class="adm-note">Answers are checked ignoring case and spaces. Example - sentence: <code>The movement is called ______.</code> answer: <code>Brownian motion</code>.</p></div>';
       }
       function compRow(){
         return '<div class="adm-row adm-itemrow">' +
@@ -320,7 +320,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return { kind:"choice", prompt:"", items:[{prompt:"",opts:["","","",""],ans:0}] };
       }
       function passageEditor(){
-        return '<div class="adm-field"><label>Question blocks <span class="hint">— one passage, several sets of questions</span></label>' +
+        return '<div class="adm-field"><label>Question blocks <span class="hint">- one passage, several sets of questions</span></label>' +
           '<div id="d-pset"></div>' +
           '<button type="button" class="adm-btn sec" id="d-addblock">+ Add block</button>' +
           '<p class="adm-note">Paste the whole passage in the “Reading text” box above. Each block is one set of questions (e.g. 14–18 multiple choice, then 19–21 matching, then 22–26 completion). Numbering runs automatically; each block gets its own Check.</p></div>';
@@ -342,7 +342,7 @@ document.addEventListener("DOMContentLoaded", function () {
           var head = '<div class="adm-prow"><select class="adm-select" data-bkind style="max-width:220px">' +
             kinds.map(function(k){ return '<option value="'+k[0]+'"'+(bl.kind===k[0]?" selected":"")+'>'+k[1]+'</option>'; }).join("") +
             '</select><button type="button" class="adm-x" data-brm title="Remove block">✕</button></div>' +
-            '<input class="adm-input" data-bprompt placeholder="Instruction (e.g. Questions 14–18 — choose A, B, C or D)" value="'+esc(bl.prompt||"")+'" style="margin-bottom:8px">';
+            '<input class="adm-input" data-bprompt placeholder="Instruction (e.g. Questions 14–18 - choose A, B, C or D)" value="'+esc(bl.prompt||"")+'" style="margin-bottom:8px">';
           var body = "";
           if (bl.kind === "matching") body += '<input class="adm-input" data-boptions placeholder="A, B, C, D" value="'+esc(bl.options||"")+'" style="margin-bottom:8px">';
           body += bl.items.map(function(it,ii){ return psetItemRow(bl.kind, it, bi, ii); }).join("");
@@ -410,7 +410,7 @@ document.addEventListener("DOMContentLoaded", function () {
               }).join("");
               var answers = pc.parts.filter(function(p){ return p.blank != null; }).map(function(p){ return esc(p.blank); }).join(", ");
               prev.innerHTML = '<div class="adm-prev-line"><b>Student sees:</b> ' + shown + '</div>' +
-                               '<div class="adm-prev-line"><b>Correct answer(s):</b> ' + (answers || "—") + '</div>';
+                               '<div class="adm-prev-line"><b>Correct answer(s):</b> ' + (answers || "-") + '</div>';
             };
             ta.addEventListener("input", upd); upd();
           }
@@ -469,7 +469,7 @@ document.addEventListener("DOMContentLoaded", function () {
           if (!pc.blanks) return err("Wrap the missing letters in [brackets], e.g. eleph[ant].");
           q.parts = pc.parts; q.format = "complete-the-words";
         } else if (t.fmt === "passage") {
-          var pp = val("d-prompt"); if (pp) q.prompt = pp;   // top prompt optional — each block has its own
+          var pp = val("d-prompt"); if (pp) q.prompt = pp;   // top prompt optional - each block has its own
           var tt = val("d-title"); if (tt) q.title = tt;     // shown on the reading-test card
         } else {
           var prompt = val("d-prompt"); if (!prompt) return err("Add a prompt.");
@@ -579,7 +579,7 @@ document.addEventListener("DOMContentLoaded", function () {
         chain.then(function(){ return BeaconStore.addQuestion(q); }).then(function (r){
           btn.disabled = false;
           if (!r.ok) return setMsg(r.error || "Could not save the question.", "bad");
-          setMsg(r.local ? "Added on this device only (couldn’t reach the database)." : "Added — every student sees it now.", "good");
+          setMsg(r.local ? "Added on this device only (couldn’t reach the database)." : "Added - every student sees it now.", "good");
           buildDyn();               // reset the form
           listQ();
         }).catch(function (e){ btn.disabled = false; setMsg(e.message || "Something went wrong.", "bad"); });
@@ -592,7 +592,7 @@ document.addEventListener("DOMContentLoaded", function () {
           return '<div class="adm-item"><div class="adm-item-main"><b>' + esc(shorten(q.prompt || (q.parts ? clozePreview(q.parts) : ""))) + '</b>' +
             '<span>' + esc(q.skill) + ' · ' + esc((q.type||"").replace(/-/g," ")) + (q.difficulty ? " · " + esc(q.difficulty) : "") + '</span></div>' +
             '<button class="adm-del" data-id="' + esc(q.id) + '">Delete</button></div>';
-        }).join("") : '<div class="adm-empty">No ' + esc(conf.label) + ' questions yet — add the first one above.</div>';
+        }).join("") : '<div class="adm-empty">No ' + esc(conf.label) + ' questions yet - add the first one above.</div>';
         list.querySelectorAll(".adm-del").forEach(function (b){ b.onclick = function(){ b.disabled = true; Promise.resolve(BeaconStore.removeQuestion(b.dataset.id)).then(listQ); }; });
       }
     }
@@ -619,14 +619,14 @@ document.addEventListener("DOMContentLoaded", function () {
       panel.innerHTML =
         '<div class="adm-card">' +
           '<h2 class="adm-h">Add a webinar</h2>' +
-          '<p class="adm-sub">Webinars are shared with every student — the home page shows the two nearest by date.</p>' +
+          '<p class="adm-sub">Webinars are shared with every student - the home page shows the two nearest by date.</p>' +
           '<div class="adm-field"><label>Date <span class="hint">(sets the order)</span></label><input class="adm-input" id="w-when" type="date"></div>' +
           '<div class="adm-field"><label>Shown date / time <span class="hint">(optional; auto-filled from the date)</span></label><input class="adm-input" id="w-date" placeholder="Aug 23 · 6:00 PM"></div>' +
           '<div class="adm-field"><label>Title</label><input class="adm-input" id="w-title"></div>' +
           '<div class="adm-field"><label>Description</label><textarea class="adm-textarea" id="w-desc"></textarea></div>' +
           '<div class="adm-field"><label>Group link <span class="hint">(students land here after "Join the group")</span></label><input class="adm-input" id="w-url" placeholder="https://…"></div>' +
-          '<div class="adm-field"><label>Cover image <span class="hint">(recommended size 1080 &times; 1350px — full image visible, not cropped)</span></label><input class="adm-input" type="file" id="w-cover" accept="image/*"></div>' +
-          '<div class="adm-field"><label>Status</label><select class="adm-select" id="w-status"><option value="open">Open — Join button active</option><option value="finished">Finished — webinar already happened</option></select></div>' +
+          '<div class="adm-field"><label>Cover image <span class="hint">(recommended size 1080 &times; 1350px - full image visible, not cropped)</span></label><input class="adm-input" type="file" id="w-cover" accept="image/*"></div>' +
+          '<div class="adm-field"><label>Status</label><select class="adm-select" id="w-status"><option value="open">Open - Join button active</option><option value="finished">Finished - webinar already happened</option></select></div>' +
           '<button class="adm-btn" id="wadd">Add webinar</button>' +
           '<div class="adm-msg" id="wm"></div>' +
         '</div>' +
@@ -655,7 +655,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }).then(function (res){
           btn.disabled = false;
           if (res && res.ok === false) return wmsg(res.error || "Could not add.","bad");
-          wmsg((res && res.local) ? "Added on this device only — check the Supabase webinars setup." : "Added — everyone can see it now.","good");
+          wmsg((res && res.local) ? "Added on this device only - check the Supabase webinars setup." : "Added - everyone can see it now.","good");
           ["w-when","w-date","w-title","w-desc","w-url","w-cover"].forEach(function (id){ document.getElementById(id).value=""; });
           document.getElementById("w-status").value = "open";
           listWebinars();

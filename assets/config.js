@@ -1,4 +1,4 @@
-/* Beacon — Supabase connection (public values; the publishable key is safe in a
+/* Beacon - Supabase connection (public values; the publishable key is safe in a
    browser as long as Row Level Security is enabled on your tables). */
 window.BEACON_SUPABASE = {
   url: 'https://flamqobtmbxvifwuyypm.supabase.co',
@@ -11,7 +11,7 @@ window.BEACON_SUPABASE = {
    Uses Gmail "+tag" so the code still lands in the beacon.exams inbox. */
 window.BEACON_ADMIN_EMAIL = 'beacon.exams+admin@gmail.com';
 
-/* Real accounts (e.g. signed in with Google) that should have admin powers —
+/* Real accounts (e.g. signed in with Google) that should have admin powers -
    managing questions & webinars. These emails are ALSO authorized in the
    database functions (run the matching SQL), so no admin password is needed. */
 window.BEACON_ADMIN_EMAILS = ['loki100104@gmail.com'];

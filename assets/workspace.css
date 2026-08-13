@@ -1,5 +1,5 @@
 /* ============================================================
-   Beacon — workspace + practice  (REBUILT FROM SCRATCH)
+   Beacon - workspace + practice  (REBUILT FROM SCRATCH)
    The "working" side of the app: calm, clean, highly readable. Personality is
    reserved for the marketing pages' hand-drawn animation; here the priority is
    speed and clarity. Same navy + gold brand and the same readable type system.
@@ -44,9 +44,9 @@ h1,h2,h3,h4{font-family:var(--display);letter-spacing:-.02em;}
 .ws-nav a{color:var(--ink-2);font-weight:500;font-size:.95rem;padding:8px 12px;border-radius:8px;transition:background .15s,color .15s;}
 .ws-nav a:hover{background:var(--surface);color:var(--ink);}
 .ws-nav a.active{color:var(--gold);font-weight:600;background:var(--gold-soft);}
-/* Saved star — sits right next to the big exam heading (TOEFL/IELTS/SAT) */
+/* Saved star - sits right next to the big exam heading (TOEFL/IELTS/SAT) */
 .ws-h1 a.ws-saved{display:inline-flex;vertical-align:middle;align-items:center;gap:5px;
-  font-family:var(--font);color:#2f6fed;background:#eaf1ff;border:1.5px solid #b9d4ff;
+  font-family:var(--font);color:#2f6fed;background:#ffffff;border:1.5px solid #b9d4ff;
   border-radius:999px;padding:5px 12px;margin-left:14px;transition:background .15s,color .15s,transform .15s;}
 .ws-h1 a.ws-saved:hover{background:#2f6fed;color:#fff;transform:translateY(-1px);}
 .ws-h1 a.ws-saved.has{background:#2f6fed;color:#fff;box-shadow:0 4px 14px rgba(47,111,237,.35);}
@@ -66,10 +66,10 @@ h1,h2,h3,h4{font-family:var(--display);letter-spacing:-.02em;}
 .ws-btn-ghost:hover,.btn-ghost:hover{border-color:var(--gold);color:var(--gold);}
 .btn-white{background:#fff;color:#14294f;border:1px solid #fff;box-shadow:0 2px 0 rgba(0,0,0,.18);}
 .btn-white:hover{background:#eaeef6;}
-/* white-framed (outline) button — on dark areas: Exit, Next, result actions */
+/* white-framed (outline) button - on dark areas: Exit, Next, result actions */
 .btn-wire{background:transparent;border:1.5px solid #fff;color:#fff;}
 .btn-wire:hover{background:#fff;color:#14294f;}
-/* navy filled — for buttons that sit ON a white card (Check, Show transcript) */
+/* navy filled - for buttons that sit ON a white card (Check, Show transcript) */
 .btn-navy{background:#14294f;color:#fff;border:1px solid #14294f;}
 .btn-navy:hover{background:#1d356b;}
 .ws-btn[disabled],.ws-btn.is-disabled,.btn[disabled]{opacity:.4;cursor:not-allowed;pointer-events:none;box-shadow:none;}
@@ -249,7 +249,7 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 .ws-subhead span{font-size:.76rem;color:#8a97b0;font-family:var(--mono);}
 .ws-sub-easy h4{color:#2f9e6f;}.ws-sub-medium h4{color:#b0851b;}.ws-sub-hard h4{color:#d9534f;}
 
-/* skill tiles — the Listening / Reading / Writing / Speaking selector at the top */
+/* skill tiles - the Listening / Reading / Writing / Speaking selector at the top */
 .ws-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:6px 0 22px;}
 @media(max-width:560px){.ws-tiles{grid-template-columns:repeat(2,1fr);}}
 .ws-tile{display:flex;flex-direction:column;align-items:center;gap:9px;padding:20px 10px 15px;background:#fff;border:1.5px solid #e6eaf2;border-radius:16px;cursor:pointer;position:relative;transition:border-color .15s,box-shadow .15s,transform .15s,background .15s;}
@@ -402,7 +402,7 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 
 /* type rows that sit straight in a panel (TOEFL Reading, all Listening) become
    the same boxed containers as the IELTS reading accordions, with the same
-   14px spacing — so every exam/section looks identical */
+   14px spacing - so every exam/section looks identical */
 .acc-body.open > .ws-item{margin-top:14px;padding:18px 20px;border-radius:14px;}
 .acc-body.open > .ws-item + .ws-item{margin-top:14px;}
 .ws-white .acc-body.open > .ws-item:not(.ws-item-full){background:#f6f8fc;border:1px solid #e4e9f2;box-shadow:none;}
