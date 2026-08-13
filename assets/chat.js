@@ -52,7 +52,6 @@
   var roomChan = null, dmChan = null;
   var view = 'room';          // 'room' | 'dms' | 'thread'
   var thread = null;          // { id, nick } of the other person in an open DM
-  var unread = 0;
 
   function boot() {
     sb = window.sb;
@@ -216,7 +215,7 @@
 
     var w = document.createElement('div'); w.id = 'bc-root';
     w.innerHTML =
-      '<button id="bc-launch" aria-label="Open chat">💬<span id="bc-badge" hidden>0</span></button>' +
+      '<button id="bc-launch" aria-label="Open chat">💬</button>' +
       '<div id="bc-panel">' +
         '<div id="bc-head">' +
           '<button class="bc-back" id="bc-back" hidden>←</button>' +
@@ -250,7 +249,6 @@
     var p = document.getElementById('bc-panel'); if (p) p.classList.add('open');
     setLaunch('✕');
     try { localStorage.setItem('beacon:chatClosed', '0'); } catch (e) {}
-    unread = 0; renderBadge();
     openTab(view === 'thread' ? 'dms' : view);
   }
 
@@ -294,7 +292,7 @@
             var body2 = document.getElementById('bc-body');
             var em = body2.querySelector('.bc-empty'); if (em) em.remove();
             body2.appendChild(msgEl(p.new)); scrollDown();
-          } else if (!me || p.new.user_id !== me.id) { unread++; renderBadge(); }
+          }
         });
       }).subscribe();
     }
@@ -375,7 +373,7 @@
         if (view === 'thread' && thread && thread.id === m.from_user && panelOpen()) {
           var body = document.getElementById('bc-body'); var em = body.querySelector('.bc-empty'); if (em) em.remove();
           body.appendChild(dmEl(m)); scrollDown();
-        } else { unread++; renderBadge(); }
+        }
       }).subscribe();
   }
 
@@ -410,10 +408,6 @@
   }
 
   function scrollDown() { var b = document.getElementById('bc-body'); if (b) b.scrollTop = b.scrollHeight; }
-  function renderBadge() {
-    var bd = document.getElementById('bc-badge'); if (!bd) return;
-    bd.textContent = unread > 9 ? '9+' : unread; bd.hidden = unread === 0;
-  }
 
   /* ---- styles (self-contained, theme-aware enough) ---- */
   function injectStyles() {
@@ -422,9 +416,8 @@
     s.textContent =
       '@keyframes bc-pop{from{opacity:0;transform:scale(.5) translateY(10px);}to{opacity:1;transform:none;}}' +
       '#bc-root{position:fixed!important;right:20px!important;left:auto!important;bottom:20px!important;top:auto!important;z-index:9000;font-family:"Hanken Grotesk",system-ui,sans-serif;}' +
-      '#bc-launch{width:56px;height:56px;border-radius:50%;border:none;background:#e0bc4f;color:#20180a;font-size:1.5rem;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.35);position:relative;animation:bc-pop .35s cubic-bezier(.2,.9,.3,1.2) both;transition:background .15s,transform .15s;}' +
+      '#bc-launch{width:56px;height:56px;border-radius:50%;border:none;background:#e0bc4f;color:#20180a;font-size:1.5rem;line-height:1;padding:0;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.35);position:relative;display:flex;align-items:center;justify-content:center;animation:bc-pop .35s cubic-bezier(.2,.9,.3,1.2) both;transition:background .15s,transform .15s;}' +
       '#bc-launch:hover{background:#f0d372;transform:scale(1.06);}' +
-      '#bc-badge{position:absolute;top:-3px;right:-3px;background:#ef5350;color:#fff;font-size:.7rem;font-weight:700;min-width:20px;height:20px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 5px;}' +
       '#bc-panel{position:absolute;right:0;bottom:70px;width:340px;max-width:calc(100vw - 40px);height:480px;max-height:calc(100vh - 120px);background:#0e2144;border:1px solid #274069;border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.5);display:flex;flex-direction:column;overflow:hidden;color:#f4efe3;' +
         'opacity:0;transform:translateY(16px) scale(.97);transform-origin:bottom right;pointer-events:none;transition:opacity .22s ease,transform .22s ease;}' +
       '#bc-panel.open{opacity:1;transform:none;pointer-events:auto;}' +
