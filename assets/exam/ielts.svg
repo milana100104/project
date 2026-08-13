@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" width="640" height="400">
+  <defs>
+    <radialGradient id="ieltsGlow" cx="50%" cy="18%" r="75%">
+      <stop offset="0" stop-color="#d4a72c" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#d4a72c" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="640" height="400" fill="#f2f5fa"/>
+  <rect width="640" height="400" fill="url(#ieltsGlow)"/>
+
+  <!-- globe -->
+  <circle cx="300" cy="205" r="92" fill="#ffffff" stroke="#0b1a38" stroke-width="4"/>
+  <g stroke="#0b1a38" stroke-width="2.6" fill="none" opacity=".85">
+    <ellipse cx="300" cy="205" rx="40" ry="92"/>
+    <ellipse cx="300" cy="205" rx="92" ry="40"/>
+    <line x1="208" y1="205" x2="392" y2="205"/>
+  </g>
+
+  <!-- flight path -->
+  <path d="M230 130 Q 340 40 460 95" fill="none" stroke="#b0851b" stroke-width="3" stroke-dasharray="2 10" stroke-linecap="round"/>
+
+  <!-- little airplane at the end of the path -->
+  <g transform="translate(460,95) rotate(18)" fill="#b0851b">
+    <path d="M0 0 l22 6 -8 6 3 9 -8-4 -8 4 2-9 -9-6 z"/>
+  </g>
+
+  <!-- badge with checkmark, bottom-right -->
+  <circle cx="440" cy="290" r="34" fill="#ffffff" stroke="#d4a72c" stroke-width="4"/>
+  <path d="M425 291 l11 11 20-24" fill="none" stroke="#b0851b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

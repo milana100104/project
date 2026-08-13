@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" width="640" height="400">
+  <defs>
+    <radialGradient id="satGlow" cx="50%" cy="18%" r="75%">
+      <stop offset="0" stop-color="#d4a72c" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#d4a72c" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="640" height="400" fill="#f2f5fa"/>
+  <rect width="640" height="400" fill="url(#satGlow)"/>
+
+  <!-- graduation cap -->
+  <g transform="translate(230,90)">
+    <path d="M0 26 L70 0 L140 26 L70 52 Z" fill="#0b1a38" stroke="#0b1a38" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M35 40 L35 66 C35 78 105 78 105 66 L105 40" fill="none" stroke="#0b1a38" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="140" y1="26" x2="140" y2="62" stroke="#b0851b" stroke-width="3.4" stroke-linecap="round"/>
+    <circle cx="140" cy="70" r="6" fill="#b0851b"/>
+  </g>
+
+  <!-- rising score chart -->
+  <g stroke="#0b1a38" stroke-width="4" stroke-linecap="round">
+    <line x1="180" y1="320" x2="460" y2="320"/>
+    <line x1="180" y1="320" x2="180" y2="200"/>
+  </g>
+  <g fill="#d4a72c">
+    <rect x="210" y="280" width="26" height="40" rx="3"/>
+    <rect x="260" y="250" width="26" height="70" rx="3"/>
+    <rect x="310" y="215" width="26" height="105" rx="3"/>
+    <rect x="360" y="180" width="26" height="140" rx="3"/>
+  </g>
+  <path d="M212 275 L272 245 L322 208 L372 172" fill="none" stroke="#b0851b" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M356 172 L372 172 L372 188" fill="none" stroke="#b0851b" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -204,9 +204,9 @@ section{padding:58px 0;}
 .sc-card p{color:#4a5875;font-size:.98rem;margin-bottom:16px;flex:1;}
 .sc-card .link-arrow{color:#b0851b;}
 
-/* photo area at the top of each exam card (drop an <img> inside .sc-photo) */
+/* photo area at the top of each exam card */
 .sc-photo{aspect-ratio:16/10;border-radius:14px;margin-bottom:18px;overflow:hidden;
-  background:#f2f5fa;border:2px dashed #c9d2e2;
+  background:#f2f5fa;border:1px solid #e3e7f0;
   display:flex;align-items:center;justify-content:center;}
 .sc-photo img{width:100%;height:100%;object-fit:cover;display:block;}
 .sc-ph{color:#7c88a3;font-family:var(--mono);font-size:.8rem;letter-spacing:.04em;}
