@@ -646,7 +646,7 @@
       } else {
         list.forEach(function (q) {
           var item = el('a', 'ws-item');
-          item.href = 'practice.html?one=' + encodeURIComponent(q.id);
+          item.href = 'practice.html?one=' + encodeURIComponent(q.id) + '&ret=' + encodeURIComponent(exam + '.html#reading');
           item.innerHTML =
             '<div class="ws-item-main"><h3>' + esc(rtitle(q)) + '</h3></div>' +
             '<span class="ws-count">' + rcount(q) + ' Qs</span>' +
@@ -660,7 +660,7 @@
     });
     if (rall.length) {
       var full = el('a', 'ws-item ws-item-full');
-      full.href = 'practice.html?mode=readingtest&exam=' + exam;
+      full.href = 'practice.html?mode=readingtest&exam=' + exam + '&ret=' + encodeURIComponent(exam + '.html#reading');
       full.innerHTML =
         '<div class="ws-item-main"><h3>Take the full Reading test</h3><p>All texts back to back · 60 minutes on one clock · scored as an overall Reading band.</p></div>' +
         '<span class="ws-count">' + rall.length + ' texts</span><span class="ws-go">Start test →</span>';
@@ -757,17 +757,15 @@
       panel.appendChild(body);
     }
 
-    // ---- saved shortcut + full-exam CTA below the panel ----
+    // ---- Saved lives as a small star in the top nav (see .ws-saved); light it up ----
     var favN = BeaconStore.favCount();
-    var saved = el('a', 'saved-card' + (favN ? '' : ' is-empty'));
-    saved.href = 'account.html?tab=favorites';
-    saved.innerHTML =
-      '<span class="star">' + (favN ? '★' : '☆') + '</span>' +
-      '<span class="saved-main"><b>Saved</b><span>' +
-      (favN ? 'Questions you saved while practising — a separate pool you can redo any time.' : 'Tap “Save” on any question to keep it here and come back to it later.') +
-      '</span></span>' +
-      '<span class="saved-count">' + favN + '</span>';
-    root.appendChild(saved);
+    document.querySelectorAll('.ws-saved').forEach(function (a) {
+      a.classList.toggle('has', !!favN);
+      var n = a.querySelector('.ws-saved-n');
+      if (n) { n.textContent = favN; n.style.display = favN ? '' : 'none'; }
+      var st = a.querySelector('.ws-saved-star');
+      if (st) st.textContent = favN ? '★' : '☆';
+    });
 
     if (config.fullTest) {
       var ready = !!config.fullTest.href;
@@ -959,7 +957,7 @@
     function nav() {
       var n = el('div', 'pr-nav');
       var exit = el('a', 'btn btn-wire pr-exit', '← Exit');
-      exit.href = (favMode || oneId) ? 'account.html?tab=favorites' : (exam + '.html');
+      exit.href = qs('ret') || (exam ? (exam + '.html' + (skill ? '#' + skill : '')) : 'account.html?tab=favorites');
       exit.addEventListener('click', function () { if (timerId) { clearInterval(timerId); timerId = null; } });
       var btns = el('div', 'pr-navbtns');
       var last = idx === pool.length - 1;
@@ -980,16 +978,17 @@
       root.innerHTML = '';
       var f = el('div', 'pr-finished');
       var savedExit = (favMode || oneId);
+      var ret = qs('ret');
+      var backHref = ret || (savedExit ? 'account.html?tab=favorites' : (exam + '.html'));
+      var backLabel = ret ? 'Back' : (savedExit ? 'Back to saved' : 'Back to ' + exam.toUpperCase());
       f.innerHTML =
         '<div class="fin-mark">✓</div>' +
         '<h2>' + (oneId ? 'Done' : 'Set complete') + '</h2>' +
         '<p>You worked through ' + pool.length + ' question' + (pool.length === 1 ? '' : 's') + '.' +
         (savedExit ? '' : ' They’ll stay out of your normal flow until you clear the whole pool.') + '</p>' +
         '<div class="fin-actions">' +
-        (savedExit
-          ? '<a class="btn btn-white" href="account.html?tab=favorites">Back to saved</a>'
-          : '<a class="btn btn-white" href="' + exam + '.html">Back to ' + exam.toUpperCase() + '</a>' +
-            '<a class="btn btn-wire" href="practice.html' + location.search + '">Keep going</a>') +
+        '<a class="btn btn-white" href="' + backHref + '">' + backLabel + '</a>' +
+        (savedExit ? '' : '<a class="btn btn-wire" href="practice.html' + location.search + '">Keep going</a>') +
         '</div>';
       root.appendChild(f);
     }
@@ -1847,7 +1846,7 @@
    * single 60-minute timer, no feedback until you submit, then a Reading band. */
   function renderReadingExam(root, examId) {
     document.body.classList.add('ws-white');
-    var home = examId + '.html';
+    var home = qs('ret') || (examId + '.html#reading');
     var NAME = examId === 'toefl' ? 'TOEFL' : 'IELTS';
 
     var all = BeaconStore.allQuestions().filter(function (q) {
