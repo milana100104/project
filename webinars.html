@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=87">
-<script src="assets/app.js?v=87" defer></script>
-<script src="assets/config.js?v=87" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=88">
+<script src="assets/app.js?v=88" defer></script>
+<script src="assets/config.js?v=88" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=87" defer></script>
-<script src="assets/chat.js?v=87" defer></script>
+<script src="assets/auth.js?v=88" defer></script>
+<script src="assets/chat.js?v=88" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -37,15 +37,7 @@
       <p>Short live sessions on the parts of these exams that are easier shown than read. Free to join &mdash; bring questions.</p>
     </div>
     <section style="padding-top:8px">
-      <div class="webinar-carousel">
-        <button type="button" class="webinar-arrow webinar-arrow-prev" id="webinar-prev" aria-label="Previous">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
-        </button>
-        <div class="webinar-grid is-carousel" id="webinar-list"></div>
-        <button type="button" class="webinar-arrow webinar-arrow-next" id="webinar-next" aria-label="Next">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
-        </button>
-      </div>
+      <div class="webinar-grid" id="webinar-list"></div>
     </section>
   </div>
 </main>
@@ -76,30 +68,8 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   var list = document.getElementById("webinar-list");
-  var prevBtn = document.getElementById("webinar-prev");
-  var nextBtn = document.getElementById("webinar-next");
   var glyph = '<div class="thumb-ph"><svg class="ph-glyph" viewBox="0 0 56 56" aria-hidden="true"><path d="M22 48 Q24 33 26 19"/><path d="M34 48 Q32 33 30 19"/><path d="M19 48 L37 48"/><path d="M25 19 L31 19"/><path d="M24 19 L24 11 L32 11 L32 19"/><path d="M21 11 L28 4 L35 11"/><path class="ph-beam" d="M33 9 L47 4"/><path class="ph-beam" d="M33 12 L48 13"/></svg></div>';
   function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
-  function updateArrows() {
-    var cards = list.children;
-    if (!cards.length) { prevBtn.classList.add("is-hidden"); nextBtn.classList.add("is-hidden"); return; }
-    var overflow = list.scrollWidth > list.clientWidth + 4;
-    if (!overflow) { prevBtn.classList.add("is-hidden"); nextBtn.classList.add("is-hidden"); return; }
-    prevBtn.classList.remove("is-hidden"); nextBtn.classList.remove("is-hidden");
-    prevBtn.disabled = list.scrollLeft <= 4;
-    nextBtn.disabled = list.scrollLeft >= list.scrollWidth - list.clientWidth - 4;
-  }
-  function page(dir) {
-    var card = list.querySelector(".webinar-card");
-    if (!card) return;
-    var gap = parseFloat(getComputedStyle(list).columnGap || getComputedStyle(list).gap || 22);
-    var amount = (card.getBoundingClientRect().width + gap) * dir;
-    list.scrollBy({ left: amount, behavior: "smooth" });
-  }
-  prevBtn.addEventListener("click", function () { page(-1); });
-  nextBtn.addEventListener("click", function () { page(1); });
-  list.addEventListener("scroll", updateArrows);
-  window.addEventListener("resize", updateArrows);
   function render() {
     var items = (window.BeaconStore ? BeaconStore.webinars() : []);
     list.innerHTML = items.map(function (w) {
@@ -112,7 +82,6 @@ document.addEventListener("DOMContentLoaded", function () {
         '<a href="webinar.html?id=' + encodeURIComponent(w.id) + '" class="link-arrow">' + (finished ? 'View' : 'Join') + ' &#8594;</a></div></div>';
     }).join("");
     if (!items.length) list.innerHTML = '<p style="color:var(--muted)">No webinars scheduled right now — check back soon.</p>';
-    updateArrows();
   }
   if (window.BeaconStore && BeaconStore.ready) BeaconStore.ready().then(render); else render();
 });

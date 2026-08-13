@@ -271,8 +271,8 @@ section{padding:58px 0;}
   box-shadow:0 4px 10px rgba(0,0,0,.2);}
 .wd-finished-tag{color:#c23b3b;}
 
-/* ---------- webinar carousel: exactly 3 cards visible, arrows page left/right ---------- */
-.webinar-carousel{position:relative;}
+/* ---------- webinar carousel: exactly 3 cards visible, arrows page left/right (arrows live in reserved side gutters, never over the cards) ---------- */
+.webinar-carousel{position:relative;padding:0 58px;}
 .webinar-grid.is-carousel{display:flex;flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x mandatory;
   scroll-behavior:smooth;scrollbar-width:none;-ms-overflow-style:none;}
 .webinar-grid.is-carousel::-webkit-scrollbar{display:none;}
@@ -282,13 +282,14 @@ section{padding:58px 0;}
   justify-content:center;cursor:pointer;color:#0b1a38;z-index:3;transition:background .15s,transform .15s,opacity .15s;}
 .webinar-arrow:hover{background:#f2f5fa;}
 .webinar-arrow svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}
-.webinar-arrow-prev{left:-18px;}
-.webinar-arrow-next{right:-18px;}
+.webinar-arrow-prev{left:4px;}
+.webinar-arrow-next{right:4px;}
 .webinar-arrow[disabled]{opacity:.35;pointer-events:none;}
 .webinar-arrow.is-hidden{display:none;}
 @media(max-width:900px){
+  .webinar-carousel{padding:0 46px;}
   .webinar-grid.is-carousel .webinar-card{flex:0 0 78%;}
-  .webinar-arrow-prev{left:-6px;} .webinar-arrow-next{right:-6px;}
+  .webinar-arrow-prev{left:0;} .webinar-arrow-next{right:0;}
 }
 
 /* ---------- webinar detail page: one white panel, portrait cover left, info right ---------- */

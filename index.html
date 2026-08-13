@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=87">
-<script src="assets/config.js?v=87" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=88">
+<script src="assets/config.js?v=88" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=87" defer></script>
-<script src="assets/chat.js?v=87" defer></script>
-<script src="assets/app.js?v=87" defer></script>
+<script src="assets/auth.js?v=88" defer></script>
+<script src="assets/chat.js?v=88" defer></script>
+<script src="assets/app.js?v=88" defer></script>
 </head>
 <body>
 
@@ -238,31 +238,39 @@
         <span class="mono-label">// this week, live</span>
         <h2 class="section-title">Some things are easier shown than read.</h2>
       </div>
-      <div class="webinar-grid" id="home-webinars">
-        <div class="webinar-card">
-          <div class="webinar-thumb">
-            <!-- Admin: add a cover image here later, e.g. <img class="webinar-cover" src="assets/webinars/name.jpg" alt="The new TOEFL Speaking, decoded"> -->
-            <div class="thumb-ph"><svg class="ph-glyph" viewBox="0 0 56 56" aria-hidden="true"><path d="M22 48 Q24 33 26 19"/><path d="M34 48 Q32 33 30 19"/><path d="M19 48 L37 48"/><path d="M25 19 L31 19"/><path d="M24 19 L24 11 L32 11 L32 19"/><path d="M21 11 L28 4 L35 11"/><path class="ph-beam" d="M33 9 L47 4"/><path class="ph-beam" d="M33 12 L48 13"/></svg></div>
+      <div class="webinar-carousel">
+        <button type="button" class="webinar-arrow webinar-arrow-prev" id="home-webinar-prev" aria-label="Previous">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <div class="webinar-grid is-carousel" id="home-webinars">
+          <div class="webinar-card">
+            <div class="webinar-thumb">
+              <!-- Admin: add a cover image here later, e.g. <img class="webinar-cover" src="assets/webinars/name.jpg" alt="The new TOEFL Speaking, decoded"> -->
+              <div class="thumb-ph"><svg class="ph-glyph" viewBox="0 0 56 56" aria-hidden="true"><path d="M22 48 Q24 33 26 19"/><path d="M34 48 Q32 33 30 19"/><path d="M19 48 L37 48"/><path d="M25 19 L31 19"/><path d="M24 19 L24 11 L32 11 L32 19"/><path d="M21 11 L28 4 L35 11"/><path class="ph-beam" d="M33 9 L47 4"/><path class="ph-beam" d="M33 12 L48 13"/></svg></div>
+            </div>
+            <div class="webinar-body">
+              <div class="webinar-date">Aug 02 &#183; 6:00 PM</div>
+              <h4>The new TOEFL Speaking, decoded</h4>
+              <p>What Listen-and-Repeat and the interview task actually reward &mdash; and how to rehearse for them.</p>
+              <a href="webinars.html" class="link-arrow">Join &#8594;</a>
+            </div>
           </div>
-          <div class="webinar-body">
-            <div class="webinar-date">Aug 02 &#183; 6:00 PM</div>
-            <h4>The new TOEFL Speaking, decoded</h4>
-            <p>What Listen-and-Repeat and the interview task actually reward &mdash; and how to rehearse for them.</p>
-            <a href="webinars.html" class="link-arrow">Join &#8594;</a>
+          <div class="webinar-card">
+            <div class="webinar-thumb">
+              <!-- Admin: add a cover image here later, e.g. <img class="webinar-cover" src="assets/webinars/name.jpg" alt="An IELTS Task 2 that actually scores"> -->
+              <div class="thumb-ph"><svg class="ph-glyph" viewBox="0 0 56 56" aria-hidden="true"><path d="M22 48 Q24 33 26 19"/><path d="M34 48 Q32 33 30 19"/><path d="M19 48 L37 48"/><path d="M25 19 L31 19"/><path d="M24 19 L24 11 L32 11 L32 19"/><path d="M21 11 L28 4 L35 11"/><path class="ph-beam" d="M33 9 L47 4"/><path class="ph-beam" d="M33 12 L48 13"/></svg></div>
+            </div>
+            <div class="webinar-body">
+              <div class="webinar-date">Aug 09 &#183; 6:00 PM</div>
+              <h4>An IELTS Task 2 that actually scores</h4>
+              <p>A structure examiners recognize, and the mistakes that quietly cost you a band.</p>
+              <a href="webinars.html" class="link-arrow">Join &#8594;</a>
+            </div>
           </div>
         </div>
-        <div class="webinar-card">
-          <div class="webinar-thumb">
-            <!-- Admin: add a cover image here later, e.g. <img class="webinar-cover" src="assets/webinars/name.jpg" alt="An IELTS Task 2 that actually scores"> -->
-            <div class="thumb-ph"><svg class="ph-glyph" viewBox="0 0 56 56" aria-hidden="true"><path d="M22 48 Q24 33 26 19"/><path d="M34 48 Q32 33 30 19"/><path d="M19 48 L37 48"/><path d="M25 19 L31 19"/><path d="M24 19 L24 11 L32 11 L32 19"/><path d="M21 11 L28 4 L35 11"/><path class="ph-beam" d="M33 9 L47 4"/><path class="ph-beam" d="M33 12 L48 13"/></svg></div>
-          </div>
-          <div class="webinar-body">
-            <div class="webinar-date">Aug 09 &#183; 6:00 PM</div>
-            <h4>An IELTS Task 2 that actually scores</h4>
-            <p>A structure examiners recognize, and the mistakes that quietly cost you a band.</p>
-            <a href="webinars.html" class="link-arrow">Join &#8594;</a>
-          </div>
-        </div>
+        <button type="button" class="webinar-arrow webinar-arrow-next" id="home-webinar-next" aria-label="Next">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
       </div>
       <a href="webinars.html" class="link-arrow">All webinars &#8594;</a>
     </div>
@@ -309,20 +317,40 @@
 </footer>
 
 <script>
-// Home page: show the two nearest upcoming webinars (by date) from the store.
+// Home page: show all webinars from the store as a 3-per-view carousel, nearest upcoming first.
 document.addEventListener("DOMContentLoaded", function () {
   var grid = document.getElementById("home-webinars");
+  var prevBtn = document.getElementById("home-webinar-prev");
+  var nextBtn = document.getElementById("home-webinar-next");
   if (!grid || !window.BeaconStore || !BeaconStore.webinars) return;
   function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
   var glyph = '<div class="thumb-ph"><svg class="ph-glyph" viewBox="0 0 56 56" aria-hidden="true"><path d="M22 48 Q24 33 26 19"/><path d="M34 48 Q32 33 30 19"/><path d="M19 48 L37 48"/><path d="M25 19 L31 19"/><path d="M24 19 L24 11 L32 11 L32 19"/><path d="M21 11 L28 4 L35 11"/><path class="ph-beam" d="M33 9 L47 4"/><path class="ph-beam" d="M33 12 L48 13"/></svg></div>';
   function ts(w){ return w.iso ? new Date(w.iso).getTime() : Number.POSITIVE_INFINITY; }
+  function updateArrows() {
+    if (!grid.children.length) { prevBtn.classList.add("is-hidden"); nextBtn.classList.add("is-hidden"); return; }
+    var overflow = grid.scrollWidth > grid.clientWidth + 4;
+    if (!overflow) { prevBtn.classList.add("is-hidden"); nextBtn.classList.add("is-hidden"); return; }
+    prevBtn.classList.remove("is-hidden"); nextBtn.classList.remove("is-hidden");
+    prevBtn.disabled = grid.scrollLeft <= 4;
+    nextBtn.disabled = grid.scrollLeft >= grid.scrollWidth - grid.clientWidth - 4;
+  }
+  function page(dir) {
+    var card = grid.querySelector(".webinar-card");
+    if (!card) return;
+    var gap = parseFloat(getComputedStyle(grid).columnGap || getComputedStyle(grid).gap || 22);
+    grid.scrollBy({ left: (card.getBoundingClientRect().width + gap) * dir, behavior: "smooth" });
+  }
+  prevBtn.addEventListener("click", function () { page(-1); });
+  nextBtn.addEventListener("click", function () { page(1); });
+  grid.addEventListener("scroll", updateArrows);
+  window.addEventListener("resize", updateArrows);
   function render() {
     var all = BeaconStore.webinars();               // sorted newest-first (shared list from Supabase when available)
     var now = Date.now();
     var upcoming = all.filter(function(w){ return ts(w) >= now; }).sort(function(a,b){ return ts(a) - ts(b); }); // nearest first
     var past = all.filter(function(w){ return ts(w) < now; });   // already recent-first
-    var pick = upcoming.concat(past).slice(0, 2);   // nearest upcoming, backfilled with recent if needed
-    if (!pick.length) return;                        // keep the static fallback cards
+    var pick = upcoming.concat(past);               // every webinar, nearest upcoming first
+    if (!pick.length) { updateArrows(); return; }     // keep the static fallback cards
     grid.innerHTML = pick.map(function (w) {
       var finished = w.status === "finished";
       var thumb = w.cover ? '<img class="webinar-cover" src="' + esc(w.cover) + '" alt="' + esc(w.title) + '">' : glyph;
@@ -332,6 +360,7 @@ document.addEventListener("DOMContentLoaded", function () {
         '<h4>' + esc(w.title) + '</h4><p>' + esc(w.desc) + '</p>' +
         '<a href="webinar.html?id=' + encodeURIComponent(w.id) + '" class="link-arrow">' + (finished ? 'View' : 'Join') + ' &#8594;</a></div></div>';
     }).join("");
+    updateArrows();
   }
   if (BeaconStore.ready) BeaconStore.ready().then(render); else render();
 });
