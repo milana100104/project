@@ -197,32 +197,32 @@
       explanation:'The passage refers to the reefs as "structures large enough to be seen from space."' }),
 
     /* ---------------- IELTS · Listening (real question types) ---------------- */
-    Q({ id:'i-l-2', exam:'ielts', skill:'listening', type:'multiple-choice', difficulty:'medium',
+    Q({ id:'i-l-2', exam:'ielts', skill:'listening', type:'multiple-choice', part:2, difficulty:'medium',
       audio:true, transcript:'Guide: "The tour meets at the north gate, not the main entrance, at a quarter past nine. Please arrive five minutes early."',
       prompt:'Where does the tour meet?',
       choices:['The main entrance','The north gate','The car park','The gift shop'], answer:1,
       explanation:'The guide says the tour meets "at the north gate, not the main entrance."' }),
-    Q({ id:'i-l-1', exam:'ielts', skill:'listening', type:'form-completion', difficulty:'easy', format:'text',
+    Q({ id:'i-l-1', exam:'ielts', skill:'listening', type:'form-completion', part:1, difficulty:'easy', format:'text',
       audio:true, transcript:'Receptionist: "Can I take your surname?" Caller: "It’s Okafor — that’s O-K-A-F-O-R."',
       prompt:'Complete the form. Surname: ______ (type what you hear).',
       answer:'okafor', accept:['Okafor'],
       explanation:'The caller spells the surname aloud: O-K-A-F-O-R.' }),
-    Q({ id:'i-l-match-1', exam:'ielts', skill:'listening', type:'matching', difficulty:'medium',
+    Q({ id:'i-l-match-1', exam:'ielts', skill:'listening', type:'matching', part:3, difficulty:'medium',
       audio:true, transcript:'Tutor: "Priya will handle the survey, Sam is writing the introduction, and Lena is preparing the slides for the presentation."',
       prompt:'Who is preparing the slides?',
       choices:['Priya','Sam','Lena','The tutor'], answer:2,
       explanation:'The tutor says "Lena is preparing the slides."' }),
-    Q({ id:'i-l-map-1', exam:'ielts', skill:'listening', type:'plan-map-diagram-labelling', difficulty:'medium',
+    Q({ id:'i-l-map-1', exam:'ielts', skill:'listening', type:'plan-map-diagram-labelling', part:2, difficulty:'medium',
       audio:true, transcript:'Warden: "As you come through the main entrance, the café is immediately on your left, and the toilets are straight ahead, past the information desk."',
       prompt:'Coming through the main entrance, where is the café?',
       choices:['On the left','On the right','Straight ahead','Upstairs'], answer:0,
       explanation:'The warden says the café is "immediately on your left."' }),
-    Q({ id:'i-l-sc-1', exam:'ielts', skill:'listening', type:'sentence-completion', difficulty:'medium', format:'text',
+    Q({ id:'i-l-sc-1', exam:'ielts', skill:'listening', type:'sentence-completion', part:4, difficulty:'medium', format:'text',
       audio:true, transcript:'Lecturer: "Please note the essay deadline has moved to Friday, and it must be submitted online."',
       prompt:'Complete the sentence with ONE word: "The essay must be submitted ______."',
       answer:'online', accept:[],
       explanation:'The lecturer says the essay "must be submitted online."' }),
-    Q({ id:'i-l-sa-1', exam:'ielts', skill:'listening', type:'short-answer', difficulty:'easy', format:'text',
+    Q({ id:'i-l-sa-1', exam:'ielts', skill:'listening', type:'short-answer', part:1, difficulty:'easy', format:'text',
       audio:true, transcript:'Clerk: "The museum is open every day except Monday."',
       prompt:'On which day is the museum closed? (ONE word)',
       answer:'monday', accept:['Monday'],
@@ -458,10 +458,14 @@
 
     questionsFor: function (exam, skill, type) {
       var bank = this._bank();
+      // "part-N" is a virtual type: it groups by the question's own q.part
+      // (e.g. IELTS Listening Part 1-4) instead of matching q.type directly.
+      var partMatch = /^part-(\d+)$/.exec(type || '');
       return Object.keys(bank).map(function (k) { return bank[k]; })
         .filter(function (q) {
           if (q.exam !== exam || q.skill !== skill) return false;
           if (!type || type === 'all' || type === 'random') return true;
+          if (partMatch) return String(q.part) === partMatch[1];
           return q.type === type;
         });
     },
@@ -726,7 +730,7 @@
           if (dev) {
             var locked = el('div', 'ws-item is-locked');
             locked.innerHTML =
-              '<div class="ws-item-main"><h3>' + esc(t.name) + '</h3><p>' + esc(t.desc || '') + '</p></div>' +
+              '<div class="ws-item-main"><h3>' + esc(t.name) + '</h3>' + (t.desc ? '<p>' + esc(t.desc) + '</p>' : '') + '</div>' +
               '<span class="ws-count empty">soon</span>';
             body.appendChild(locked);
           } else {
@@ -734,7 +738,7 @@
             item.href = 'practice.html?exam=' + exam + '&skill=' + skill.id + '&type=' + t.id;
             var pct = c.total ? Math.round((c.solved / c.total) * 100) : 0;
             item.innerHTML =
-              '<div class="ws-item-main"><h3>' + esc(t.name) + '</h3><p>' + esc(t.desc || '') + '</p></div>' +
+              '<div class="ws-item-main"><h3>' + esc(t.name) + '</h3>' + (t.desc ? '<p>' + esc(t.desc) + '</p>' : '') + '</div>' +
               '<span class="ws-count' + (c.total ? '' : ' empty') + '">' + (c.total ? c.solved + '/' + c.total : 'no questions yet') + '</span>' +
               (c.total ? '<span class="ws-progress-track"><span class="ws-progress-fill" style="width:' + pct + '%"></span></span>' : '') +
               '<span class="ws-go">Practice →</span>';
