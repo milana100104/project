@@ -761,7 +761,7 @@
       reading:   '<svg viewBox="0 0 48 48"><path d="M24 13v26"/><path d="M24 13c-4-3-11-3-16-1v25c5-2 12-2 16 1"/><path d="M24 13c4-3 11-3 16-1v25c-5-2-12-2-16 1"/></svg>',
       writing:   '<svg viewBox="0 0 48 48"><path d="M31 9l8 8-22 22-10 2 2-10z"/><path d="M27 13l8 8"/></svg>',
       speaking:  '<svg viewBox="0 0 48 48"><rect x="18" y="6" width="12" height="22" rx="6"/><path d="M12 22a12 12 0 0 0 24 0"/><path d="M24 34v6"/><path d="M17 40h14"/></svg>',
-      math:      '<svg viewBox="0 0 48 48"><path d="M11 12h13l-9 24"/><path d="M28 20l12 16"/><path d="M40 20L28 36"/></svg>',
+      math:      '<svg viewBox="0 0 48 48"><path d="M8 6v36h34"/><path d="M12 32c5-16 12-22 17-22s10 9 13 20"/></svg>',
       english:   '<svg viewBox="0 0 48 48"><path d="M24 13v26"/><path d="M24 13c-4-3-11-3-16-1v25c5-2 12-2 16 1"/><path d="M24 13c4-3 11-3 16-1v25c-5-2-12-2-16 1"/></svg>'
     };
     return I[id] || '<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="14"/></svg>';
