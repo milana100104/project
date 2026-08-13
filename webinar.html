@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=81">
-<script src="assets/app.js?v=81" defer></script>
-<script src="assets/config.js?v=81" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=82">
+<script src="assets/app.js?v=82" defer></script>
+<script src="assets/config.js?v=82" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=81" defer></script>
-<script src="assets/chat.js?v=81" defer></script>
+<script src="assets/auth.js?v=82" defer></script>
+<script src="assets/chat.js?v=82" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     var thumb = w.cover ? '<img src="' + esc(w.cover) + '" alt="' + esc(w.title) + '">' : glyph;
     host.innerHTML =
-      '<div class="wd-grid">' +
+      '<div class="wd-panel"><div class="wd-grid">' +
         '<div class="wd-media">' + thumb + '</div>' +
         '<div class="wd-info">' +
           '<div class="webinar-date">' + esc(w.date) + '</div>' +
@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
           '<p class="wd-desc">' + esc(w.desc || "") + '</p>' +
           '<a class="btn btn-gold wd-join" href="' + esc(w.url || '#') + '" target="_blank" rel="noopener">Join the group &#8594;</a>' +
         '</div>' +
-      '</div>';
+      '</div></div>';
   }
   if (window.BeaconStore && BeaconStore.ready) BeaconStore.ready().then(render); else render();
 });
