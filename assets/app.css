@@ -193,22 +193,22 @@ section{padding:58px 0;}
 
 /* ---------- animated exam showcase (the standout, CSS-driven, always moving) ---------- */
 .showcase{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;padding-top:6px;}
-.sc-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;
-  box-shadow:var(--shadow);display:flex;flex-direction:column;transition:transform .16s,border-color .16s;}
+.sc-card{background:#fff;border:1px solid #e3e7f0;border-radius:18px;padding:22px;
+  box-shadow:0 10px 30px rgba(0,0,0,.22);display:flex;flex-direction:column;transition:transform .16s,border-color .16s;}
 .sc-card:hover{transform:translateY(-5px);border-color:var(--gold-line);}
 .sc-art-wrap{height:132px;border-radius:14px;margin-bottom:18px;display:flex;align-items:center;justify-content:center;
-  background:radial-gradient(120% 120% at 50% 10%,rgba(212,167,44,.08),transparent 60%),var(--bg-2);
-  border:1px solid var(--border);overflow:hidden;}
+  background:radial-gradient(120% 120% at 50% 10%,rgba(212,167,44,.1),transparent 60%),#f2f5fa;
+  border:1px solid #e3e7f0;overflow:hidden;}
 .sc-art{width:180px;height:106px;}
-.sc-card h3{font-size:1.55rem;margin:6px 0 6px;}
-.sc-card p{color:var(--ink-2);font-size:.98rem;margin-bottom:16px;flex:1;}
+.sc-card h3{font-size:1.55rem;margin:6px 0 6px;color:#0b1a38;}
+.sc-card p{color:#4a5875;font-size:.98rem;margin-bottom:16px;flex:1;}
 
 /* photo area at the top of each exam card (drop an <img> inside .sc-photo) */
 .sc-photo{aspect-ratio:16/10;border-radius:14px;margin-bottom:18px;overflow:hidden;
-  background:var(--bg-2);border:2px dashed var(--border-strong);
+  background:#f2f5fa;border:2px dashed #c9d2e2;
   display:flex;align-items:center;justify-content:center;}
 .sc-photo img{width:100%;height:100%;object-fit:cover;display:block;}
-.sc-ph{color:var(--muted);font-family:var(--mono);font-size:.8rem;letter-spacing:.04em;}
+.sc-ph{color:#7c88a3;font-family:var(--mono);font-size:.8rem;letter-spacing:.04em;}
 
 /* TOEFL — bouncing equalizer bars (Listening) */
 .sc-art rect{fill:var(--gold);transform-box:fill-box;transform-origin:center bottom;
@@ -230,29 +230,29 @@ section{padding:58px 0;}
 @keyframes scDrawRing{0%{stroke-dashoffset:214;}42%{stroke-dashoffset:0;}80%{stroke-dashoffset:0;}100%{stroke-dashoffset:-214;}}
 
 /* SAT — a score gauge whose needle sweeps 400 -> 1600 */
-.sc-gauge-track{fill:none;stroke:var(--border-strong);stroke-width:7;stroke-linecap:round;}
-.sc-gauge-fill{fill:none;stroke:var(--gold);stroke-width:7;stroke-linecap:round;
+.sc-gauge-track{fill:none;stroke:#c9d2e2;stroke-width:7;stroke-linecap:round;}
+.sc-gauge-fill{fill:none;stroke:var(--gold-line);stroke-width:7;stroke-linecap:round;
   stroke-dasharray:173;stroke-dashoffset:173;animation:scGauge 2.8s ease-in-out infinite;}
-.sc-needle{stroke:var(--ink);stroke-width:4;stroke-linecap:round;transform-box:view-box;transform-origin:85px 86px;
+.sc-needle{stroke:#0b1a38;stroke-width:4;stroke-linecap:round;transform-box:view-box;transform-origin:85px 86px;
   animation:scNeedle 2.8s ease-in-out infinite;}
 .sc-hub{fill:var(--gold);}
 @keyframes scGauge{0%{stroke-dashoffset:173;}50%{stroke-dashoffset:34;}100%{stroke-dashoffset:173;}}
 @keyframes scNeedle{0%{transform:rotate(-84deg);}50%{transform:rotate(70deg);}100%{transform:rotate(-84deg);}}
 
 /* ---------- logbook / manifesto ---------- */
-.logbook .logbook-inner{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:40px 42px;box-shadow:var(--shadow);}
+.logbook .logbook-inner{background:#fff;border:1px solid #e3e7f0;border-radius:20px;padding:40px 42px;box-shadow:0 10px 30px rgba(0,0,0,.22);}
 .log-list{display:flex;flex-direction:column;gap:22px;margin-top:20px;}
-.log-list li{display:flex;gap:16px;align-items:flex-start;font-size:1.06rem;color:var(--ink-2);}
-.log-list b{color:var(--ink);}
+.log-list li{display:flex;gap:16px;align-items:flex-start;font-size:1.06rem;color:#4a5875;}
+.log-list b{color:#0b1a38;}
 .tick{flex-shrink:0;width:30px;height:30px;}
-.tick svg{width:100%;height:100%;fill:none;stroke:var(--gold);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;}
+.tick svg{width:100%;height:100%;fill:none;stroke:#b0851b;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;}
 
 /* ---------- webinars: white cards, navy text, portrait 3:4 cover ---------- */
 .webinar-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px;margin-bottom:26px;}
 .webinar-card{background:#fff;border:1px solid #e3e7f0;border-radius:var(--radius);overflow:hidden;
   box-shadow:0 10px 30px rgba(0,0,0,.22);transition:transform .16s ease,border-color .16s ease;display:flex;flex-direction:column;}
 .webinar-card:hover{transform:translateY(-4px);border-color:var(--gold-line);}
-.webinar-thumb{aspect-ratio:3/4;background:#f2f5fa;position:relative;overflow:hidden;border-bottom:1px solid #e3e7f0;}
+.webinar-thumb{aspect-ratio:1080/1350;background:#f2f5fa;position:relative;overflow:hidden;border-bottom:1px solid #e3e7f0;}
 .webinar-cover{width:100%;height:100%;object-fit:contain;}
 .thumb-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   background:radial-gradient(circle at 70% 20%,rgba(212,167,44,.16),transparent 60%);}
@@ -268,7 +268,7 @@ section{padding:58px 0;}
 .wd-back{display:inline-flex;margin-bottom:18px;}
 .wd-panel{background:#fff;border:1px solid #e3e7f0;border-radius:22px;box-shadow:0 16px 44px rgba(0,0,0,.28);padding:34px;margin-bottom:70px;}
 .wd-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;}
-.wd-media{background:#f2f5fa;border:1px solid #e3e7f0;border-radius:16px;overflow:hidden;aspect-ratio:3/4;position:relative;}
+.wd-media{background:#f2f5fa;border:1px solid #e3e7f0;border-radius:16px;overflow:hidden;aspect-ratio:1080/1350;position:relative;}
 .wd-media img{width:100%;height:100%;object-fit:contain;background:#f2f5fa;}
 .wd-info h1{font-size:clamp(1.7rem,3.4vw,2.3rem);margin:10px 0 16px;line-height:1.2;color:#0b1a38;}
 .wd-desc{color:#4a5875;font-size:1.05rem;line-height:1.75;margin-bottom:28px;white-space:pre-line;}
