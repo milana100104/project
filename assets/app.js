@@ -909,7 +909,8 @@
 
       stage.appendChild(card);
       root.appendChild(stage);
-      root.appendChild(nav());
+      root.appendChild(nav(answerEl));
+      root.appendChild(trackerUI());
 
       function onResolved(correct) {
         answered = true;
@@ -921,22 +922,59 @@
       }
     }
 
-    function nav() {
+    function nav(answerEl) {
       var n = el('div', 'pr-nav');
       var exit = el('a', 'btn btn-wire pr-exit', '← Exit');
       exit.href = qs('ret') || (exam ? (exam + '.html' + (skill ? '#' + skill : '')) : 'account.html?tab=favorites');
       exit.addEventListener('click', function () { if (timerId) { clearInterval(timerId); timerId = null; } });
       var btns = el('div', 'pr-navbtns');
       var last = idx === pool.length - 1;
+      var canResolve = answerEl && typeof answerEl.resolve === 'function';
       var nextBtn = el('button', 'btn btn-white', last ? (testMode ? 'Submit test' : 'Finish') : 'Next →');
-      nextBtn.type = 'button'; nextBtn.setAttribute('data-next', '1'); nextBtn.setAttribute('disabled', '');
+      nextBtn.type = 'button'; nextBtn.setAttribute('data-next', '1');
+      if (!canResolve) nextBtn.setAttribute('disabled', '');
       nextBtn.addEventListener('click', function () {
+        if (!answered && canResolve) answerEl.resolve();
         if (!answered) return;
         if (last) { finish(); } else { idx++; draw(); }
       });
       btns.appendChild(nextBtn);
       n.appendChild(exit); n.appendChild(btns);
       return n;
+    }
+
+    // dot per question: unanswered / answered (test mode) / correct-or-wrong (practice mode)
+    function palette(inReview) {
+      var p = el('div', 'pr-palette');
+      var grid = el('div', 'pr-palette-grid');
+      pool.forEach(function (q, i) {
+        var known = q.id in answers;
+        var cls = 'pr-dot' + (!inReview && i === idx ? ' current' : '');
+        if (known) cls += reveal ? (answers[q.id] ? ' done' : ' wrong') : ' done';
+        var b = el('button', cls);
+        b.type = 'button'; b.textContent = i + 1; b.setAttribute('data-i', i);
+        b.addEventListener('click', function () { idx = i; draw(); });
+        grid.appendChild(b);
+      });
+      p.appendChild(grid);
+      return p;
+    }
+
+    function trackerUI() {
+      var row = el('div', 'pr-tracker-row');
+      var doneCount = pool.filter(function (q) { return q.id in answers; }).length;
+      var btn = el('button', 'btn btn-wire pr-tracker-btn', '🗂 Track progress (' + doneCount + '/' + pool.length + ')');
+      btn.type = 'button';
+      var overlay = el('div', 'pr-tracker-overlay');
+      var panel = el('div', 'pr-tracker-panel');
+      panel.innerHTML = '<div class="pr-tracker-head"><span>Progress</span><button type="button" class="pr-tracker-x">✕</button></div>';
+      panel.appendChild(palette(false));
+      overlay.appendChild(panel);
+      btn.addEventListener('click', function () { overlay.classList.add('open'); });
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.classList.remove('open'); });
+      panel.querySelector('.pr-tracker-x').addEventListener('click', function () { overlay.classList.remove('open'); });
+      row.appendChild(btn); row.appendChild(overlay);
+      return row;
     }
 
     function finish() {
@@ -1140,14 +1178,29 @@
         n.appendChild(back); n.appendChild(btns);
         root.appendChild(n);
 
-        // question palette - jump to any question; shows answered vs current
-        root.appendChild(palette(false));
+        // question tracker - a button opens an overlay with the jump-to-any-question grid
+        root.appendChild(trackerUI());
+      }
+
+      function trackerUI() {
+        var row = el('div', 'pr-tracker-row');
+        var answered = qs_.filter(function (q) { return picked[q.id] != null; }).length;
+        var btn = el('button', 'btn btn-wire pr-tracker-btn', '🗂 Track progress (' + answered + '/' + qs_.length + ')');
+        btn.type = 'button';
+        var overlay = el('div', 'pr-tracker-overlay');
+        var panel = el('div', 'pr-tracker-panel');
+        panel.innerHTML = '<div class="pr-tracker-head"><span>Progress</span><button type="button" class="pr-tracker-x">✕</button></div>';
+        panel.appendChild(palette(false));
+        overlay.appendChild(panel);
+        btn.addEventListener('click', function () { overlay.classList.add('open'); });
+        overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.classList.remove('open'); });
+        panel.querySelector('.pr-tracker-x').addEventListener('click', function () { overlay.classList.remove('open'); });
+        row.appendChild(btn); row.appendChild(overlay);
+        return row;
       }
 
       function palette(inReview) {
         var p = el('div', 'pr-palette');
-        var answered = qs_.filter(function (q) { return picked[q.id] != null; }).length;
-        p.appendChild(el('div', 'pr-palette-label', 'Answered ' + answered + ' / ' + qs_.length + ' · tap a number to jump'));
         var grid = el('div', 'pr-palette-grid');
         qs_.forEach(function (q, i) {
           var b = el('button', 'pr-dot' + (!inReview && i === idx ? ' current' : '') + (picked[q.id] != null ? ' done' : ''));
@@ -1166,8 +1219,8 @@
           var dot = root.querySelector('.pr-dot[data-i="' + i + '"]');
           if (dot) dot.classList.toggle('done', done);
         });
-        var lbl = root.querySelector('.pr-palette-label');
-        if (lbl) lbl.textContent = 'Answered ' + answered + ' / ' + qs_.length + ' · tap a number to jump';
+        var tb = root.querySelector('.pr-tracker-btn');
+        if (tb) tb.textContent = '🗂 Track progress (' + answered + '/' + qs_.length + ')';
       }
 
       function review() {
@@ -1353,10 +1406,9 @@
       }
     });
     wrap.appendChild(text);
-    var actions = el('div', 'cloze-actions');
-    var check = el('button', 'btn btn-navy', 'Check');
-    check.type = 'button';
-    check.addEventListener('click', function () {
+    // no inline Check button here - filling the blanks and pressing the page's
+    // own Next button grades this block (see nav()'s canResolve/resolve wiring)
+    wrap.resolve = function () {
       if (wrap.dataset.done) return;
       wrap.dataset.done = '1';
       var allCorrect = true;
@@ -1369,12 +1421,9 @@
           if (!ok) inp.title = 'Answer: ' + inp.dataset.answer;
         }
       });
-      check.style.display = 'none';
       if (reveal) showFeedback(feedback, allCorrect, q.explanation);
       done(allCorrect);
-    });
-    actions.appendChild(check);
-    wrap.appendChild(actions);
+    };
     return wrap;
   }
 
@@ -1634,13 +1683,28 @@
       btns.appendChild(nextBtn);
       n.appendChild(back); n.appendChild(btns);
       root.appendChild(n);
-      root.appendChild(palette(false));
+      root.appendChild(trackerUI());
+    }
+
+    function trackerUI() {
+      var row = el('div', 'pr-tracker-row');
+      var answered = qs_.filter(function (q) { return picked[q.id] != null; }).length;
+      var btn = el('button', 'btn btn-wire pr-tracker-btn', '🗂 Track progress (' + answered + '/' + qs_.length + ')');
+      btn.type = 'button';
+      var overlay = el('div', 'pr-tracker-overlay');
+      var panel = el('div', 'pr-tracker-panel');
+      panel.innerHTML = '<div class="pr-tracker-head"><span>Progress</span><button type="button" class="pr-tracker-x">✕</button></div>';
+      panel.appendChild(palette(false));
+      overlay.appendChild(panel);
+      btn.addEventListener('click', function () { overlay.classList.add('open'); });
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.classList.remove('open'); });
+      panel.querySelector('.pr-tracker-x').addEventListener('click', function () { overlay.classList.remove('open'); });
+      row.appendChild(btn); row.appendChild(overlay);
+      return row;
     }
 
     function palette(inReview) {
       var p = el('div', 'pr-palette');
-      var answered = qs_.filter(function (q) { return picked[q.id] != null; }).length;
-      p.appendChild(el('div', 'pr-palette-label', 'Answered ' + answered + ' / ' + qs_.length + ' · tap a number to jump'));
       var grid = el('div', 'pr-palette-grid');
       qs_.forEach(function (q, i) {
         var b = el('button', 'pr-dot' + (!inReview && i === idx ? ' current' : '') + (picked[q.id] != null ? ' done' : ''));
@@ -1660,8 +1724,8 @@
         var dot = root.querySelector('.pr-dot[data-i="' + i + '"]');
         if (dot) dot.classList.toggle('done', done);
       });
-      var lbl = root.querySelector('.pr-palette-label');
-      if (lbl) lbl.textContent = 'Answered ' + answered + ' / ' + qs_.length + ' · tap a number to jump';
+      var tb = root.querySelector('.pr-tracker-btn');
+      if (tb) tb.textContent = '🗂 Track progress (' + answered + '/' + qs_.length + ')';
     }
 
     function review() {
@@ -1914,7 +1978,25 @@
       btns.appendChild(nextBtn);
       n.appendChild(back); n.appendChild(btns);
       root.appendChild(n);
-      root.appendChild(palette(false));
+      root.appendChild(trackerUI());
+    }
+
+    function trackerUI() {
+      var row = el('div', 'pr-tracker-row');
+      var totA = 0, totT = 0;
+      texts.forEach(function (_, i) { var r = answeredIn(i); totA += r.a; totT += r.t; });
+      var btn = el('button', 'btn btn-wire pr-tracker-btn', '🗂 Track progress (' + totA + '/' + totT + ')');
+      btn.type = 'button';
+      var overlay = el('div', 'pr-tracker-overlay');
+      var panel = el('div', 'pr-tracker-panel');
+      panel.innerHTML = '<div class="pr-tracker-head"><span>Progress</span><button type="button" class="pr-tracker-x">✕</button></div>';
+      panel.appendChild(palette(false));
+      overlay.appendChild(panel);
+      btn.addEventListener('click', function () { overlay.classList.add('open'); });
+      overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.classList.remove('open'); });
+      panel.querySelector('.pr-tracker-x').addEventListener('click', function () { overlay.classList.remove('open'); });
+      row.appendChild(btn); row.appendChild(overlay);
+      return row;
     }
 
     // render one text's blocks with inputs bound to state (no checking, no reveal)
@@ -1962,9 +2044,6 @@
 
     function palette(inReview) {
       var p = el('div', 'pr-palette');
-      var totA = 0, totT = 0;
-      texts.forEach(function (_, i) { var r = answeredIn(i); totA += r.a; totT += r.t; });
-      p.appendChild(el('div', 'pr-palette-label', 'Answered ' + totA + ' / ' + totT + ' · tap a text to jump'));
       var grid = el('div', 'pr-palette-grid');
       texts.forEach(function (_, i) {
         var r = answeredIn(i);
@@ -1984,8 +2063,8 @@
         var dot = root.querySelector('.pr-dot[data-i="' + i + '"]');
         if (dot) dot.classList.toggle('done', r.t > 0 && r.a === r.t);
       });
-      var lbl = root.querySelector('.pr-palette-label');
-      if (lbl) lbl.textContent = 'Answered ' + totA + ' / ' + totT + ' · tap a text to jump';
+      var tb = root.querySelector('.pr-tracker-btn');
+      if (tb) tb.textContent = '🗂 Track progress (' + totA + '/' + totT + ')';
     }
 
     function review() {

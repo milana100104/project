@@ -8,42 +8,38 @@
     <path d="M-20 320 A 220 220 0 0 1 200 100"/>
   </g>
 
-  <!-- open book, hand-sketched: a faint retraced "ghost" pass under a crisp pass -->
-  <g transform="translate(155,120) scale(4.6)">
-    <g fill="none" stroke="#0b1a38" stroke-opacity=".22" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" transform="translate(.6,.5)">
-      <path d="M24 14v25"/>
-      <path d="M24 14c-4.4-3-11-3-16.4-.8v24c5.4-2 12-2 16.4.8"/>
-      <path d="M24 14c4.4-3 11-3 16.4-.8v24c-5.4-2-12-2-16.4.8"/>
-    </g>
-    <g fill="none" stroke="#0b1a38" stroke-width="1.15" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M24 13.6v25.4"/>
-      <path d="M24 13.6c-4.3-3-11-3-16.2-.9v24.3c5.3-2 11.9-2 16.2.9"/>
-      <path d="M24 13.6c4.3-3 11-3 16.2-.9v24.3c-5.3-2-11.9-2-16.2.9"/>
-      <path d="M11 17.5c3-1 6.4-1 9 .2" stroke-width=".7" opacity=".6"/>
-      <path d="M11 22.4c3-1 6.4-1 9 .2" stroke-width=".7" opacity=".6"/>
-    </g>
+  <!-- book shadow -->
+  <ellipse cx="340" cy="342" rx="145" ry="13" fill="#0b1a38" opacity=".1"/>
+
+  <!-- spine -->
+  <rect x="185" y="52" width="28" height="284" rx="4" fill="#081226"/>
+  <line x1="196" y1="80" x2="196" y2="310" stroke="#d4a72c" stroke-width="2" opacity=".55"/>
+
+  <!-- page edges -->
+  <g stroke="#f4efe3" stroke-width="1.3" opacity=".6">
+    <line x1="486" y1="66" x2="486" y2="322"/>
+    <line x1="482" y1="60" x2="482" y2="328"/>
+    <line x1="478" y1="56" x2="478" y2="332"/>
   </g>
 
-  <!-- headphones resting above the book -->
-  <g transform="translate(360,90) scale(3.6)" fill="none" stroke="#0b1a38" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M4 26v-4a14 14 0 0 1 27.5-3" stroke-opacity=".22" stroke-width="2.4" transform="translate(.5,.4)"/>
-    <path d="M4 26v-4a14 14 0 0 1 27.5-3" stroke-width="1.5"/>
-    <path d="M2 25.5c-1.6.3-2.5 1.6-2.5 4s.9 4.4 2.6 4.7" stroke-width="1.5"/>
-    <path d="M33 18.5c1.6.3 2.5 1.6 2.5 4s-.9 4.4-2.6 4.7" stroke-width="1.5"/>
-  </g>
+  <!-- cover -->
+  <rect x="205" y="50" width="278" height="288" rx="9" fill="#0b1a38" stroke="#081226" stroke-width="1.5"/>
 
-  <!-- soundwave, listening -->
-  <g stroke="#b0851b" stroke-width="3.4" stroke-linecap="round">
-    <path d="M470 235v14"/>
-    <path d="M484 225v34"/>
-    <path d="M498 212v60"/>
-    <path d="M512 228v28"/>
-  </g>
+  <!-- bookmark ribbon -->
+  <path d="M410 50 L410 116 L398 104 L386 116 L386 50 Z" fill="#d4a72c"/>
 
-  <!-- a couple of hand-set dots, adaptive/loading -->
-  <g fill="#b0851b">
-    <circle cx="205" cy="300" r="4.4"/>
-    <circle cx="224" cy="302" r="4.4" opacity=".65"/>
-    <circle cx="243" cy="299" r="4.4" opacity=".35"/>
+  <!-- title -->
+  <line x1="235" y1="156" x2="453" y2="156" stroke="#d4a72c" stroke-width="1.4" opacity=".7"/>
+  <text x="344" y="212" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-weight="700" font-size="46" fill="#e7c257" letter-spacing="1.5">TOEFL</text>
+  <line x1="235" y1="238" x2="453" y2="238" stroke="#d4a72c" stroke-width="1.4" opacity=".7"/>
+
+  <!-- tiny lighthouse emblem, the brand mark on every cover -->
+  <g transform="translate(320,262) scale(0.62)" fill="none" stroke="#d4a72c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 48 Q24 33 26 19"/>
+    <path d="M34 48 Q32 33 30 19"/>
+    <path d="M19 48 L37 48"/>
+    <path d="M25 19 L31 19"/>
+    <path d="M24 19 L24 11 L32 11 L32 19"/>
+    <path d="M21 11 L28 4 L35 11"/>
   </g>
 </svg>

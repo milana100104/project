@@ -8,32 +8,38 @@
     <path d="M-20 320 A 220 220 0 0 1 200 100"/>
   </g>
 
-  <!-- globe, hand-sketched: ghost pass + crisp pass -->
-  <g transform="translate(220,105)">
-    <g fill="none" stroke="#0b1a38" stroke-opacity=".22" stroke-width="4" transform="translate(1.6,1.2)">
-      <circle cx="90" cy="100" r="88"/>
-    </g>
-    <circle cx="90" cy="100" r="88" fill="none" stroke="#0b1a38" stroke-width="2"/>
-    <g fill="none" stroke="#0b1a38" stroke-width="1.5" opacity=".85">
-      <path d="M90 12c-24 22-24 154 0 176"/>
-      <path d="M90 12c24 22 24 154 0 176"/>
-      <path d="M4 76c50-14 132-14 172 0" opacity=".8"/>
-      <path d="M2 100h176"/>
-      <path d="M4 124c50 14 132 14 172 0" opacity=".8"/>
-    </g>
+  <!-- book shadow -->
+  <ellipse cx="340" cy="342" rx="145" ry="13" fill="#0b1a38" opacity=".1"/>
+
+  <!-- spine -->
+  <rect x="185" y="52" width="28" height="284" rx="4" fill="#081226"/>
+  <line x1="196" y1="80" x2="196" y2="310" stroke="#d4a72c" stroke-width="2" opacity=".55"/>
+
+  <!-- page edges -->
+  <g stroke="#f4efe3" stroke-width="1.3" opacity=".6">
+    <line x1="486" y1="66" x2="486" y2="322"/>
+    <line x1="482" y1="60" x2="482" y2="328"/>
+    <line x1="478" y1="56" x2="478" y2="332"/>
   </g>
 
-  <!-- flight path + plane -->
-  <path d="M225 95 Q 330 8 465 68" fill="none" stroke="#b0851b" stroke-width="2.4" stroke-dasharray="1 11" stroke-linecap="round"/>
-  <g transform="translate(465,68) rotate(24)" fill="#b0851b">
-    <path d="M0 0 l24 6 -9 6 3 10 -8-4 -9 4 3-10 -10-6z"/>
-  </g>
+  <!-- cover -->
+  <rect x="205" y="50" width="278" height="288" rx="9" fill="#0b1a38" stroke="#081226" stroke-width="1.5"/>
 
-  <!-- hand-drawn "passed" stamp -->
-  <g transform="translate(430,255)">
-    <path d="M40 2c21-3 41 14 41 37 0 22-18 39-40 38-22 -1-39-19-38-40C4 15 20-1 40 2Z" fill="none" stroke="#b0851b" stroke-width="2.2" stroke-opacity=".22" transform="translate(1,1)"/>
-    <path d="M40 2c21-3 41 14 41 37 0 22-18 39-40 38-22 -1-39-19-38-40C4 15 20-1 40 2Z" fill="none" stroke="#b0851b" stroke-width="1.4"/>
-    <path d="M20 38l13 13 26-30" fill="none" stroke="#0b1a38" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".22" transform="translate(1,1)"/>
-    <path d="M20 38l13 13 26-30" fill="none" stroke="#0b1a38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- bookmark ribbon -->
+  <path d="M410 50 L410 116 L398 104 L386 116 L386 50 Z" fill="#d4a72c"/>
+
+  <!-- title -->
+  <line x1="235" y1="156" x2="453" y2="156" stroke="#d4a72c" stroke-width="1.4" opacity=".7"/>
+  <text x="344" y="212" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-weight="700" font-size="46" fill="#e7c257" letter-spacing="1.5">IELTS</text>
+  <line x1="235" y1="238" x2="453" y2="238" stroke="#d4a72c" stroke-width="1.4" opacity=".7"/>
+
+  <!-- tiny lighthouse emblem, the brand mark on every cover -->
+  <g transform="translate(320,262) scale(0.62)" fill="none" stroke="#d4a72c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 48 Q24 33 26 19"/>
+    <path d="M34 48 Q32 33 30 19"/>
+    <path d="M19 48 L37 48"/>
+    <path d="M25 19 L31 19"/>
+    <path d="M24 19 L24 11 L32 11 L32 19"/>
+    <path d="M21 11 L28 4 L35 11"/>
   </g>
 </svg>

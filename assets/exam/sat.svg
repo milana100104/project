@@ -8,34 +8,38 @@
     <path d="M-20 320 A 220 220 0 0 1 200 100"/>
   </g>
 
-  <!-- graduation cap, hand-sketched -->
-  <g transform="translate(215,90)">
-    <g fill="none" stroke="#0b1a38" stroke-opacity=".22" stroke-width="2.2" stroke-linejoin="round" transform="translate(1.4,1)">
-      <path d="M0 27 L72 0 L144 27 L72 54 Z"/>
-      <path d="M36 41 L36 66 C36 78 108 78 108 66 L108 41"/>
-    </g>
-    <g fill="none" stroke="#0b1a38" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
-      <path d="M0 27 L72 0 L144 27 L72 54 Z"/>
-      <path d="M36 41 L36 66 C36 78 108 78 108 66 L108 41"/>
-    </g>
-    <path d="M144 27v34" stroke="#b0851b" stroke-width="1.6" stroke-linecap="round" fill="none"/>
-    <circle cx="144" cy="65" r="4.6" fill="#b0851b"/>
+  <!-- book shadow -->
+  <ellipse cx="340" cy="342" rx="145" ry="13" fill="#0b1a38" opacity=".1"/>
+
+  <!-- spine -->
+  <rect x="185" y="52" width="28" height="284" rx="4" fill="#081226"/>
+  <line x1="196" y1="80" x2="196" y2="310" stroke="#d4a72c" stroke-width="2" opacity=".55"/>
+
+  <!-- page edges -->
+  <g stroke="#f4efe3" stroke-width="1.3" opacity=".6">
+    <line x1="486" y1="66" x2="486" y2="322"/>
+    <line x1="482" y1="60" x2="482" y2="328"/>
+    <line x1="478" y1="56" x2="478" y2="332"/>
   </g>
 
-  <!-- rising score, one confident hand-drawn stroke -->
-  <g fill="none" stroke="#0b1a38" stroke-width="1.4" stroke-linecap="round" opacity=".8">
-    <path d="M178 322h270"/>
-    <path d="M178 322v-140"/>
-  </g>
-  <path d="M195 300c34-6 55-30 78-56 25-28 55-48 92-58" fill="none" stroke="#b0851b" stroke-width="2" stroke-opacity=".22" stroke-linecap="round" transform="translate(1.3,1.2)"/>
-  <path d="M195 300c34-6 55-30 78-56 25-28 55-48 92-58" fill="none" stroke="#b0851b" stroke-width="2.6" stroke-linecap="round"/>
-  <path d="M347 188l19-4 3 19" fill="none" stroke="#b0851b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- cover -->
+  <rect x="205" y="50" width="278" height="288" rx="9" fill="#0b1a38" stroke="#081226" stroke-width="1.5"/>
 
-  <!-- a few hand-set ticks along the baseline -->
-  <g stroke="#0b1a38" stroke-width="1.4" opacity=".55">
-    <path d="M220 322v8"/>
-    <path d="M275 322v8"/>
-    <path d="M330 322v8"/>
-    <path d="M385 322v8"/>
+  <!-- bookmark ribbon -->
+  <path d="M410 50 L410 116 L398 104 L386 116 L386 50 Z" fill="#d4a72c"/>
+
+  <!-- title -->
+  <line x1="235" y1="156" x2="453" y2="156" stroke="#d4a72c" stroke-width="1.4" opacity=".7"/>
+  <text x="344" y="212" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-weight="700" font-size="46" fill="#e7c257" letter-spacing="1.5">SAT</text>
+  <line x1="235" y1="238" x2="453" y2="238" stroke="#d4a72c" stroke-width="1.4" opacity=".7"/>
+
+  <!-- tiny lighthouse emblem, the brand mark on every cover -->
+  <g transform="translate(320,262) scale(0.62)" fill="none" stroke="#d4a72c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 48 Q24 33 26 19"/>
+    <path d="M34 48 Q32 33 30 19"/>
+    <path d="M19 48 L37 48"/>
+    <path d="M25 19 L31 19"/>
+    <path d="M24 19 L24 11 L32 11 L32 19"/>
+    <path d="M21 11 L28 4 L35 11"/>
   </g>
 </svg>
