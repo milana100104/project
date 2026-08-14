@@ -867,8 +867,8 @@
     pool = shuffle(pool.slice());
     var idx = 0, answered = false, answers = {};
 
-    // exam-style countdown for full-skill tests
-    var remaining = testMode ? pool.length * (skill === 'listening' ? 60 : 90) : 0;
+    // exam-style countdown for full-skill tests - the real per-section time limit, not a guess from question count
+    var remaining = testMode ? officialSectionSeconds(exam, skill, pool.length) : 0;
     var timerId = null;
     if (testMode) {
       timerId = setInterval(function () {
@@ -882,14 +882,17 @@
       answered = false;
       var q = pool[idx];
       root.innerHTML = '';
-      root.appendChild(bar(idx, pool.length, crumb, testMode ? remaining : null));
+      var barNav = testMode ? {
+        prev: function () { if (idx > 0) { idx--; draw(); } },
+        next: function () { var nb = root.querySelector('[data-next]'); if (nb) nb.click(); }
+      } : null;
+      root.appendChild(bar(idx, pool.length, crumb, testMode ? remaining : null, barNav));
 
       var stage = el('div', 'pr-stage');
       var card = el('div', 'pr-card');
 
       var head = el('div', 'pr-head');
-      var diff = q.difficulty ? ' · ' + q.difficulty : '';
-      head.innerHTML = '<span class="pr-kicker">Question ' + (idx + 1) + diff + '</span>';
+      head.innerHTML = '<span class="pr-kicker">Question ' + (idx + 1) + '</span>';
       var save = el('button', 'pr-save' + (BeaconStore.isFav(q.id) ? ' on' : ''));
       save.type = 'button';
       save.innerHTML = '<span class="st">' + (BeaconStore.isFav(q.id) ? '★' : '☆') + '</span> ' + (BeaconStore.isFav(q.id) ? 'Saved' : 'Save');
@@ -981,10 +984,9 @@
       var canResolve = answerEl && typeof answerEl.resolve === 'function';
       var nextBtn = el('button', 'btn btn-white', last ? (testMode ? 'Submit test' : 'Finish') : 'Next →');
       nextBtn.type = 'button'; nextBtn.setAttribute('data-next', '1');
-      if (!canResolve) nextBtn.setAttribute('disabled', '');
       nextBtn.addEventListener('click', function () {
+        // answering isn't required - Next always advances, like a real exam you can skip and move on
         if (!answered && canResolve) answerEl.resolve();
-        if (!answered) return;
         if (last) { finish(); } else { idx++; draw(); }
       });
       btns.appendChild(nextBtn);
@@ -1399,16 +1401,27 @@
     }
   }
 
-  function bar(idx, total, crumb, remaining) {
+  function bar(idx, total, crumb, remaining, nav) {
     var b = el('div', 'pr-bar');
     var pct = total ? Math.round(((idx) / total) * 100) : 0;
+    var jump = nav ?
+      '<span class="pr-exam-jump">' +
+        '<button type="button" class="pr-arrow" data-bar-prev' + (idx === 0 ? ' disabled' : '') + '>◀</button>' +
+        '<span class="pr-exam-qn">' + (idx + 1) + ' / ' + total + '</span>' +
+        '<button type="button" class="pr-arrow" data-bar-next>▶</button>' +
+      '</span>'
+      : '<span class="pr-count">' + (idx + 1) + ' / ' + total + '</span>';
     b.innerHTML =
       '<div class="pr-bar-inner">' +
       '<span class="pr-crumb">' + esc(crumb) + '</span>' +
       '<div class="pr-progress-wrap"><div class="pr-progress-track"><div class="pr-progress-fill" style="width:' + pct + '%"></div></div></div>' +
-      '<span class="pr-count">' + (idx + 1) + ' / ' + total + '</span>' +
+      jump +
       (remaining != null ? '<span class="pr-timer">⏱ ' + fmtTime(remaining) + '</span>' : '') +
       '</div>';
+    if (nav) {
+      var pv = b.querySelector('[data-bar-prev]'); if (pv) pv.addEventListener('click', nav.prev);
+      var nx = b.querySelector('[data-bar-next]'); if (nx) nx.addEventListener('click', nav.next);
+    }
     return b;
   }
 
@@ -1636,6 +1649,14 @@
   }
   function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var x = a[i]; a[i] = a[j]; a[j] = x; } return a; }
   function fmtTime(s) { if (s < 0) s = 0; var m = Math.floor(s / 60), r = s % 60; return m + ':' + (r < 10 ? '0' : '') + r; }
+  // real per-section time limits (same numbers used by the full-exam/adaptive-SAT runners)
+  function officialSectionSeconds(examId, skillId, fallbackCount) {
+    var T = { toefl: { reading: 35 * 60, listening: 36 * 60 },
+              ielts: { reading: 60 * 60, listening: 30 * 60 },
+              sat:   { math: 35 * 60, english: 32 * 60 } };
+    if (T[examId] && T[examId][skillId]) return T[examId][skillId];
+    return fallbackCount * (skillId === 'listening' ? 60 : 90);
+  }
   function shortenPrompt(s) { s = String(s || ''); return s.length > 90 ? s.slice(0, 90) + '…' : s; }
 
   // IELTS raw%->band curve (approximates the Academic Reading/Listening tables)
@@ -2004,7 +2025,7 @@
 
       var stage = el('div', 'pr-stage');
       var card = el('div', 'pr-card');
-      card.innerHTML = '<span class="pr-kicker">Text ' + (ti + 1) + (q.difficulty ? ' · ' + q.difficulty : '') + '</span>';
+      card.innerHTML = '<span class="pr-kicker">Text ' + (ti + 1) + '</span>';
 
       var split = el('div', 'pr-split');
       var left = el('div', 'pr-split-left');
