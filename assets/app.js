@@ -1160,7 +1160,14 @@
       var picked = {};            // qid -> chosen choice index (persists, changeable)
       var flagged = {};           // qid -> true, "Mark for Review" like the real Bluebook app
       var timerHidden = false;    // "Hide" toggle, like the real Bluebook timer
+      var highlightMode = false;  // "Highlights & Notes" toggle - armed means selecting text highlights it
       var idx = 0;
+      // one outside-click listener for the whole module (not re-added on every draw),
+      // pointed at whichever question-navigator row/close-fn the current draw() set up
+      var qnavRef = { row: null, open: false, close: function () {} };
+      document.addEventListener('click', function (e) {
+        if (qnavRef.open && qnavRef.row && !qnavRef.row.contains(e.target)) qnavRef.close();
+      });
       // real per-module time, like the actual Digital SAT: 32 min for a Reading
       // & Writing module, 35 min for a Math module.
       var remaining = sec.minutes * 60;
@@ -1178,12 +1185,10 @@
         root.innerHTML = '';
 
         // exam top bar (sticky), laid out like the real Bluebook app:
-        // section name + directions (left) · timer + hide (center) · tools + exit (right)
+        // section name (left) · timer + hide (center) · tools + exit (right)
         var top = el('div', 'pr-exam-top bb-top');
         top.innerHTML =
-          '<div class="bb-zoom">25% <span class="bb-zoom-i">&#9432;</span><span class="bb-zoom-c">&#9678;</span></div>' +
-          '<div class="bb-top-left"><span class="bb-sec-name">Section ' + (si + 1) + ': ' + esc(sec.name) + '</span>' +
-            '<span class="bb-directions">Directions <span class="bb-chev">&#8964;</span></span></div>' +
+          '<div class="bb-top-left"><span class="bb-sec-name">Section ' + (si + 1) + ': ' + esc(sec.name) + '</span></div>' +
           '<div class="bb-top-center">' +
             (timerHidden
               ? '<span class="pr-timer bb-timer-off">Time is hidden</span>'
@@ -1191,22 +1196,20 @@
             '<button type="button" class="bb-hide-btn">' + (timerHidden ? 'Show' : 'Hide') + '</button>' +
           '</div>' +
           '<div class="bb-top-right">' +
-            '<button type="button" class="bb-tool-btn">&#9998; Highlights &amp; Notes</button>' +
-            '<button type="button" class="bb-tool-btn bb-more">&#8942; More</button>' +
-            (sec.key === 'math' ? '<button type="button" class="pr-calc-btn">&#128425; Calculator</button>' : '') +
+            '<button type="button" class="bb-tool-btn bb-hl-btn' + (highlightMode ? ' on' : '') + '">&#9998; Highlights &amp; Notes</button>' +
+            (sec.key === 'math'
+              ? '<button type="button" class="bb-tool-btn bb-calc-btn">&#128425; Calculator</button>' +
+                '<button type="button" class="bb-tool-btn bb-desmos-btn">&#128200; Desmos</button>'
+              : '') +
             '<a class="pr-exit-x" href="sat.html" title="Leave the test">Exit &#10005;</a>' +
           '</div>';
         top.querySelector('.bb-hide-btn').addEventListener('click', function () { timerHidden = !timerHidden; draw(); });
-        top.querySelector('.bb-tool-btn').addEventListener('click', function (e) {
-          var t = e.currentTarget, old = t.innerHTML;
-          t.textContent = 'Select text in the passage, then click Highlight';
-          setTimeout(function () { t.innerHTML = old; }, 2200);
-        });
-        top.querySelector('.bb-more').addEventListener('click', function () {
-          if (confirm('Leave the test and go back to the SAT page?')) location.href = 'sat.html';
-        });
+        top.querySelector('.bb-hl-btn').addEventListener('click', function () { highlightMode = !highlightMode; draw(); });
+        var calcBtn = top.querySelector('.bb-calc-btn');
+        if (calcBtn) calcBtn.addEventListener('click', function () { toggleCalcPanel('scientific', 'Calculator'); });
+        var desmosBtn = top.querySelector('.bb-desmos-btn');
+        if (desmosBtn) desmosBtn.addEventListener('click', function () { toggleCalcPanel('graphing', 'Desmos'); });
         top.querySelector('.pr-exit-x').addEventListener('click', function () { if (timerId) { clearInterval(timerId); timerId = null; } });
-        var cb = top.querySelector('.pr-calc-btn'); if (cb) cb.addEventListener('click', toggleDesmos);
         root.appendChild(top);
         root.appendChild(el('div', 'bb-ruler'));
 
@@ -1243,9 +1246,9 @@
           // question header + prompt + choices right, divided by a vertical rule
           var split = el('div', 'pr-split bb-split');
           var left = el('div', 'pr-split-left bb-passage-col');
-          var passageEl = el('div', 'pr-passage bb-passage', letterHeaderHtml(q) + esc(q.passage));
+          var passageEl = el('div', 'pr-passage bb-passage' + (highlightMode ? ' hl-on' : ''), letterHeaderHtml(q) + esc(q.passage));
           left.appendChild(passageEl);
-          wireHighlight(passageEl);
+          wireHighlight(passageEl, highlightMode);
           var right = el('div', 'pr-split-right');
           right.appendChild(head);
           if (q.image) { var fig1 = el('div', 'pr-image'); fig1.innerHTML = '<img src="' + esc(q.image) + '" alt="Question image" loading="lazy">'; right.appendChild(fig1); }
@@ -1283,18 +1286,20 @@
 
       function trackerUI() {
         var row = el('div', 'pr-tracker-row');
-        var answered = qs_.filter(function (q) { return picked[q.id] != null; }).length;
-        var btn = el('button', 'btn btn-wire pr-tracker-btn', '🗂 Track progress (' + answered + '/' + qs_.length + ')');
+        var btn = el('button', 'btn pr-qnav-btn', 'Question ' + (idx + 1) + ' of ' + qs_.length + ' <span class="pr-qnav-chev">&#8963;</span>');
         btn.type = 'button';
-        var overlay = el('div', 'pr-tracker-overlay');
-        var panel = el('div', 'pr-tracker-panel');
-        panel.innerHTML = '<div class="pr-tracker-head"><span>Progress</span><button type="button" class="pr-tracker-x">✕</button></div>';
+        var panel = el('div', 'pr-qnav-panel');
         panel.appendChild(palette(false));
-        overlay.appendChild(panel);
-        btn.addEventListener('click', function () { overlay.classList.add('open'); });
-        overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.classList.remove('open'); });
-        panel.querySelector('.pr-tracker-x').addEventListener('click', function () { overlay.classList.remove('open'); });
-        row.appendChild(btn); row.appendChild(overlay);
+        function setOpen(v) {
+          qnavRef.open = v;
+          panel.classList.toggle('open', v);
+          var chev = btn.querySelector('.pr-qnav-chev');
+          if (chev) chev.innerHTML = v ? '&#8964;' : '&#8963;';
+        }
+        qnavRef.row = row;
+        qnavRef.close = function () { setOpen(false); };
+        btn.addEventListener('click', function (e) { e.stopPropagation(); setOpen(!qnavRef.open); });
+        row.appendChild(panel); row.appendChild(btn);
         return row;
       }
 
@@ -1313,14 +1318,11 @@
       }
 
       function syncPalette() {
-        var answered = 0;
         qs_.forEach(function (q, i) {
-          var done = picked[q.id] != null; if (done) answered++;
+          var done = picked[q.id] != null;
           var dot = root.querySelector('.pr-dot[data-i="' + i + '"]');
           if (dot) dot.classList.toggle('done', done);
         });
-        var tb = root.querySelector('.pr-tracker-btn');
-        if (tb) tb.textContent = '🗂 Track progress (' + answered + '/' + qs_.length + ')';
       }
 
       function review() {
@@ -1708,42 +1710,41 @@
   }
   function shortenPrompt(s) { s = String(s || ''); return s.length > 90 ? s.slice(0, 90) + '…' : s; }
 
-  /* Bluebook-style text highlighter: select text in a passage, a small "Highlight" tip
-   * appears, click it to wrap the selection in a <mark>. Highlights don't persist across
-   * redraws (e.g. moving to another question) - same idea as the real tool, lighter build. */
-  function wireHighlight(passageEl) {
-    var tip = null;
-    function removeTip() { if (tip) { tip.remove(); tip = null; } }
-    passageEl.addEventListener('mouseup', function () {
-      removeTip();
+  /* Bluebook-style text highlighter: click "Highlights & Notes" to arm highlight mode,
+   * then select text in the passage to highlight it right away - no extra popup. Click
+   * an existing highlight to remove it; click "Highlights & Notes" again to disarm.
+   * Highlights don't persist across redraws (e.g. moving to another question) - same
+   * idea as the real tool, lighter build. */
+  function wireHighlight(passageEl, active) {
+    passageEl.addEventListener('mouseup', function (e) {
+      if (e.target && e.target.closest && e.target.closest('mark.pr-hl')) return;
+      if (!active) return;
       var sel = window.getSelection();
       if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
       var range = sel.getRangeAt(0);
       if (!passageEl.contains(range.commonAncestorContainer)) return;
-      var rect = range.getBoundingClientRect();
-      if (!rect || (rect.width === 0 && rect.height === 0)) return;
-      tip = document.createElement('button');
-      tip.type = 'button'; tip.className = 'pr-hl-tip'; tip.textContent = '✎ Highlight';
-      tip.style.left = (rect.left + rect.width / 2 + window.scrollX) + 'px';
-      tip.style.top = (rect.top + window.scrollY - 34) + 'px';
-      document.body.appendChild(tip);
-      tip.addEventListener('mousedown', function (e) {
-        e.preventDefault();
-        try {
-          var mark = document.createElement('mark');
-          mark.className = 'pr-hl';
-          range.surroundContents(mark);
-        } catch (e2) { /* selection crossed element boundaries - skip rather than break the DOM */ }
-        sel.removeAllRanges();
-        removeTip();
-      });
+      try {
+        var mark = document.createElement('mark');
+        mark.className = 'pr-hl';
+        range.surroundContents(mark);
+      } catch (e2) { /* selection crossed element boundaries - skip rather than break the DOM */ }
+      sel.removeAllRanges();
     });
-    document.addEventListener('mousedown', function (e) { if (tip && e.target !== tip) removeTip(); });
+    passageEl.addEventListener('click', function (e) {
+      var mark = e.target && e.target.closest && e.target.closest('mark.pr-hl');
+      if (!mark) return;
+      var parent = mark.parentNode;
+      while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+      parent.removeChild(mark);
+      parent.normalize();
+    });
   }
 
-  /* Real Digital SAT Math lets you open the Desmos graphing calculator mid-test.
-   * Loaded lazily from Desmos's own embed API on first use. */
-  var desmosPanel = null;
+  /* Real Digital SAT Math lets you open a calculator mid-test: "Calculator" opens a
+   * Desmos scientific calculator (roots, powers, trig), "Desmos" opens the full Desmos
+   * graphing calculator - both float in a resizable panel inside the test instead of
+   * navigating to desmos.com. Loaded lazily from Desmos's own embed API on first use. */
+  var calcPanel = null, calcPanelKind = null, calcInstance = null;
   function ensureDesmos(cb) {
     if (window.Desmos) { cb(); return; }
     var s = document.createElement('script');
@@ -1751,16 +1752,27 @@
     s.onload = cb;
     document.head.appendChild(s);
   }
-  function toggleDesmos() {
-    if (desmosPanel) { desmosPanel.remove(); desmosPanel = null; return; }
-    desmosPanel = el('div', 'pr-desmos-panel');
-    desmosPanel.innerHTML = '<div class="pr-desmos-head"><span>Calculator</span><button type="button" class="pr-desmos-x">✕</button></div><div class="pr-desmos-mount"></div>';
-    document.body.appendChild(desmosPanel);
-    desmosPanel.querySelector('.pr-desmos-x').addEventListener('click', function () { desmosPanel.remove(); desmosPanel = null; });
+  function closeCalcPanel() {
+    if (calcPanel) { calcPanel.remove(); calcPanel = null; calcPanelKind = null; calcInstance = null; }
+  }
+  function toggleCalcPanel(kind, title) {
+    if (calcPanel && calcPanelKind === kind) { closeCalcPanel(); return; }
+    closeCalcPanel();
+    calcPanelKind = kind;
+    calcPanel = el('div', 'pr-desmos-panel');
+    calcPanel.innerHTML = '<div class="pr-desmos-head"><span>' + esc(title) + '</span><button type="button" class="pr-desmos-x">&#10005;</button></div><div class="pr-desmos-mount"></div>';
+    document.body.appendChild(calcPanel);
+    calcPanel.querySelector('.pr-desmos-x').addEventListener('click', closeCalcPanel);
     ensureDesmos(function () {
-      if (!desmosPanel) return;
-      var mount = desmosPanel.querySelector('.pr-desmos-mount');
-      if (mount) window.Desmos.GraphingCalculator(mount);
+      if (!calcPanel) return;
+      var mount = calcPanel.querySelector('.pr-desmos-mount');
+      if (!mount) return;
+      calcInstance = (kind === 'scientific' && window.Desmos.ScientificCalculator)
+        ? window.Desmos.ScientificCalculator(mount)
+        : window.Desmos.GraphingCalculator(mount);
+      if (window.ResizeObserver) {
+        new ResizeObserver(function () { if (calcInstance) calcInstance.resize(); }).observe(mount);
+      }
     });
   }
 
