@@ -50,7 +50,7 @@ h1,h2,h3,h4{font-family:var(--display);letter-spacing:-.02em;}
   border-radius:999px;padding:5px 12px;margin-left:14px;transition:background .15s,color .15s,transform .15s;}
 .ws-h1 a.ws-saved:hover{background:#0b1a38;color:#fff;transform:translateY(-1px);}
 .ws-h1 a.ws-saved.has{background:#0b1a38;color:#fff;box-shadow:0 4px 14px rgba(11,26,56,.35);}
-.ws-saved-star{font-size:1.05rem;line-height:1;}
+.ws-saved-star{font-size:1.05rem;line-height:1;position:relative;top:-2px;}
 .ws-saved-n{font-family:var(--mono);font-size:.72rem;font-weight:700;}
 @media(max-width:560px){.ws-h1 a.ws-saved{display:flex;width:fit-content;margin:10px 0 0;}}
 .header-actions{display:flex;align-items:center;gap:12px;flex-shrink:0;}
