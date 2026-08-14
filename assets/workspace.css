@@ -178,6 +178,9 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 .pr-dot.done{background:var(--good-bg);border-color:var(--good-line);color:var(--good);}
 .pr-dot.wrong{background:var(--bad-bg);border-color:var(--bad-line);color:var(--bad);}
 .pr-dot.current{outline:2px solid var(--gold);outline-offset:1px;border-color:var(--gold);color:var(--ink);}
+.pr-dot{position:relative;}
+.pr-dot .flag-dot{position:absolute;top:-7px;right:-6px;font-size:.8rem;line-height:1;}
+.pr-dot.flagged{border-color:var(--bad-line);}
 
 /* progress tracker: a button opens an overlay with the palette instead of always showing it */
 .pr-tracker-row{max-width:820px;margin:0 auto 40px;padding:0 20px;display:flex;justify-content:center;}
@@ -209,6 +212,11 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 .pr-save:hover{border-color:var(--gold-line);color:var(--gold);}
 .pr-save.on{color:var(--gold);border-color:var(--gold-line);background:var(--gold-soft);}
 .pr-save .st{font-size:1.05rem;line-height:1;}
+.pr-flag{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:.86rem;color:var(--ink-2);
+  border:1px solid var(--border-strong);border-radius:9px;padding:7px 13px;background:transparent;cursor:pointer;transition:all .15s;}
+.pr-flag:hover{border-color:var(--gold-line);color:var(--gold);}
+.pr-flag.on{color:var(--bad);border-color:var(--bad-line);background:var(--bad-bg);}
+.pr-flag .fl{font-size:1.05rem;line-height:1;}
 
 .pr-passage{color:var(--ink-2);font-size:1.05rem;line-height:1.78;margin-bottom:22px;white-space:pre-line;padding-left:16px;border-left:3px solid var(--gold-line);}
 .pr-letter{margin-bottom:14px;padding-bottom:12px;border-bottom:1px dashed var(--border-strong);}
@@ -468,6 +476,9 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 /* save button + badges on white */
 .ws-white .pr-save{border-color:#dbe1ec;color:#4a5875;}
 .ws-white .pr-save:hover,.ws-white .pr-save.on{color:#b0851b;border-color:#e6cf7e;background:#fdf7e3;}
+.ws-white .pr-flag{border-color:#dbe1ec;color:#4a5875;}
+.ws-white .pr-flag:hover{color:#b0851b;border-color:#e6cf7e;}
+.ws-white .pr-flag.on{color:#c23b3b;border-color:#e3b3b3;background:#fdecec;}
 .ws-white .ws-badge.dev{background:#eef1f7;border-color:#dbe1ec;color:#8592ab;}
 .ws-white .acc.is-dev{opacity:.7;}
 .ws-white .ws-fulltest{border-style:dashed;border-color:#cdd6e6;}
@@ -532,6 +543,9 @@ body.pr-examroom{background:#fff;}
 .pr-examroom .pr-feedback.good,
 .pr-examroom .pr-feedback.bad{color:#14233f;}
 .pr-examroom .pr-feedback .exp{color:#14233f;}
+.pr-examroom .pr-dot.current{outline-color:var(--exam-accent);border-color:var(--exam-accent);}
+.pr-examroom .pr-dot:hover{border-color:var(--exam-accent);}
+.pr-examroom .pr-tracker-head span{color:#14233f;}
 
 /* TOEFL: ETS-blue accent, matching the real test's clean blue-on-white interface */
 .pr-examroom.exam-toefl{--exam-accent:#1450c4;--exam-accent-soft:#eaf0fd;}

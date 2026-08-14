@@ -1158,6 +1158,7 @@
     function runModule(sec, moduleNo, qs_, secState, onModuleDone) {
       if (!qs_.length) { onModuleDone(0); return; }
       var picked = {};            // qid -> chosen choice index (persists, changeable)
+      var flagged = {};           // qid -> true, "Mark for Review" like the real Bluebook app
       var idx = 0;
       // real per-module time, like the actual Digital SAT: 32 min for a Reading
       // & Writing module, 35 min for a Math module.
@@ -1193,7 +1194,13 @@
 
         var stage = el('div', 'pr-stage');
         var card = el('div', 'pr-card');
-        card.innerHTML = '<span class="pr-kicker">Question ' + (idx + 1) + ' of ' + qs_.length + '</span>';
+        var head = el('div', 'pr-head');
+        head.innerHTML = '<span class="pr-kicker">Question ' + (idx + 1) + ' of ' + qs_.length + '</span>';
+        var flagBtn = el('button', 'pr-flag' + (flagged[q.id] ? ' on' : ''), '<span class="fl">' + (flagged[q.id] ? '&#9873;' : '&#9872;') + '</span> Mark for Review');
+        flagBtn.type = 'button';
+        flagBtn.addEventListener('click', function () { flagged[q.id] = !flagged[q.id]; draw(); });
+        head.appendChild(flagBtn);
+        card.appendChild(head);
         if (q.passage) card.appendChild(el('div', 'pr-passage', letterHeaderHtml(q) + esc(q.passage)));
         if (q.image) { var fig = el('div', 'pr-image'); fig.innerHTML = '<img src="' + esc(q.image) + '" alt="Question image" loading="lazy">'; card.appendChild(fig); }
         card.appendChild(el('div', 'pr-prompt', esc(q.prompt)));
@@ -1254,8 +1261,9 @@
         var p = el('div', 'pr-palette');
         var grid = el('div', 'pr-palette-grid');
         qs_.forEach(function (q, i) {
-          var b = el('button', 'pr-dot' + (!inReview && i === idx ? ' current' : '') + (picked[q.id] != null ? ' done' : ''));
-          b.type = 'button'; b.textContent = i + 1; b.setAttribute('data-i', i);
+          var cls = 'pr-dot' + (!inReview && i === idx ? ' current' : '') + (picked[q.id] != null ? ' done' : '') + (flagged[q.id] ? ' flagged' : '');
+          var b = el('button', cls, (flagged[q.id] ? '<span class="flag-dot">&#9873;</span>' : '') + (i + 1));
+          b.type = 'button'; b.setAttribute('data-i', i);
           b.addEventListener('click', function () { idx = i; draw(); });
           grid.appendChild(b);
         });
