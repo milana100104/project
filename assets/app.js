@@ -1176,7 +1176,7 @@
         var q = qs_[idx];
         root.innerHTML = '';
 
-        // exam top bar (sticky): exit · section · timer · quick prev/next jump
+        // exam top bar (sticky): exit · section · timer · quick prev/next jump · calculator (Math only)
         var top = el('div', 'pr-exam-top');
         var last0 = idx === qs_.length - 1;
         top.innerHTML =
@@ -1186,10 +1186,12 @@
             '<button type="button" class="pr-arrow" data-prev' + (idx === 0 ? ' disabled' : '') + '>◀</button>' +
             '<span class="pr-exam-qn">' + (idx + 1) + ' / ' + qs_.length + '</span>' +
             '<button type="button" class="pr-arrow" data-next>' + (last0 ? '✔' : '▶') + '</button>' +
-          '</span>';
+          '</span>' +
+          (sec.key === 'math' ? '<button type="button" class="pr-calc-btn">&#128425; Calculator</button>' : '');
         top.querySelector('.pr-exit-x').addEventListener('click', function () { if (timerId) { clearInterval(timerId); timerId = null; } });
         var pv = top.querySelector('[data-prev]'); if (pv) pv.addEventListener('click', function () { if (idx > 0) { idx--; draw(); } });
         var nx = top.querySelector('[data-next]'); if (nx) nx.addEventListener('click', function () { if (last0) { review(); } else { idx++; draw(); } });
+        var cb = top.querySelector('.pr-calc-btn'); if (cb) cb.addEventListener('click', toggleDesmos);
         root.appendChild(top);
 
         var stage = el('div', 'pr-stage');
@@ -1201,7 +1203,11 @@
         flagBtn.addEventListener('click', function () { flagged[q.id] = !flagged[q.id]; draw(); });
         head.appendChild(flagBtn);
         card.appendChild(head);
-        if (q.passage) card.appendChild(el('div', 'pr-passage', letterHeaderHtml(q) + esc(q.passage)));
+        if (q.passage) {
+          var passageEl = el('div', 'pr-passage', letterHeaderHtml(q) + esc(q.passage));
+          card.appendChild(passageEl);
+          wireHighlight(passageEl);
+        }
         if (q.image) { var fig = el('div', 'pr-image'); fig.innerHTML = '<img src="' + esc(q.image) + '" alt="Question image" loading="lazy">'; card.appendChild(fig); }
         card.appendChild(el('div', 'pr-prompt', esc(q.prompt)));
 
@@ -1666,6 +1672,62 @@
     return fallbackCount * (skillId === 'listening' ? 60 : 90);
   }
   function shortenPrompt(s) { s = String(s || ''); return s.length > 90 ? s.slice(0, 90) + '…' : s; }
+
+  /* Bluebook-style text highlighter: select text in a passage, a small "Highlight" tip
+   * appears, click it to wrap the selection in a <mark>. Highlights don't persist across
+   * redraws (e.g. moving to another question) - same idea as the real tool, lighter build. */
+  function wireHighlight(passageEl) {
+    var tip = null;
+    function removeTip() { if (tip) { tip.remove(); tip = null; } }
+    passageEl.addEventListener('mouseup', function () {
+      removeTip();
+      var sel = window.getSelection();
+      if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
+      var range = sel.getRangeAt(0);
+      if (!passageEl.contains(range.commonAncestorContainer)) return;
+      var rect = range.getBoundingClientRect();
+      if (!rect || (rect.width === 0 && rect.height === 0)) return;
+      tip = document.createElement('button');
+      tip.type = 'button'; tip.className = 'pr-hl-tip'; tip.textContent = '✎ Highlight';
+      tip.style.left = (rect.left + rect.width / 2 + window.scrollX) + 'px';
+      tip.style.top = (rect.top + window.scrollY - 34) + 'px';
+      document.body.appendChild(tip);
+      tip.addEventListener('mousedown', function (e) {
+        e.preventDefault();
+        try {
+          var mark = document.createElement('mark');
+          mark.className = 'pr-hl';
+          range.surroundContents(mark);
+        } catch (e2) { /* selection crossed element boundaries - skip rather than break the DOM */ }
+        sel.removeAllRanges();
+        removeTip();
+      });
+    });
+    document.addEventListener('mousedown', function (e) { if (tip && e.target !== tip) removeTip(); });
+  }
+
+  /* Real Digital SAT Math lets you open the Desmos graphing calculator mid-test.
+   * Loaded lazily from Desmos's own embed API on first use. */
+  var desmosPanel = null;
+  function ensureDesmos(cb) {
+    if (window.Desmos) { cb(); return; }
+    var s = document.createElement('script');
+    s.src = 'https://www.desmos.com/api/v1.11/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6';
+    s.onload = cb;
+    document.head.appendChild(s);
+  }
+  function toggleDesmos() {
+    if (desmosPanel) { desmosPanel.remove(); desmosPanel = null; return; }
+    desmosPanel = el('div', 'pr-desmos-panel');
+    desmosPanel.innerHTML = '<div class="pr-desmos-head"><span>Calculator</span><button type="button" class="pr-desmos-x">✕</button></div><div class="pr-desmos-mount"></div>';
+    document.body.appendChild(desmosPanel);
+    desmosPanel.querySelector('.pr-desmos-x').addEventListener('click', function () { desmosPanel.remove(); desmosPanel = null; });
+    ensureDesmos(function () {
+      if (!desmosPanel) return;
+      var mount = desmosPanel.querySelector('.pr-desmos-mount');
+      if (mount) window.Desmos.GraphingCalculator(mount);
+    });
+  }
 
   // IELTS raw%->band curve (approximates the Academic Reading/Listening tables)
   function ieltsBand(pct) {

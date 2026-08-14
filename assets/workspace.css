@@ -166,6 +166,23 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 .pr-arrow:hover:not([disabled]){border-color:var(--gold-line);color:var(--gold);}
 .pr-arrow[disabled]{opacity:.35;cursor:not-allowed;}
 .pr-exam-qn{font-family:var(--mono);font-size:.82rem;color:var(--ink-2);min-width:52px;text-align:center;}
+.pr-calc-btn{font-family:var(--mono);font-size:.78rem;color:#fff;border:1.5px solid #fff;background:transparent;
+  padding:6px 13px;border-radius:8px;white-space:nowrap;font-weight:600;cursor:pointer;margin-left:auto;}
+.pr-calc-btn:hover{background:#fff;color:#14294f;}
+
+/* Bluebook-style text highlighter */
+.pr-hl-tip{position:fixed;z-index:500;transform:translate(-50%,-100%);background:#14233f;color:#fff;
+  border:none;border-radius:8px;padding:7px 13px;font-size:.82rem;font-weight:600;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.25);}
+.pr-hl-tip:hover{background:#0b1a38;}
+mark.pr-hl{background:#fef08a;color:inherit;border-radius:2px;padding:0 1px;}
+
+/* floating Desmos calculator */
+.pr-desmos-panel{position:fixed;right:24px;bottom:24px;z-index:500;width:360px;max-width:calc(100vw - 32px);
+  background:#fff;border:1px solid #d7deea;border-radius:14px;box-shadow:0 16px 40px rgba(20,40,80,.28);overflow:hidden;}
+.pr-desmos-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;
+  background:#14233f;color:#fff;font-weight:700;font-size:.88rem;}
+.pr-desmos-head button{background:transparent;border:none;color:#fff;cursor:pointer;font-size:1rem;line-height:1;}
+.pr-desmos-mount{width:100%;height:360px;}
 .brk-clock{text-align:center;margin:18px 0 6px;}
 .brk-clock .brk-time{font-family:var(--mono);font-size:2.4rem;font-weight:600;color:var(--gold);}
 
@@ -535,6 +552,8 @@ body.pr-examroom{background:#fff;}
 .pr-examroom .pr-exam-top .pr-timer{color:var(--exam-accent);}
 .pr-examroom .pr-exit-x{color:#4a5875;border-color:#c9d2e2;}
 .pr-examroom .pr-exit-x:hover{background:#f2f5fa;color:#14233f;}
+.pr-examroom .pr-calc-btn{color:var(--exam-accent);border-color:var(--exam-accent);}
+.pr-examroom .pr-calc-btn:hover{background:var(--exam-accent);color:#fff;}
 .pr-examroom .pr-arrow{background:#fff;border-color:#d7deea;color:#14233f;}
 .pr-examroom .pr-arrow:hover:not([disabled]){border-color:var(--exam-accent);color:var(--exam-accent);}
 .pr-examroom .pr-exam-qn{color:#4a5875;}
