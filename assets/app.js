@@ -1451,20 +1451,10 @@
     }
 
     function finishAll() {
-      var totalScore = 0, allCorrect = 0, allTotal = 0;
-      results.forEach(function (r) {
-        totalScore += r.scaled; allCorrect += r.correct; allTotal += r.total;
-      });
+      var totalScore = 0;
+      results.forEach(function (r) { totalScore += r.scaled; });
       var rwSec = results.filter(function (r) { return r.name === 'Reading & Writing'; })[0];
       var mathSec = results.filter(function (r) { return r.name === 'Math'; })[0];
-
-      var secRows = results.map(function (r) {
-        return '<div class="pr-rev ok"><span class="pr-rev-n">' + esc(r.name.split(' ')[0]) + '</span>' +
-          '<div class="pr-rev-main"><div class="pr-rev-q">' + esc(r.name) + '</div>' +
-          '<div class="pr-rev-a"><b>' + r.scaled + '</b> / 800 · ' + r.correct + '/' + r.total + ' correct · ' +
-          (r.path === 'hard' ? 'harder' : 'easier') + ' Module 2</div></div>' +
-          '<span class="pr-rev-mark">' + r.scaled + '</span></div>';
-      }).join('');
 
       var note = results.length < 2
         ? '<div class="pr-passage" style="border:0;padding-left:0">Only the <b>' + esc(results[0].name) + '</b> section had questions, so this is a section score out of 800. Add ' +
@@ -1500,7 +1490,6 @@
         '<div class="pr-stage"><div class="pr-result">' +
         reportHtml +
         note +
-        '<div class="pr-review">' + secRows + '</div>' +
         '<div class="pr-passage" style="border:0;padding-left:0;font-size:.9rem;color:#7c88a3">This score is an estimate from your answers and which Module 2 you unlocked - a study guide, not an official SAT score. Saved to your profile.</div>' +
         '<div class="fin-actions">' +
         '<a class="btn btn-white" href="sat.html">Back to SAT</a>' +

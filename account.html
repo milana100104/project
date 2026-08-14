@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Account - Beacon</title>
-<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=132">
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=133">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=132">
-<script src="assets/app.js?v=132" defer></script>
-<script src="assets/config.js?v=132" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=133">
+<script src="assets/app.js?v=133" defer></script>
+<script src="assets/config.js?v=133" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=132" defer></script>
-<script src="assets/chat.js?v=132" defer></script>
+<script src="assets/auth.js?v=133" defer></script>
+<script src="assets/chat.js?v=133" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -95,10 +95,11 @@ document.addEventListener("DOMContentLoaded", function () {
       }).join("");
       return '<div class="group-title">'+esc(EX[e].name)+' · '+hist.length+' test'+(hist.length>1?"s":"")+'</div><div class="row-list">'+rows+'</div>';
     }).join("");
-    var resultsCard = resultsGroups ?
+    var resultsCard = (user.role === "admin") ? "" :
       '<div class="card" style="margin-top:16px;margin-bottom:48px"><h2 style="font-size:1.1rem;margin-bottom:2px">Your results</h2>' +
       '<p class="sub" style="margin-bottom:6px">Every full test you’ve completed - most recent first.</p>' +
-      resultsGroups + '</div>' : "";
+      (resultsGroups || '<p class="sub">No full tests completed yet - finish a full TOEFL, IELTS, or SAT test (not just skill practice) and it’ll show up here.</p>') +
+      '</div>';
 
     panel.innerHTML =
       '<div class="card">' +
