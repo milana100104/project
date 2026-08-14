@@ -1196,27 +1196,19 @@
 
         var stage = el('div', 'pr-stage');
         var card = el('div', 'pr-card');
-        var head = el('div', 'pr-head');
-        head.innerHTML = '<span class="pr-kicker">Question ' + (idx + 1) + ' of ' + qs_.length + '</span>';
+        var head = el('div', 'pr-head bb-head');
+        head.innerHTML = '<span class="pr-kicker">' + (idx + 1) + '</span>';
         var flagBtn = el('button', 'pr-flag' + (flagged[q.id] ? ' on' : ''), '<span class="fl">' + (flagged[q.id] ? '&#9873;' : '&#9872;') + '</span> Mark for Review');
         flagBtn.type = 'button';
         flagBtn.addEventListener('click', function () { flagged[q.id] = !flagged[q.id]; draw(); });
         head.appendChild(flagBtn);
-        card.appendChild(head);
-        if (q.passage) {
-          var passageEl = el('div', 'pr-passage', letterHeaderHtml(q) + esc(q.passage));
-          card.appendChild(passageEl);
-          wireHighlight(passageEl);
-        }
-        if (q.image) { var fig = el('div', 'pr-image'); fig.innerHTML = '<img src="' + esc(q.image) + '" alt="Question image" loading="lazy">'; card.appendChild(fig); }
-        card.appendChild(el('div', 'pr-prompt', esc(q.prompt)));
 
-        // choices: highlight the current pick; clicking (re)selects - no reveal
-        var wrap = el('div', 'pr-choices');
+        // choices: letter circle on the right edge, Bluebook-style
+        var wrap = el('div', 'pr-choices bb-choices');
         (q.choices || []).forEach(function (choice, i) {
           var btn = el('button', 'pr-choice' + (picked[q.id] === i ? ' picked' : ''));
           btn.type = 'button';
-          btn.innerHTML = '<span class="mark">' + String.fromCharCode(65 + i) + '</span><span>' + esc(choice) + '</span>';
+          btn.innerHTML = '<span>' + esc(choice) + '</span><span class="mark">' + String.fromCharCode(65 + i) + '</span>';
           btn.addEventListener('click', function () {
             picked[q.id] = i;
             wrap.querySelectorAll('.pr-choice').forEach(function (k) { k.classList.remove('picked'); });
@@ -1225,7 +1217,28 @@
           });
           wrap.appendChild(btn);
         });
-        card.appendChild(wrap);
+
+        if (q.passage) {
+          // side-by-side like the real Bluebook: passage left (plain, no accent bar),
+          // question header + prompt + choices right, divided by a vertical rule
+          var split = el('div', 'pr-split bb-split');
+          var left = el('div', 'pr-split-left bb-passage-col');
+          var passageEl = el('div', 'pr-passage bb-passage', letterHeaderHtml(q) + esc(q.passage));
+          left.appendChild(passageEl);
+          wireHighlight(passageEl);
+          var right = el('div', 'pr-split-right');
+          right.appendChild(head);
+          if (q.image) { var fig1 = el('div', 'pr-image'); fig1.innerHTML = '<img src="' + esc(q.image) + '" alt="Question image" loading="lazy">'; right.appendChild(fig1); }
+          right.appendChild(el('div', 'pr-prompt', esc(q.prompt)));
+          right.appendChild(wrap);
+          split.appendChild(left); split.appendChild(right);
+          card.appendChild(split);
+        } else {
+          card.appendChild(head);
+          if (q.image) { var fig2 = el('div', 'pr-image'); fig2.innerHTML = '<img src="' + esc(q.image) + '" alt="Question image" loading="lazy">'; card.appendChild(fig2); }
+          card.appendChild(el('div', 'pr-prompt', esc(q.prompt)));
+          card.appendChild(wrap);
+        }
         stage.appendChild(card);
         root.appendChild(stage);
 
