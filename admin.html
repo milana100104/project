@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin - Beacon</title>
-<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=99">
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=100">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=99">
-<script src="assets/app.js?v=99" defer></script>
-<script src="assets/config.js?v=99" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=100">
+<script src="assets/app.js?v=100" defer></script>
+<script src="assets/config.js?v=100" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=99" defer></script>
-<script src="assets/chat.js?v=99" defer></script>
+<script src="assets/auth.js?v=100" defer></script>
+<script src="assets/chat.js?v=100" defer></script>
 <style>
 /* ---- Admin: clean white workspace ---- */
 body.adm-body{background:#eef1f7;font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;}
@@ -101,6 +101,7 @@ body.adm-body .site-header .brand-name,body.adm-body .site-header .main-nav a,bo
       <a href="admin.html?tab=ielts" data-tab="ielts">IELTS</a>
       <a href="admin.html?tab=sat" data-tab="sat">SAT</a>
       <a href="admin.html?tab=webinars" data-tab="webinars">Webinars</a>
+      <a href="admin.html?tab=mentors" data-tab="mentors">Mentor requests</a>
     </nav>
     <div id="panel"></div>
   </div>
@@ -165,6 +166,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll("#tabs a").forEach(function (a){ if (a.dataset.tab === tab) a.classList.add("active"); });
 
     if (tab === "webinars") { renderWebinars(); return; }
+    if (tab === "mentors") { renderMentors(); return; }
     if (!EXAMS[tab]) { renderExam("toefl"); return; }
     BeaconStore.ready().then(function () { renderExam(tab); });
 
@@ -683,6 +685,46 @@ document.addEventListener("DOMContentLoaded", function () {
             var updated = {}; for (var k in w) updated[k] = w[k];
             updated.status = (w.status === "finished") ? "open" : "finished";
             Promise.resolve(BeaconStore.addWebinar(updated)).then(listWebinars);
+          };
+        });
+      }
+    }
+
+    /* =================== mentor requests (home page "book a session" form) =================== */
+    function renderMentors(){
+      panel.innerHTML =
+        '<div class="adm-card">' +
+          '<h2 class="adm-h">Mentor requests</h2>' +
+          '<p class="adm-sub">Students who asked to book a session from the home page. Message them on Telegram, then delete once handled.</p>' +
+          '<div class="adm-msg" id="mm"></div>' +
+        '</div>' +
+        '<div class="adm-list" id="mlist"></div>';
+      var mm = document.getElementById("mm");
+      function mmsg(t,k){ mm.className = "adm-msg" + (k ? " " + k : ""); mm.textContent = t || ""; }
+      load();
+      function load(){
+        mmsg("Loading…");
+        BeaconStore.listMentorRequests().then(function (res){
+          if (!res.ok) return mmsg(res.error || "Could not load.", "bad");
+          mmsg("");
+          renderList(res.rows);
+        });
+      }
+      function renderList(rows){
+        var list = document.getElementById("mlist");
+        list.innerHTML = rows.map(function (r){
+          var when = r.created_at ? new Date(r.created_at).toLocaleString([], { month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit" }) : "";
+          return '<div class="adm-item"><div class="adm-item-main"><b>' + esc(r.name) + ' · ' + esc(r.exam) + '</b>' +
+            '<span>' + esc(r.telegram) + (when ? ' · ' + esc(when) : '') + '</span></div>' +
+            '<button class="adm-del" data-id="' + r.id + '">Delete</button></div>';
+        }).join("") || '<div class="adm-empty">No requests yet.</div>';
+        list.querySelectorAll(".adm-del").forEach(function (b){
+          b.onclick = function (){
+            b.disabled = true;
+            BeaconStore.deleteMentorRequest(Number(b.dataset.id)).then(function (res){
+              if (!res.ok) { b.disabled = false; mmsg(res.error || "Could not delete.", "bad"); return; }
+              load();
+            });
           };
         });
       }

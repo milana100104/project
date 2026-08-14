@@ -555,6 +555,23 @@
       }
       var d = this._load(); d.webinars = d.webinars.filter(function (w) { return w.id !== id; }); this._save();
       return Promise.resolve({ ok: true, local: true });
+    },
+    /** Admin only: "book a mentor" leads students submitted from the home page. */
+    listMentorRequests: function () {
+      var sb = window.sb, pw = this._adminPw();
+      if (!sb) return Promise.resolve({ ok: false, error: 'Not reachable right now.' });
+      return sb.rpc('beacon_list_mentor_requests', { pass: pw || '' }).then(function (res) {
+        if (res.error) return { ok: false, error: res.error.message };
+        return { ok: true, rows: res.data || [] };
+      });
+    },
+    deleteMentorRequest: function (id) {
+      var sb = window.sb, pw = this._adminPw();
+      if (!sb) return Promise.resolve({ ok: false, error: 'Not reachable right now.' });
+      return sb.rpc('beacon_delete_mentor_request', { pass: pw || '', rid: id }).then(function (res) {
+        if (res.error) return { ok: false, error: res.error.message };
+        return { ok: true };
+      });
     }
   };
 

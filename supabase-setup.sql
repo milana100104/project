@@ -245,6 +245,48 @@ insert into public.webinars (id, iso, data) values
   ('w6','2026-09-06T18:00', '{"id":"w6","iso":"2026-09-06T18:00","date":"Sep 06 · 6:00 PM","title":"SAT Reading & Writing: grammar that pays off","desc":"The handful of Standard English Conventions questions you can get right every single time.","url":"#","cover":""}'::jsonb)
 on conflict (id) do nothing;
 
+-- ============================================================================
+-- 9) "Book a session with a mentor" - anyone can submit, only the admin can read
+-- ----------------------------------------------------------------------------
+create table if not exists public.mentor_requests (
+  id          bigint generated always as identity primary key,
+  name        text not null,
+  telegram    text not null,
+  exam        text not null,
+  created_at  timestamptz default now()
+);
+alter table public.mentor_requests enable row level security;
+
+-- Any visitor (no login needed) may submit a request; nobody can read the table
+-- directly - that only happens through the admin-gated function below.
+drop policy if exists "mentor requests insert" on public.mentor_requests;
+create policy "mentor requests insert"
+  on public.mentor_requests for insert
+  with check (true);
+grant insert on public.mentor_requests to anon, authenticated;
+
+create or replace function public.beacon_list_mentor_requests(pass text)
+returns setof public.mentor_requests
+language plpgsql security definer set search_path = public as $$
+begin
+  if not public.beacon_is_admin(pass) then
+    raise exception 'not authorized';
+  end if;
+  return query select * from public.mentor_requests order by created_at desc;
+end; $$;
+
+create or replace function public.beacon_delete_mentor_request(pass text, rid bigint)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.beacon_is_admin(pass) then
+    raise exception 'not authorized';
+  end if;
+  delete from public.mentor_requests where id = rid;
+end; $$;
+
+grant execute on function public.beacon_list_mentor_requests(text) to anon, authenticated;
+grant execute on function public.beacon_delete_mentor_request(text, bigint) to anon, authenticated;
+
 -- Done. Reload the site; questions AND webinars you manage in the admin panel are
 -- now shared with everyone, each student's Saved list + progress follow them to any
 -- device, and the bottom-right chat is live for signed-in students.

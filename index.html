@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Beacon - practice the TOEFL, IELTS & SAT with instant checks</title>
-<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=99">
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=100">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=99">
-<script src="assets/config.js?v=99" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=100">
+<script src="assets/config.js?v=100" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=99" defer></script>
-<script src="assets/chat.js?v=99" defer></script>
-<script src="assets/app.js?v=99" defer></script>
+<script src="assets/auth.js?v=100" defer></script>
+<script src="assets/chat.js?v=100" defer></script>
+<script src="assets/app.js?v=100" defer></script>
 </head>
 <body>
 
@@ -262,6 +262,39 @@
     </div>
   </section>
 
+  <section class="mentor-cta" id="mentor">
+    <div class="wrap">
+      <div class="mentor-inner">
+        <div>
+          <span class="mono-label">// 1:1, free, over Telegram</span>
+          <h2>Book a session with a mentor</h2>
+          <p>Fifteen minutes with someone who&rsquo;s actually taken the exam. Tell us your name, your Telegram, and which exam you&rsquo;re prepping for &mdash; we&rsquo;ll message you to set a time.</p>
+        </div>
+        <button type="button" class="btn btn-gold btn-lg" id="mentor-open">Book a session &#8594;</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="mentor-overlay" id="mentor-overlay">
+    <div class="mentor-panel">
+      <div class="mentor-head"><span>Book a session with a mentor</span><button type="button" class="mentor-x" id="mentor-close" aria-label="Close">&#10005;</button></div>
+      <form id="mentor-form">
+        <div class="field"><label for="mentor-name">Name</label><input id="mentor-name" type="text" autocomplete="name" required></div>
+        <div class="field"><label for="mentor-telegram">Telegram</label><input id="mentor-telegram" type="text" placeholder="@username" required></div>
+        <div class="field"><label for="mentor-exam">Which exam?</label>
+          <select id="mentor-exam" required>
+            <option value="">Choose one</option>
+            <option>TOEFL</option>
+            <option>IELTS</option>
+            <option>SAT</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-gold full" id="mentor-submit">Send request</button>
+        <div class="form-msg" id="mentor-msg"></div>
+      </form>
+    </div>
+  </div>
+
   <section class="webinars" id="webinars">
     <div class="wrap">
       <div class="section-head-left">
@@ -394,6 +427,47 @@ document.addEventListener("DOMContentLoaded", function () {
     updateArrows();
   }
   if (BeaconStore.ready) BeaconStore.ready().then(render); else render();
+});
+</script>
+
+<script>
+// Book-a-mentor: a small form that inserts straight into Supabase (question-bank pattern's cousin).
+document.addEventListener("DOMContentLoaded", function () {
+  var openBtn = document.getElementById("mentor-open");
+  var overlay = document.getElementById("mentor-overlay");
+  var closeBtn = document.getElementById("mentor-close");
+  var form = document.getElementById("mentor-form");
+  var msg = document.getElementById("mentor-msg");
+  var submitBtn = document.getElementById("mentor-submit");
+  if (!openBtn || !overlay || !form) return;
+
+  function open() { overlay.classList.add("open"); document.getElementById("mentor-name").focus(); }
+  function close() { overlay.classList.remove("open"); }
+  function showMsg(text, good) {
+    msg.textContent = text;
+    msg.className = "form-msg show " + (good ? "good" : "bad");
+  }
+
+  openBtn.addEventListener("click", open);
+  closeBtn.addEventListener("click", close);
+  overlay.addEventListener("click", function (e) { if (e.target === overlay) close(); });
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = document.getElementById("mentor-name").value.trim();
+    var telegram = document.getElementById("mentor-telegram").value.trim();
+    var exam = document.getElementById("mentor-exam").value;
+    if (!name || !telegram || !exam) return;
+    if (!window.sb) { showMsg("Couldn’t reach the server — email us at beacon.exams@gmail.com instead.", false); return; }
+    submitBtn.disabled = true; submitBtn.textContent = "Sending…";
+    window.sb.from("mentor_requests").insert({ name: name, telegram: telegram, exam: exam }).then(function (r) {
+      submitBtn.disabled = false; submitBtn.textContent = "Send request";
+      if (r.error) { showMsg("Something went wrong — email us at beacon.exams@gmail.com instead.", false); return; }
+      showMsg("Sent — we’ll message you on Telegram to set a time.", true);
+      form.reset();
+      setTimeout(close, 1800);
+    });
+  });
 });
 </script>
 

@@ -250,6 +250,24 @@ section{padding:58px 0;}
 .tick{flex-shrink:0;width:30px;height:30px;}
 .tick svg{width:100%;height:100%;fill:none;stroke:#b0851b;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;}
 
+/* ---------- mentor booking: CTA card + modal form ---------- */
+.mentor-cta{padding:10px 0 6px;}
+.mentor-inner{background:#fff;border:1px solid #e3e7f0;border-radius:20px;padding:38px 42px;
+  box-shadow:0 10px 30px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:space-between;gap:30px;flex-wrap:wrap;}
+.mentor-inner h2{font-size:1.7rem;color:#0b1a38;margin:6px 0 10px;}
+.mentor-inner p{color:#4a5875;max-width:52ch;font-size:1.02rem;}
+.mentor-overlay{position:fixed;inset:0;z-index:300;background:rgba(6,14,30,.6);
+  display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .18s ease;padding:20px;}
+.mentor-overlay.open{opacity:1;pointer-events:auto;}
+.mentor-panel{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--border);border-radius:18px;
+  padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.5);transform:translateY(16px);transition:transform .18s ease;}
+.mentor-overlay.open .mentor-panel{transform:none;}
+.mentor-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.mentor-head span{font-family:var(--display);font-weight:700;font-size:1.12rem;}
+.mentor-x{width:32px;height:32px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);
+  color:var(--ink-2);cursor:pointer;font-size:1rem;flex-shrink:0;}
+@media(max-width:560px){.mentor-inner{padding:28px 24px;}}
+
 /* ---------- webinars: white cards, navy text, portrait 3:4 cover, full width ---------- */
 .webinar-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px;margin-bottom:26px;}
 .webinar-card{background:#fff;border:1px solid #e3e7f0;border-radius:var(--radius);overflow:hidden;
