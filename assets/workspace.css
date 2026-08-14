@@ -86,7 +86,7 @@ h1,h2,h3,h4{font-family:var(--display);letter-spacing:-.02em;}
 /* ---- page ---- */
 .ws-page{width:100%;max-width:var(--wrap);margin:0 auto;padding:40px 26px 90px;}
 .ws-eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);}
-.ws-h1{font-family:var(--display);font-size:2.2rem;font-weight:600;letter-spacing:-.02em;margin-top:10px;}
+.ws-h1{font-family:var(--display);font-size:2.2rem;font-weight:600;letter-spacing:-.02em;margin-top:10px;display:flex;align-items:center;flex-wrap:wrap;}
 .ws-sub{color:var(--ink-2);margin-top:10px;max-width:64ch;font-size:1.06rem;}
 
 /* ---- favorites card ---- */
