@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin - Beacon</title>
-<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=104">
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=105">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=104">
-<script src="assets/app.js?v=104" defer></script>
-<script src="assets/config.js?v=104" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=105">
+<script src="assets/app.js?v=105" defer></script>
+<script src="assets/config.js?v=105" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=104" defer></script>
-<script src="assets/chat.js?v=104" defer></script>
+<script src="assets/auth.js?v=105" defer></script>
+<script src="assets/chat.js?v=105" defer></script>
 <style>
 /* ---- Admin: clean white workspace ---- */
 body.adm-body{background:#eef1f7;font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;}
@@ -66,6 +66,10 @@ body.adm-body .site-header .brand-name,body.adm-body .site-header .main-nav a,bo
 .adm-item-main span{color:#7382a0;font-size:.78rem;text-transform:capitalize;}
 .adm-del{background:#fff;border:1px solid #e3b3b3;color:#c23b3b;border-radius:9px;padding:7px 13px;font-weight:600;cursor:pointer;font-size:.82rem;flex-shrink:0;}
 .adm-del:hover{background:#fdecec;}
+.adm-item.is-contacted{background:#f5f8f4;}
+.adm-item.is-contacted .adm-item-main b{color:#5c6b8a;}
+.adm-check{display:flex;align-items:center;gap:6px;font-size:.78rem;color:#4a5875;flex-shrink:0;cursor:pointer;user-select:none;white-space:nowrap;}
+.adm-check input{width:16px;height:16px;accent-color:#2e8b57;cursor:pointer;}
 .adm-empty{color:#8a97b0;font-size:.9rem;padding:16px;text-align:center;background:#fff;border:1px dashed #d5dceb;border-radius:12px;}
 .adm-denied{background:#fff;border:1px solid #e2e7f0;border-radius:16px;padding:40px;text-align:center;color:#5a6b8c;}
 /* passage-set block editor */
@@ -713,11 +717,23 @@ document.addEventListener("DOMContentLoaded", function () {
       function renderList(rows){
         var list = document.getElementById("mlist");
         list.innerHTML = rows.map(function (r){
-          var when = r.created_at ? new Date(r.created_at).toLocaleString([], { month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit" }) : "";
-          return '<div class="adm-item"><div class="adm-item-main"><b>' + esc(r.name) + ' · ' + esc(r.exam) + '</b>' +
+          var when = r.created_at ? new Date(r.created_at).toLocaleString("en-US", { month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit" }) : "";
+          return '<div class="adm-item' + (r.contacted ? " is-contacted" : "") + '"><div class="adm-item-main"><b>' + esc(r.name) + ' · ' + esc(r.exam) + '</b>' +
             '<span>' + esc(r.telegram) + (when ? ' · ' + esc(when) : '') + '</span></div>' +
+            '<label class="adm-check"><input type="checkbox" data-id="' + r.id + '"' + (r.contacted ? " checked" : "") + '>Contacted</label>' +
             '<button class="adm-del" data-id="' + r.id + '">Delete</button></div>';
         }).join("") || '<div class="adm-empty">No requests yet.</div>';
+        list.querySelectorAll(".adm-check input").forEach(function (cb){
+          cb.onchange = function (){
+            var item = cb.closest(".adm-item");
+            cb.disabled = true;
+            BeaconStore.setMentorContacted(Number(cb.dataset.id), cb.checked).then(function (res){
+              cb.disabled = false;
+              if (!res.ok) { cb.checked = !cb.checked; mmsg(res.error || "Could not update.", "bad"); return; }
+              item.classList.toggle("is-contacted", cb.checked);
+            });
+          };
+        });
         list.querySelectorAll(".adm-del").forEach(function (b){
           b.onclick = function (){
             b.disabled = true;

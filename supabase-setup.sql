@@ -255,6 +255,8 @@ create table if not exists public.mentor_requests (
   exam        text not null,
   created_at  timestamptz default now()
 );
+-- whether the admin has already reached out about this request
+alter table public.mentor_requests add column if not exists contacted boolean not null default false;
 alter table public.mentor_requests enable row level security;
 
 -- Any visitor (no login needed) may submit a request; nobody can read the table
@@ -284,8 +286,18 @@ begin
   delete from public.mentor_requests where id = rid;
 end; $$;
 
+create or replace function public.beacon_set_mentor_contacted(pass text, rid bigint, done boolean)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.beacon_is_admin(pass) then
+    raise exception 'not authorized';
+  end if;
+  update public.mentor_requests set contacted = done where id = rid;
+end; $$;
+
 grant execute on function public.beacon_list_mentor_requests(text) to anon, authenticated;
 grant execute on function public.beacon_delete_mentor_request(text, bigint) to anon, authenticated;
+grant execute on function public.beacon_set_mentor_contacted(text, bigint, boolean) to anon, authenticated;
 
 -- ============================================================================
 -- 10) Housekeeping: auto-purge old public chat messages -----------------------

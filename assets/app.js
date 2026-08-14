@@ -572,6 +572,14 @@
         if (res.error) return { ok: false, error: res.error.message };
         return { ok: true };
       });
+    },
+    setMentorContacted: function (id, contacted) {
+      var sb = window.sb, pw = this._adminPw();
+      if (!sb) return Promise.resolve({ ok: false, error: 'Not reachable right now.' });
+      return sb.rpc('beacon_set_mentor_contacted', { pass: pw || '', rid: id, done: !!contacted }).then(function (res) {
+        if (res.error) return { ok: false, error: res.error.message };
+        return { ok: true };
+      });
     }
   };
 
