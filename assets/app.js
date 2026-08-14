@@ -1159,6 +1159,7 @@
       if (!qs_.length) { onModuleDone(0); return; }
       var picked = {};            // qid -> chosen choice index (persists, changeable)
       var flagged = {};           // qid -> true, "Mark for Review" like the real Bluebook app
+      var timerHidden = false;    // "Hide" toggle, like the real Bluebook timer
       var idx = 0;
       // real per-module time, like the actual Digital SAT: 32 min for a Reading
       // & Writing module, 35 min for a Math module.
@@ -1166,7 +1167,7 @@
       var timerId = setInterval(function () {
         remaining--;
         var t = root.querySelector('.pr-timer');
-        if (t) { t.textContent = '⏱ ' + fmtTime(remaining); if (remaining <= 60) t.classList.add('low'); }
+        if (t && !timerHidden) { t.textContent = fmtTime(remaining); if (remaining <= 60) t.classList.add('low'); }
         if (remaining <= 0) { clearInterval(timerId); timerId = null; endModule(); }
       }, 1000);
 
@@ -1176,21 +1177,30 @@
         var q = qs_[idx];
         root.innerHTML = '';
 
-        // exam top bar (sticky): exit · section · timer · quick prev/next jump · calculator (Math only)
-        var top = el('div', 'pr-exam-top');
-        var last0 = idx === qs_.length - 1;
+        // exam top bar (sticky), laid out like the real Bluebook app:
+        // section name + directions (left) · timer + hide (center) · tools + exit (right)
+        var top = el('div', 'pr-exam-top bb-top');
         top.innerHTML =
-          '<a class="pr-exit-x" href="sat.html" title="Leave the test">Exit ✕</a>' +
-          '<span class="pr-timer' + (remaining <= 60 ? ' low' : '') + '">⏱ ' + fmtTime(remaining) + '</span>' +
-          '<span class="pr-exam-jump">' +
-            '<button type="button" class="pr-arrow" data-prev' + (idx === 0 ? ' disabled' : '') + '>◀</button>' +
-            '<span class="pr-exam-qn">' + (idx + 1) + ' / ' + qs_.length + '</span>' +
-            '<button type="button" class="pr-arrow" data-next>' + (last0 ? '✔' : '▶') + '</button>' +
-          '</span>' +
-          (sec.key === 'math' ? '<button type="button" class="pr-calc-btn">&#128425; Calculator</button>' : '');
+          '<div class="bb-top-left"><span class="bb-sec-name">Section ' + (si + 1) + ': ' + esc(sec.name) + '</span>' +
+            '<span class="bb-directions">Directions <span class="bb-chev">&#8964;</span></span></div>' +
+          '<div class="bb-top-center">' +
+            (timerHidden
+              ? '<span class="pr-timer bb-timer-off">Time is hidden</span>'
+              : '<span class="pr-timer' + (remaining <= 60 ? ' low' : '') + '">' + fmtTime(remaining) + '</span>') +
+            '<button type="button" class="bb-hide-btn">' + (timerHidden ? 'Show' : 'Hide') + '</button>' +
+          '</div>' +
+          '<div class="bb-top-right">' +
+            '<button type="button" class="bb-tool-btn">&#9998; Highlights &amp; Notes</button>' +
+            (sec.key === 'math' ? '<button type="button" class="pr-calc-btn">&#128425; Calculator</button>' : '') +
+            '<a class="pr-exit-x" href="sat.html" title="Leave the test">Exit &#10005;</a>' +
+          '</div>';
+        top.querySelector('.bb-hide-btn').addEventListener('click', function () { timerHidden = !timerHidden; draw(); });
+        top.querySelector('.bb-tool-btn').addEventListener('click', function (e) {
+          var t = e.currentTarget, old = t.textContent;
+          t.textContent = 'Select text in the passage, then click Highlight';
+          setTimeout(function () { t.textContent = old; }, 2200);
+        });
         top.querySelector('.pr-exit-x').addEventListener('click', function () { if (timerId) { clearInterval(timerId); timerId = null; } });
-        var pv = top.querySelector('[data-prev]'); if (pv) pv.addEventListener('click', function () { if (idx > 0) { idx--; draw(); } });
-        var nx = top.querySelector('[data-next]'); if (nx) nx.addEventListener('click', function () { if (last0) { review(); } else { idx++; draw(); } });
         var cb = top.querySelector('.pr-calc-btn'); if (cb) cb.addEventListener('click', toggleDesmos);
         root.appendChild(top);
 
