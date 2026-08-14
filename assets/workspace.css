@@ -588,11 +588,11 @@ body.pr-examroom{background:#fff;}
 .pr-examroom.exam-sat{--exam-accent:#14233f;--exam-accent-soft:#eef1f7;}
 
 /* Bluebook layout match: question header bar + answer letter on the right, like the real app */
-.bb-head{background:#eef1f7;border-radius:10px 10px 0 0;padding:12px 16px;margin-bottom:0;}
+.bb-head{background:#eef1f7;border-radius:10px 10px 0 0;padding:12px 16px;margin-bottom:20px;}
 .bb-head .pr-kicker{background:#14233f;color:#fff;min-width:24px;height:24px;padding:0 6px;border-radius:5px;
   display:inline-flex;align-items:center;justify-content:center;font-family:var(--font);font-weight:700;
   font-size:.86rem;text-transform:none;letter-spacing:0;}
-.bb-head .pr-flag{border:0;background:transparent;padding:4px 6px;}
+.bb-head .pr-flag{border:0;background:transparent;padding:4px 6px;color:#1f2b47;}
 .bb-head .pr-flag.on{background:transparent;border:0;}
 .bb-passage{border-left:0;padding-left:0;}
 .bb-split.pr-split{gap:0;align-items:stretch;}
