@@ -427,6 +427,24 @@ mark.pr-hl{background:#fef08a;color:inherit;border-radius:2px;padding:0 1px;curs
 .pr-rev.ok .pr-rev-mark{color:var(--good);}
 .pr-rev.no .pr-rev-mark{color:var(--bad);}
 
+/* SAT score report - styled after the official College Board result card */
+.score-report{background:#fff;border:1px solid #e3e7f0;border-radius:16px;padding:26px 28px;margin-bottom:22px;
+  box-shadow:0 10px 30px rgba(20,40,80,.14);text-align:left;}
+.sr-head h2{font-family:var(--display);font-size:1.25rem;font-weight:700;color:#14233f;margin-bottom:2px;}
+.sr-sub{font-size:.86rem;color:#7c88a3;}
+.sr-div{border-top:1px solid #e3e7f0;margin:18px 0;}
+.sr-label{display:block;font-size:.82rem;color:#4a5875;font-weight:600;margin-bottom:4px;}
+.sr-big{display:flex;align-items:baseline;gap:8px;font-family:var(--display);font-size:2.6rem;font-weight:700;color:#14233f;line-height:1;}
+.sr-mid{display:flex;align-items:baseline;gap:6px;font-family:var(--display);font-size:1.7rem;font-weight:700;color:#14233f;line-height:1;}
+.sr-range{font-family:var(--font);font-size:.66rem;font-weight:500;color:#9aa4bb;line-height:1.2;}
+.sr-cols{display:flex;gap:36px;margin-top:20px;flex-wrap:wrap;}
+.sr-col{flex:1;min-width:170px;}
+
+/* break screen: bigger, in the same serif style as the test itself */
+.pr-break-card .pr-prompt{font-size:1.7rem;}
+.pr-break-card .pr-passage{font-size:1.05rem;line-height:1.6;}
+.pr-break-card .brk-time{font-size:3.2rem;}
+
 /* footer */
 .ws-footer{border-top:1px solid var(--border);background:var(--bg-2);}
 .ws-footer-inner{max-width:1100px;margin:0 auto;padding:22px 26px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;color:var(--muted);font-size:.86rem;}

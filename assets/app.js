@@ -376,13 +376,21 @@
     // ---- exam goals + mock-test scores (shown in the profile) --------
     getGoals: function () { return this._load().prefs.goals || {}; },
     setGoals: function (goals) { var d = this._load(); d.prefs.goals = goals || {}; this._save(); this._syncUp(); },
-    /** record a full-test score for an exam (keeps the last 20) */
-    recordScore: function (exam, score) {
+    /** record a full-test score for an exam (keeps the last 20). `extra` can carry
+     *  exam-specific detail (e.g. SAT's { rw, math } section scores) shown in the profile. */
+    recordScore: function (exam, score, extra) {
       var d = this._load();
       if (!d.prefs.scores[exam]) d.prefs.scores[exam] = [];
-      d.prefs.scores[exam].push({ score: score, at: Date.now() });
+      var entry = { score: score, at: Date.now() };
+      if (extra) for (var k in extra) if (extra[k] != null) entry[k] = extra[k];
+      d.prefs.scores[exam].push(entry);
       if (d.prefs.scores[exam].length > 20) d.prefs.scores[exam] = d.prefs.scores[exam].slice(-20);
       this._save(); this._syncUp();
+    },
+    /** every recorded score for an exam, newest first - for the profile's results history */
+    scoreHistory: function (exam) {
+      var arr = (this._load().prefs.scores || {})[exam] || [];
+      return arr.slice().reverse();
     },
     /** average of recorded scores for an exam → { avg, count } or null */
     avgScore: function (exam) {
@@ -1418,7 +1426,7 @@
       function render() {
         root.innerHTML = '';
         var c = el('div', 'pr-stage');
-        var card = el('div', 'pr-card');
+        var card = el('div', 'pr-card pr-break-card');
         card.innerHTML =
           '<span class="pr-kicker">Break</span>' +
           '<h2 class="pr-prompt" style="margin-top:8px">10-minute break</h2>' +
@@ -1443,10 +1451,13 @@
     }
 
     function finishAll() {
-      var totalScore = 0, allCorrect = 0, allTotal = 0, reviews = [];
+      var totalScore = 0, allCorrect = 0, allTotal = 0;
       results.forEach(function (r) {
         totalScore += r.scaled; allCorrect += r.correct; allTotal += r.total;
       });
+      var rwSec = results.filter(function (r) { return r.name === 'Reading & Writing'; })[0];
+      var mathSec = results.filter(function (r) { return r.name === 'Math'; })[0];
+
       var secRows = results.map(function (r) {
         return '<div class="pr-rev ok"><span class="pr-rev-n">' + esc(r.name.split(' ')[0]) + '</span>' +
           '<div class="pr-rev-main"><div class="pr-rev-q">' + esc(r.name) + '</div>' +
@@ -1461,16 +1472,36 @@
         : '';
 
       var big = results.length < 2 ? results[0].scaled : totalScore;
-      var sub = results.length < 2 ? (results[0].name + ' · out of 800') : ('Digital SAT · 400–1600 scale · ' + allCorrect + ' / ' + allTotal + ' correct');
-      var pass = results.length < 2 ? results[0].scaled >= 500 : totalScore >= 1000;
+
+      if (window.BeaconStore && BeaconStore.recordScore) {
+        BeaconStore.recordScore('sat', big, { rw: rwSec ? rwSec.scaled : null, math: mathSec ? mathSec.scaled : null });
+      }
+
+      var dateStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      var reportHtml = results.length >= 2
+        ? '<div class="score-report"><div class="sr-head"><h2>SAT Practice Test</h2>' +
+          '<div class="sr-sub">' + esc(dateStr) + ' · Practice result</div></div>' +
+          '<div class="sr-div"></div>' +
+          '<span class="sr-label">Your Total Score</span>' +
+          '<div class="sr-big">' + big + '<span class="sr-range">400 to<br>1600</span></div>' +
+          '<div class="sr-cols">' +
+          '<div class="sr-col"><span class="sr-label">Your Reading and Writing Score</span>' +
+          '<div class="sr-mid">' + (rwSec ? rwSec.scaled : '-') + '<span class="sr-range">200 to<br>800</span></div></div>' +
+          '<div class="sr-col"><span class="sr-label">Your Math Score</span>' +
+          '<div class="sr-mid">' + (mathSec ? mathSec.scaled : '-') + '<span class="sr-range">200 to<br>800</span></div></div>' +
+          '</div></div>'
+        : '<div class="score-report"><div class="sr-head"><h2>SAT Practice Test</h2>' +
+          '<div class="sr-sub">' + esc(dateStr) + ' · Practice result</div></div>' +
+          '<div class="sr-div"></div>' +
+          '<span class="sr-label">Your ' + esc(results[0].name) + ' Score</span>' +
+          '<div class="sr-big">' + big + '<span class="sr-range">200 to<br>800</span></div></div>';
 
       root.innerHTML =
         '<div class="pr-stage"><div class="pr-result">' +
-        '<div class="pr-score ' + (pass ? 'pass' : 'fail') + '"><span class="pct">' + big + '</span>' +
-        '<span class="frac">' + esc(sub) + '</span></div>' +
+        reportHtml +
         note +
         '<div class="pr-review">' + secRows + '</div>' +
-        '<div class="pr-passage" style="border:0;padding-left:0;font-size:.9rem;color:#7c88a3">This score is an estimate from your answers and which Module 2 you unlocked - a study guide, not an official SAT score.</div>' +
+        '<div class="pr-passage" style="border:0;padding-left:0;font-size:.9rem;color:#7c88a3">This score is an estimate from your answers and which Module 2 you unlocked - a study guide, not an official SAT score. Saved to your profile.</div>' +
         '<div class="fin-actions">' +
         '<a class="btn btn-white" href="sat.html">Back to SAT</a>' +
         '<a class="btn btn-wire" href="practice.html?mode=adaptive&exam=sat">Retake test</a>' +
