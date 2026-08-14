@@ -937,11 +937,12 @@
       }
 
       if (q.passage) {
-        // reading: the text sits on the left, the questions on the right
+        // reading: the text sits on the left (photo above the text, if there is one),
+        // the questions on the right
         var split = el('div', 'pr-split');
         var left = el('div', 'pr-split-left');
-        left.appendChild(el('div', 'pr-passage', letterHeaderHtml(q) + esc(q.passage)));
         if (imageEl) left.appendChild(imageEl);
+        left.appendChild(el('div', 'pr-passage', letterHeaderHtml(q) + esc(q.passage)));
         var right = el('div', 'pr-split-right');
         right.appendChild(promptEl);
         if (audioEl) right.appendChild(audioEl);
@@ -1853,16 +1854,17 @@
       var stage = el('div', 'pr-stage');
       var card = el('div', 'pr-card');
       card.innerHTML = '<span class="pr-kicker">Question ' + (idx + 1) + ' of ' + qs_.length + '</span>';
-      if (q.passage) card.appendChild(el('div', 'pr-passage', letterHeaderHtml(q) + esc(q.passage)));
-      if (q.image) { var fig = el('div', 'pr-image'); fig.innerHTML = '<img src="' + esc(q.image) + '" alt="Question image" loading="lazy">'; card.appendChild(fig); }
+
+      var imageEl = null;
+      if (q.image) { imageEl = el('div', 'pr-image'); imageEl.innerHTML = '<img src="' + esc(q.image) + '" alt="Question image" loading="lazy">'; }
+      var audioEl = null;
       if (q.audio) {
-        var au = el('div', 'pr-audio');
-        au.innerHTML = q.audioSrc ? '<audio controls src="' + esc(q.audioSrc) + '"></audio>'
+        audioEl = el('div', 'pr-audio');
+        audioEl.innerHTML = q.audioSrc ? '<audio controls src="' + esc(q.audioSrc) + '"></audio>'
           : '<div class="ph"><span class="ico">▶</span> Audio placeholder - use the transcript below.</div>' +
             (q.transcript ? '<div class="pr-transcript"><span class="tlabel">Transcript</span>' + esc(q.transcript) + '</div>' : '');
-        card.appendChild(au);
       }
-      card.appendChild(el('div', 'pr-prompt', esc(q.prompt)));
+      var promptEl = el('div', 'pr-prompt', esc(q.prompt));
 
       var wrap = el('div', 'pr-choices');
       (q.choices || []).forEach(function (choice, i) {
@@ -1877,7 +1879,26 @@
         });
         wrap.appendChild(btn);
       });
-      card.appendChild(wrap);
+
+      if (q.passage) {
+        // reading: the text sits on the left (photo above the text, if there is one),
+        // the questions on the right
+        var split = el('div', 'pr-split');
+        var left = el('div', 'pr-split-left');
+        if (imageEl) left.appendChild(imageEl);
+        left.appendChild(el('div', 'pr-passage', letterHeaderHtml(q) + esc(q.passage)));
+        var right = el('div', 'pr-split-right');
+        if (audioEl) right.appendChild(audioEl);
+        right.appendChild(promptEl);
+        right.appendChild(wrap);
+        split.appendChild(left); split.appendChild(right);
+        card.appendChild(split);
+      } else {
+        if (imageEl) card.appendChild(imageEl);
+        if (audioEl) card.appendChild(audioEl);
+        card.appendChild(promptEl);
+        card.appendChild(wrap);
+      }
       stage.appendChild(card); root.appendChild(stage);
 
       var n = el('div', 'pr-nav');
@@ -2167,8 +2188,8 @@
       var split = el('div', 'pr-split');
       var left = el('div', 'pr-split-left');
       if (q.title) left.appendChild(el('div', 'pr-prompt', esc(q.title)));
-      left.appendChild(el('div', 'pr-passage', letterHeaderHtml(q) + esc(q.passage || '')));
       if (q.image) { var fig = el('div', 'pr-image'); fig.innerHTML = '<img src="' + esc(q.image) + '" alt="Reading figure" loading="lazy">'; left.appendChild(fig); }
+      left.appendChild(el('div', 'pr-passage', letterHeaderHtml(q) + esc(q.passage || '')));
       var right = el('div', 'pr-split-right');
       right.appendChild(examBlocks(q, ti));
       split.appendChild(left); split.appendChild(right);

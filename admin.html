@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin - Beacon</title>
-<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=128">
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=129">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=128">
-<script src="assets/app.js?v=128" defer></script>
-<script src="assets/config.js?v=128" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=129">
+<script src="assets/app.js?v=129" defer></script>
+<script src="assets/config.js?v=129" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=128" defer></script>
-<script src="assets/chat.js?v=128" defer></script>
+<script src="assets/auth.js?v=129" defer></script>
+<script src="assets/chat.js?v=129" defer></script>
 <style>
 /* ---- Admin: clean white workspace ---- */
 body.adm-body{background:#eef1f7;font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;}
@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // fmt: 'choice' (options), 'cloze' (fill missing letters), 'text' (typed answer).
     var EXAMS = {
       toefl: { label:"TOEFL", skills:{
-        reading:  { label:"Reading", passage:true, types:{
+        reading:  { label:"Reading", passage:true, image:true, types:{
           "complete-the-words":{ label:"Complete the Words", fmt:"cloze" },
           "daily-life":{ label:"Read in Daily Life", fmt:"choice" },
           "whole-text":{ label:"Academic Passage", fmt:"choice" } }},
@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", function () {
           "lectures":{ label:"Lectures & announcements", fmt:"choice" } }}
       }},
       ielts: { label:"IELTS", skills:{
-        reading:  { label:"Reading", passage:true, types:{
+        reading:  { label:"Reading", passage:true, image:true, types:{
           "full-passage":{ label:"Full passage (mixed question types)", fmt:"passage" } }},
         listening:{ label:"Listening", audio:true, image:true, transcript:true, types:{
           "multiple-choice":{ label:"Multiple choice", fmt:"choice" },
@@ -158,7 +158,7 @@ document.addEventListener("DOMContentLoaded", function () {
           "advanced-math":{ label:"Advanced Math", fmt:"choice" },
           "problem-solving-data-analysis":{ label:"Problem-Solving & Data Analysis", fmt:"choice" },
           "geometry-trig":{ label:"Geometry & Trigonometry", fmt:"choice" } }},
-        english: { label:"Reading & Writing", passage:true, types:{
+        english: { label:"Reading & Writing", passage:true, image:true, types:{
           "information-ideas":{ label:"Information & Ideas", fmt:"choice" },
           "craft-structure":{ label:"Craft & Structure", fmt:"choice" },
           "expression-ideas":{ label:"Expression of Ideas", fmt:"choice" },
