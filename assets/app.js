@@ -89,17 +89,20 @@
 
     /* ---------------- TOEFL · Reading - Read in Daily Life (emails, texts, notices) ---------------- */
     Q({ id:'t-r-dl-1', exam:'toefl', skill:'reading', type:'daily-life', difficulty:'easy',
-      passage:'From: Prof. Alvarez\nSubject: Room change for Thursday\'s seminar\n\nHi all - Thursday\'s seminar has been moved from Room 204 to the Media Lab (Room 118) because of a scheduling conflict. Same time, 2:00 PM. Let me know if this is a problem for anyone.',
+      letterKind:'email', letterFrom:'Prof. Alvarez', letterSubject:'Room change for Thursday\'s seminar',
+      passage:'Hi all - Thursday\'s seminar has been moved from Room 204 to the Media Lab (Room 118) because of a scheduling conflict. Same time, 2:00 PM. Let me know if this is a problem for anyone.',
       prompt:'Why did Prof. Alvarez send this email?',
       choices:['To cancel Thursday\'s seminar','To announce a different room for the seminar','To change the seminar\'s start time','To ask students to bring a laptop'],
       answer:1, explanation:'The email says the seminar "has been moved from Room 204 to the Media Lab" - the room changed, not the time or whether it\'s happening.' }),
     Q({ id:'t-r-dl-2', exam:'toefl', skill:'reading', type:'daily-life', difficulty:'medium',
+      letterKind:'message', letterFrom:'Jordan',
       passage:'Hey - I\'m at the store now. We\'re out of milk and the eggs are almost gone too. Want me to grab both, or just milk? Also, did you already pay the electric bill this month?',
       prompt:'What is the writer asking the reader to do?',
       choices:['Decide what groceries to buy and confirm about the bill','Drive to the store to help carry groceries','Pay the writer back for the electric bill','Tell the writer which store has the best prices'],
       answer:0, explanation:'The message asks two things: whether to buy just milk or milk and eggs, and whether the electric bill has been paid.' }),
     Q({ id:'t-r-dl-3', exam:'toefl', skill:'reading', type:'daily-life', difficulty:'hard',
-      passage:'NOTICE - Library Hours\nStarting next Monday, the East Wing reading room will close at 9 PM instead of midnight for the rest of the semester due to reduced weekend staffing. The Main Hall remains open until midnight as usual.',
+      letterKind:'announcement', letterSubject:'Library Hours',
+      passage:'Starting next Monday, the East Wing reading room will close at 9 PM instead of midnight for the rest of the semester due to reduced weekend staffing. The Main Hall remains open until midnight as usual.',
       prompt:'What is changing about the East Wing reading room?',
       choices:['It will close earlier at night.','It will close permanently.','It will open later in the morning.','It will move into the Main Hall.'],
       answer:0, explanation:'The notice says the East Wing "will close at 9 PM instead of midnight" - an earlier closing time, nothing else.' }),
@@ -604,6 +607,23 @@
   function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
   function qs(name) { var m = new RegExp('[?&]' + name + '=([^&]*)').exec(location.search); return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : null; }
+  /* "Read in Daily Life": an optional email/notice/message header rendered above the passage text. */
+  function letterHeaderHtml(q) {
+    if (!q.letterKind) return '';
+    if (q.letterKind === 'email') {
+      return '<div class="pr-letter pr-letter-email">' +
+        (q.letterFrom ? '<div class="pr-letter-row"><span class="pr-letter-k">From</span>' + esc(q.letterFrom) + '</div>' : '') +
+        (q.letterSubject ? '<div class="pr-letter-row"><span class="pr-letter-k">Subject</span>' + esc(q.letterSubject) + '</div>' : '') +
+      '</div>';
+    }
+    if (q.letterKind === 'announcement') {
+      return '<div class="pr-letter-notice"><span class="pr-letter-tag">Notice</span>' + esc(q.letterSubject || q.letterFrom || '') + '</div>';
+    }
+    if (q.letterKind === 'message' && q.letterFrom) {
+      return '<div class="pr-letter-msg">' + esc(q.letterFrom) + '</div>';
+    }
+    return '';
+  }
   var CHEV = '<span class="acc-chev"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span>';
 
   /* Reading section body: full-passage tests grouped into easy / medium / hard
@@ -913,7 +933,7 @@
         // reading: the text sits on the left, the questions on the right
         var split = el('div', 'pr-split');
         var left = el('div', 'pr-split-left');
-        left.appendChild(el('div', 'pr-passage', esc(q.passage)));
+        left.appendChild(el('div', 'pr-passage', letterHeaderHtml(q) + esc(q.passage)));
         if (imageEl) left.appendChild(imageEl);
         var right = el('div', 'pr-split-right');
         right.appendChild(promptEl);
@@ -1168,7 +1188,7 @@
         var stage = el('div', 'pr-stage');
         var card = el('div', 'pr-card');
         card.innerHTML = '<span class="pr-kicker">Question ' + (idx + 1) + ' of ' + qs_.length + '</span>';
-        if (q.passage) card.appendChild(el('div', 'pr-passage', esc(q.passage)));
+        if (q.passage) card.appendChild(el('div', 'pr-passage', letterHeaderHtml(q) + esc(q.passage)));
         if (q.image) { var fig = el('div', 'pr-image'); fig.innerHTML = '<img src="' + esc(q.image) + '" alt="Question image" loading="lazy">'; card.appendChild(fig); }
         card.appendChild(el('div', 'pr-prompt', esc(q.prompt)));
 
@@ -1671,7 +1691,7 @@
       var stage = el('div', 'pr-stage');
       var card = el('div', 'pr-card');
       card.innerHTML = '<span class="pr-kicker">Question ' + (idx + 1) + ' of ' + qs_.length + '</span>';
-      if (q.passage) card.appendChild(el('div', 'pr-passage', esc(q.passage)));
+      if (q.passage) card.appendChild(el('div', 'pr-passage', letterHeaderHtml(q) + esc(q.passage)));
       if (q.image) { var fig = el('div', 'pr-image'); fig.innerHTML = '<img src="' + esc(q.image) + '" alt="Question image" loading="lazy">'; card.appendChild(fig); }
       if (q.audio) {
         var au = el('div', 'pr-audio');
@@ -1985,7 +2005,7 @@
       var split = el('div', 'pr-split');
       var left = el('div', 'pr-split-left');
       if (q.title) left.appendChild(el('div', 'pr-prompt', esc(q.title)));
-      left.appendChild(el('div', 'pr-passage', esc(q.passage || '')));
+      left.appendChild(el('div', 'pr-passage', letterHeaderHtml(q) + esc(q.passage || '')));
       if (q.image) { var fig = el('div', 'pr-image'); fig.innerHTML = '<img src="' + esc(q.image) + '" alt="Reading figure" loading="lazy">'; left.appendChild(fig); }
       var right = el('div', 'pr-split-right');
       right.appendChild(examBlocks(q, ti));

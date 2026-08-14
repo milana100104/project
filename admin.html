@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin - Beacon</title>
-<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=113">
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=114">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=113">
-<script src="assets/app.js?v=113" defer></script>
-<script src="assets/config.js?v=113" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=114">
+<script src="assets/app.js?v=114" defer></script>
+<script src="assets/config.js?v=114" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=113" defer></script>
-<script src="assets/chat.js?v=113" defer></script>
+<script src="assets/auth.js?v=114" defer></script>
+<script src="assets/chat.js?v=114" defer></script>
 <style>
 /* ---- Admin: clean white workspace ---- */
 body.adm-body{background:#eef1f7;font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;}
@@ -235,6 +235,18 @@ document.addEventListener("DOMContentLoaded", function () {
         // 1) the question
         h += field('Question' + (t.fmt==="cloze" ? ' <span class="hint">(instruction line shown above the words)</span>' : ''),
                    '<input class="adm-input" id="d-prompt" placeholder="' + (t.fmt==="cloze" ? "e.g. Complete the missing letters to finish each word." : "The question the student answers") + '">');
+        // 1b) TOEFL "Read in Daily Life" - format the text as an email / notice / message
+        if (typeSel.value === "daily-life") {
+          h += field('Format <span class="hint">- how this text is presented, TOEFL-style</span>',
+            '<select class="adm-select" id="d-letterkind">' +
+              '<option value="">Plain text</option>' +
+              '<option value="email">Email</option>' +
+              '<option value="announcement">Announcement / notice</option>' +
+              '<option value="message">Text message</option>' +
+            '</select>');
+          h += field('From / sender <span class="hint">(optional - shown above the text)</span>', '<input class="adm-input" id="d-letterfrom" placeholder="e.g. Prof. Alvarez">');
+          h += field('Subject / title <span class="hint">(optional - Email subject, or the Announcement heading)</span>', '<input class="adm-input" id="d-lettersubject" placeholder="e.g. Room change for Thursday\'s seminar">');
+        }
         // 2) the text
         if (sk.passage) h += field('Reading text / passage <span class="hint">(optional - the text the questions are based on)</span>', '<textarea class="adm-textarea" id="d-passage"></textarea>');
         if (sk.image)   h += field('Image <span class="hint">(optional - graph, map or diagram)</span>', '<input class="adm-input" type="file" id="d-image" accept="image/*">');
@@ -568,6 +580,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         var passage = val("d-passage"); if (passage) q.passage = passage;
+        if (typeSel.value === "daily-life") {
+          var lk = val("d-letterkind"); if (lk) q.letterKind = lk;
+          var lf = val("d-letterfrom"); if (lf) q.letterFrom = lf;
+          var ls = val("d-lettersubject"); if (ls) q.letterSubject = ls;
+        }
         var tr = val("d-transcript"); if (tr) q.transcript = tr;
         var exp = val("d-exp"); if (exp) q.explanation = exp;
         return q;
