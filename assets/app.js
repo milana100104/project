@@ -1307,7 +1307,8 @@
 
       function trackerUI() {
         var row = el('div', 'pr-tracker-row');
-        var btn = el('button', 'btn pr-qnav-btn', 'Question ' + (idx + 1) + ' of ' + qs_.length + ' <span class="pr-qnav-chev">&#8963;</span>');
+        var chevSvg = '<svg viewBox="0 0 12 8" width="12" height="8"><path d="M1 6.2L6 1.4L11 6.2" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        var btn = el('button', 'btn pr-qnav-btn', 'Question ' + (idx + 1) + ' of ' + qs_.length + ' <span class="pr-qnav-chev">' + chevSvg + '</span>');
         btn.type = 'button';
         var panel = el('div', 'pr-qnav-panel');
         panel.appendChild(palette(false));
@@ -1315,7 +1316,7 @@
           qnavRef.open = v;
           panel.classList.toggle('open', v);
           var chev = btn.querySelector('.pr-qnav-chev');
-          if (chev) chev.innerHTML = v ? '&#8964;' : '&#8963;';
+          if (chev) chev.classList.toggle('down', v);
         }
         qnavRef.row = row;
         qnavRef.close = function () { setOpen(false); };

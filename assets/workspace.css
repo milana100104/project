@@ -208,7 +208,9 @@ mark.pr-hl{background:#fef08a;color:inherit;border-radius:2px;padding:0 1px;curs
 .pr-qnav-btn:hover{background:#0b1a38;}
 .pr-examroom .pr-qnav-btn{background:var(--exam-accent);border-color:var(--exam-accent);}
 .pr-examroom .pr-qnav-btn:hover{background:#0b1a38;border-color:#0b1a38;}
-.pr-qnav-chev{font-size:.7rem;line-height:1;}
+.pr-qnav-chev{display:inline-flex;align-items:center;justify-content:center;transition:transform .18s ease;}
+.pr-qnav-chev svg{display:block;}
+.pr-qnav-chev.down{transform:rotate(180deg);}
 .pr-qnav-panel{position:absolute;left:50%;bottom:calc(100% + 12px);transform:translate(-50%,8px);
   width:min(520px,90vw);max-height:56vh;overflow:auto;background:#fff;border:1px solid #e3e7f0;border-radius:14px;
   padding:16px 18px 10px;box-shadow:0 16px 40px rgba(20,40,80,.28);opacity:0;pointer-events:none;
@@ -645,6 +647,12 @@ body.pr-examroom{background:#fff;}
   border-radius:6px;border:1px solid #c9d2e2;background:#fff;display:flex;align-items:center;justify-content:center;
   gap:1px;font-size:.55rem;color:#7382a0;z-index:2;box-shadow:0 1px 3px rgba(0,0,0,.1);pointer-events:none;}
 .bb-passage{font-family:'Noto Serif',Georgia,serif;}
+
+/* SAT question/answer text reads in the same serif as the real Bluebook app -
+   distinct from the sans-serif used everywhere else on the site. UI chrome
+   (buttons, badges, the top bar) stays in the site's normal font. */
+.pr-examroom.exam-sat .pr-prompt,
+.pr-examroom.exam-sat .bb-choices .pr-choice > span:first-child{font-family:'Noto Serif',Georgia,serif;}
 
 @media(max-width:860px){
   .pr-examroom .pr-split-left{border-right:0;padding-right:0;border-bottom:1px solid #e3e7f0;padding-bottom:20px;margin-bottom:16px;}
