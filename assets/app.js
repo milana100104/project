@@ -821,6 +821,10 @@
   function _renderPractice(root) {
     // white task surfaces on every practice page (matches the workspace pages)
     document.body.classList.add('ws-white');
+    // full-page exam room, styled to match the real test (per exam)
+    document.body.classList.add('pr-examroom');
+    var examForTheme = qs('exam') || (qs('mode') === 'adaptive' ? 'sat' : '');
+    if (examForTheme) document.body.classList.add('exam-' + examForTheme);
 
     if (qs('mode') === 'adaptive') { renderAdaptiveSAT(root); return; }
     if (qs('mode') === 'readingtest') { renderReadingExam(root, qs('exam') || 'ielts'); return; }

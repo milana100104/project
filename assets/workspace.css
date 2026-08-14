@@ -487,6 +487,46 @@ a.ws-item-full:hover{background:rgba(212,167,44,.18);border-color:var(--gold);}
 .ws-white .ws-panel .acc-head:hover,
 .ws-white .ws-panel a.ws-item:hover{background:#eef2f9;}
 
+/* ================= Exam room: full-page white runner, styled per real exam ================= */
+body.pr-examroom{background:#fff;}
+.pr-examroom{--exam-accent:#b0851b;--exam-accent-soft:#fdf7e3;}
+.pr-examroom .pr-bar{background:#fff;border-bottom:1px solid #e3e7f0;backdrop-filter:none;box-shadow:0 1px 0 rgba(20,40,80,.03);}
+.pr-examroom .pr-bar-inner{max-width:1180px;}
+.pr-examroom .pr-crumb{color:#8592ab;font-weight:600;text-transform:uppercase;letter-spacing:.04em;font-size:.72rem;}
+.pr-examroom .pr-count{color:#4a5875;font-weight:600;}
+.pr-examroom .pr-progress-track{background:#e6ebf4;}
+.pr-examroom .pr-progress-fill{background:var(--exam-accent);}
+.pr-examroom .pr-timer{color:var(--exam-accent);}
+
+.pr-examroom .pr-stage{max-width:1180px;padding:36px 20px 8px;}
+.pr-examroom .pr-card{background:#fff;border:0;border-radius:0;box-shadow:none;padding:0;}
+.pr-examroom .pr-split{gap:56px;}
+.pr-examroom .pr-split-left{border-right:1px solid #e3e7f0;padding-right:44px;}
+.pr-examroom .pr-kicker{color:var(--exam-accent);}
+.pr-examroom .pr-passage{border-left-color:var(--exam-accent);color:#33415f;}
+.pr-examroom .pr-prompt{color:#14233f;}
+
+.pr-examroom .pr-choice{background:#fff;border:1.5px solid #d7deea;}
+.pr-examroom .pr-choice:hover:not(:disabled){border-color:var(--exam-accent);}
+.pr-examroom .pr-choice .mark{border-color:#c4cddd;color:#6b7690;}
+.pr-examroom .pr-choice.picked{background:var(--exam-accent-soft);border-color:var(--exam-accent);box-shadow:0 0 0 1px var(--exam-accent) inset;}
+.pr-examroom .pr-choice.picked .mark{background:var(--exam-accent);border-color:var(--exam-accent);color:#fff;}
+
+.pr-examroom .pr-nav{max-width:1180px;border-top:1px solid #e3e7f0;padding-top:20px;}
+.pr-examroom .btn-white{background:var(--exam-accent);color:#fff;border-color:var(--exam-accent);}
+.pr-examroom .btn-wire{background:transparent;border-color:#c9d2e2;color:#4a5875;}
+.pr-examroom .btn-wire:hover{background:#f2f5fa;color:#14233f;border-color:#c9d2e2;}
+
+/* TOEFL: ETS-blue accent, matching the real test's clean blue-on-white interface */
+.pr-examroom.exam-toefl{--exam-accent:#1450c4;--exam-accent-soft:#eaf0fd;}
+
+@media(max-width:860px){
+  .pr-examroom .pr-split-left{border-right:0;padding-right:0;border-bottom:1px solid #e3e7f0;padding-bottom:20px;margin-bottom:16px;}
+}
+@media(max-width:720px){
+  .pr-examroom .pr-stage{padding:20px 16px 8px;}
+}
+
 @media (max-width:720px){
   body{font-size:16px;}
   .ws-nav a{padding:8px 9px;font-size:.9rem;}
