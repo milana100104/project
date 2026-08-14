@@ -623,13 +623,11 @@ body.pr-examroom{background:#fff;}
 @media(max-width:720px){.bb-top{grid-template-columns:auto auto;gap:10px;}.bb-top-right{grid-column:1/-1;justify-content:flex-end;}}
 
 /* Bluebook fine details: pale blue-gray top bar, ruler strip, divider drag-handle,
-   "ABC" button, serif passage type - matched from Milana's screenshots */
+   serif passage type - matched from Milana's screenshots */
 .pr-examroom.exam-sat .pr-exam-top{background:#e9edf5;}
 .bb-ruler{height:7px;background-image:repeating-linear-gradient(to right, rgba(20,35,63,.18) 0 1px, transparent 1px 11px);}
 .pr-examroom .bb-ruler{background-color:#fff;}
 .bb-head-left{display:flex;align-items:center;gap:16px;}
-.bb-abc-btn{background:#0a5ad6;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-weight:700;
-  font-size:.7rem;letter-spacing:.02em;cursor:default;flex-shrink:0;}
 .bb-split.pr-split{position:relative;}
 .bb-divider-handle{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:20px;height:28px;
   border-radius:6px;border:1px solid #c9d2e2;background:#fff;display:flex;align-items:center;justify-content:center;

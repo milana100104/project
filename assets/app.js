@@ -776,7 +776,7 @@
       var n = a.querySelector('.ws-saved-n');
       if (n) { n.textContent = favN; n.style.display = favN ? '' : 'none'; }
       var st = a.querySelector('.ws-saved-star');
-      if (st) st.textContent = favN ? '★' : '☆';
+      if (st) st.innerHTML = favN ? '&#9873;' : '&#9872;';
     });
 
     if (config.fullTest) {
@@ -895,11 +895,11 @@
       head.innerHTML = '<span class="pr-kicker">Question ' + (idx + 1) + '</span>';
       var save = el('button', 'pr-save' + (BeaconStore.isFav(q.id) ? ' on' : ''));
       save.type = 'button';
-      save.innerHTML = '<span class="st">' + (BeaconStore.isFav(q.id) ? '★' : '☆') + '</span> ' + (BeaconStore.isFav(q.id) ? 'Saved' : 'Save');
+      save.innerHTML = '<span class="st">' + (BeaconStore.isFav(q.id) ? '&#9873;' : '&#9872;') + '</span> ' + (BeaconStore.isFav(q.id) ? 'Saved' : 'Save');
       save.addEventListener('click', function () {
         var on = BeaconStore.toggleFav(q.id);
         save.classList.toggle('on', on);
-        save.innerHTML = '<span class="st">' + (on ? '★' : '☆') + '</span> ' + (on ? 'Saved' : 'Save');
+        save.innerHTML = '<span class="st">' + (on ? '&#9873;' : '&#9872;') + '</span> ' + (on ? 'Saved' : 'Save');
       });
       head.appendChild(save);
       card.appendChild(head);
@@ -1222,9 +1222,7 @@
         flagBtn.type = 'button';
         flagBtn.addEventListener('click', function () { flagged[q.id] = !flagged[q.id]; draw(); });
         headLeft.appendChild(flagBtn);
-        var abcBtn = el('button', 'bb-abc-btn', 'ABC'); abcBtn.type = 'button';
         head.appendChild(headLeft);
-        head.appendChild(abcBtn);
 
         // choices: letter circle on the right edge, Bluebook-style
         var wrap = el('div', 'pr-choices bb-choices');
