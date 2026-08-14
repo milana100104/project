@@ -287,6 +287,26 @@ end; $$;
 grant execute on function public.beacon_list_mentor_requests(text) to anon, authenticated;
 grant execute on function public.beacon_delete_mentor_request(text, bigint) to anon, authenticated;
 
+-- ============================================================================
+-- 10) Housekeeping: auto-purge old public chat messages -----------------------
+-- ----------------------------------------------------------------------------
+-- Keeps the "messages" (public group chat) table from growing without bound as
+-- more students use the chat. Runs daily at 03:00 UTC, deletes anything older
+-- than 7 days. Private DMs are left alone on purpose - only the public feed
+-- is pruned.
+--
+-- NOTE: this needs the "pg_cron" extension enabled once for your project first:
+--   Dashboard -> Database -> Extensions -> search "pg_cron" -> Enable.
+-- Only after that will the statement below run without erroring.
+select cron.unschedule('purge-old-messages')
+where exists (select 1 from cron.job where jobname = 'purge-old-messages');
+
+select cron.schedule(
+  'purge-old-messages',
+  '0 3 * * *',
+  $$delete from public.messages where created_at < now() - interval '7 days'$$
+);
+
 -- Done. Reload the site; questions AND webinars you manage in the admin panel are
 -- now shared with everyone, each student's Saved list + progress follow them to any
 -- device, and the bottom-right chat is live for signed-in students.
