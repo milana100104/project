@@ -1161,6 +1161,8 @@
       var flagged = {};           // qid -> true, "Mark for Review" like the real Bluebook app
       var timerHidden = false;    // "Hide" toggle, like the real Bluebook timer
       var highlightMode = false;  // "Highlights & Notes" toggle - armed means selecting text highlights it
+      var abcMode = false;        // "ABC" answer-eliminator toggle, like the real Bluebook app
+      var eliminated = {};        // qid -> {choiceIndex: true}, crossed-out choices (kept even when ABC is off)
       var idx = 0;
       // one outside-click listener for the whole module (not re-added on every draw),
       // pointed at whichever question-navigator row/close-fn the current draw() set up
@@ -1222,15 +1224,35 @@
         flagBtn.type = 'button';
         flagBtn.addEventListener('click', function () { flagged[q.id] = !flagged[q.id]; draw(); });
         headLeft.appendChild(flagBtn);
+        var abcBtn = el('button', 'bb-abc-btn' + (abcMode ? ' on' : ''), 'ABC');
+        abcBtn.type = 'button'; abcBtn.title = 'Cross out answer choices you’ve ruled out';
+        abcBtn.addEventListener('click', function () { abcMode = !abcMode; draw(); });
         head.appendChild(headLeft);
+        head.appendChild(abcBtn);
 
-        // choices: letter circle on the right edge, Bluebook-style
+        // choices: letter circle on the right edge, Bluebook-style; while ABC is armed,
+        // each choice gets a small cross-out toggle - crossed-out choices stay struck
+        // through (and unselectable) even after ABC is turned back off
         var wrap = el('div', 'pr-choices bb-choices');
         (q.choices || []).forEach(function (choice, i) {
-          var btn = el('button', 'pr-choice' + (picked[q.id] === i ? ' picked' : ''));
+          var elimOn = !!(eliminated[q.id] && eliminated[q.id][i]);
+          var btn = el('button', 'pr-choice' + (picked[q.id] === i ? ' picked' : '') + (elimOn ? ' eliminated' : ''));
           btn.type = 'button';
-          btn.innerHTML = '<span>' + esc(choice) + '</span><span class="mark">' + String.fromCharCode(65 + i) + '</span>';
+          btn.innerHTML = '<span>' + esc(choice) + '</span>' +
+            (abcMode ? '<span class="pr-elim-x" title="' + (elimOn ? 'Undo cross-out' : 'Cross out') + '">' + (elimOn ? '&#8617;' : '&#10005;') + '</span>' : '') +
+            '<span class="mark">' + String.fromCharCode(65 + i) + '</span>';
+          var elimX = btn.querySelector('.pr-elim-x');
+          if (elimX) {
+            elimX.addEventListener('click', function (e) {
+              e.stopPropagation();
+              if (!eliminated[q.id]) eliminated[q.id] = {};
+              eliminated[q.id][i] = !eliminated[q.id][i];
+              if (eliminated[q.id][i] && picked[q.id] === i) delete picked[q.id];
+              draw();
+            });
+          }
           btn.addEventListener('click', function () {
+            if (eliminated[q.id] && eliminated[q.id][i]) return;
             picked[q.id] = i;
             wrap.querySelectorAll('.pr-choice').forEach(function (k) { k.classList.remove('picked'); });
             btn.classList.add('picked');

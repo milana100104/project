@@ -601,6 +601,18 @@ body.pr-examroom{background:#fff;}
 .bb-choices .pr-choice{justify-content:space-between;}
 @media(max-width:860px){.bb-passage-col{border-right:0;padding-right:0;}.bb-split .pr-split-right{padding-left:0;}}
 
+/* ABC answer eliminator: cross out choices you've ruled out, like the real Bluebook app */
+.bb-abc-btn{background:#0a5ad6;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-weight:700;
+  font-size:.7rem;letter-spacing:.02em;cursor:pointer;flex-shrink:0;}
+.bb-abc-btn:hover{background:#0847ad;}
+.bb-abc-btn.on{background:#14233f;}
+.pr-elim-x{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
+  border-radius:50%;border:1px solid #c9d2e2;color:#4a5875;font-size:.68rem;cursor:pointer;flex-shrink:0;margin:0 8px;}
+.pr-elim-x:hover{border-color:#14233f;color:#14233f;}
+.pr-choice.eliminated{cursor:default;}
+.pr-choice.eliminated > span:first-child{text-decoration:line-through;color:#98a2b8;}
+.pr-choice.eliminated .mark{opacity:.5;}
+
 /* Bluebook top bar: section name / timer+hide / tools+exit, three even columns */
 .bb-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;padding:14px 22px;}
 .bb-top-left{display:flex;flex-direction:column;line-height:1.35;}
