@@ -572,8 +572,9 @@ body.pr-examroom{background:#fff;}
 /* IELTS: British Council / IDP / Cambridge red accent */
 .pr-examroom.exam-ielts{--exam-accent:#c8102e;--exam-accent-soft:#fdecef;}
 
-/* SAT: College Board / Bluebook blue accent */
-.pr-examroom.exam-sat{--exam-accent:#0a5ad6;--exam-accent-soft:#eaf1fd;}
+/* SAT: the real Bluebook app is almost entirely black/white/gray in the actual
+   test screens (no bright blue chrome) - dark navy stands in for "SAT accent". */
+.pr-examroom.exam-sat{--exam-accent:#14233f;--exam-accent-soft:#eef1f7;}
 
 /* Bluebook layout match: question header bar + answer letter on the right, like the real app */
 .bb-head{background:#eef1f7;border-radius:10px 10px 0 0;padding:12px 16px;margin-bottom:0;}
