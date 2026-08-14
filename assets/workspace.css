@@ -517,6 +517,22 @@ body.pr-examroom{background:#fff;}
 .pr-examroom .btn-wire{background:transparent;border-color:#c9d2e2;color:#4a5875;}
 .pr-examroom .btn-wire:hover{background:#f2f5fa;color:#14233f;border-color:#c9d2e2;}
 
+/* the full-test/adaptive-SAT top bar was still the old dark navy - stayed sticky, but never
+   restyled for the white exam room, so it looked like a broken/mismatched piece of navigation. */
+.pr-examroom .pr-exam-top{background:#fff;border-bottom:1px solid #e3e7f0;backdrop-filter:none;}
+.pr-examroom .pr-exam-top .pr-exam-sec{color:#8592ab;}
+.pr-examroom .pr-exam-top .pr-timer{color:var(--exam-accent);}
+.pr-examroom .pr-exit-x{color:#4a5875;border-color:#c9d2e2;}
+.pr-examroom .pr-exit-x:hover{background:#f2f5fa;color:#14233f;}
+.pr-examroom .pr-arrow{background:#fff;border-color:#d7deea;color:#14233f;}
+.pr-examroom .pr-arrow:hover:not([disabled]){border-color:var(--exam-accent);color:var(--exam-accent);}
+.pr-examroom .pr-exam-qn{color:#4a5875;}
+
+/* feedback text must stay readable - green/red only as the container tint, not the text color */
+.pr-examroom .pr-feedback.good,
+.pr-examroom .pr-feedback.bad{color:#14233f;}
+.pr-examroom .pr-feedback .exp{color:#14233f;}
+
 /* TOEFL: ETS-blue accent, matching the real test's clean blue-on-white interface */
 .pr-examroom.exam-toefl{--exam-accent:#1450c4;--exam-accent-soft:#eaf0fd;}
 
