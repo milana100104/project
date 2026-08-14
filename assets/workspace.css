@@ -536,6 +536,12 @@ body.pr-examroom{background:#fff;}
 /* TOEFL: ETS-blue accent, matching the real test's clean blue-on-white interface */
 .pr-examroom.exam-toefl{--exam-accent:#1450c4;--exam-accent-soft:#eaf0fd;}
 
+/* IELTS: British Council / IDP / Cambridge red accent */
+.pr-examroom.exam-ielts{--exam-accent:#c8102e;--exam-accent-soft:#fdecef;}
+
+/* SAT: College Board / Bluebook blue accent */
+.pr-examroom.exam-sat{--exam-accent:#0a5ad6;--exam-accent-soft:#eaf1fd;}
+
 @media(max-width:860px){
   .pr-examroom .pr-split-left{border-right:0;padding-right:0;border-bottom:1px solid #e3e7f0;padding-bottom:20px;margin-bottom:16px;}
 }
