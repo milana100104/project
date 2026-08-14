@@ -1181,6 +1181,7 @@
         // section name + directions (left) · timer + hide (center) · tools + exit (right)
         var top = el('div', 'pr-exam-top bb-top');
         top.innerHTML =
+          '<div class="bb-zoom">25% <span class="bb-zoom-i">&#9432;</span><span class="bb-zoom-c">&#9678;</span></div>' +
           '<div class="bb-top-left"><span class="bb-sec-name">Section ' + (si + 1) + ': ' + esc(sec.name) + '</span>' +
             '<span class="bb-directions">Directions <span class="bb-chev">&#8964;</span></span></div>' +
           '<div class="bb-top-center">' +
@@ -1191,27 +1192,36 @@
           '</div>' +
           '<div class="bb-top-right">' +
             '<button type="button" class="bb-tool-btn">&#9998; Highlights &amp; Notes</button>' +
+            '<button type="button" class="bb-tool-btn bb-more">&#8942; More</button>' +
             (sec.key === 'math' ? '<button type="button" class="pr-calc-btn">&#128425; Calculator</button>' : '') +
             '<a class="pr-exit-x" href="sat.html" title="Leave the test">Exit &#10005;</a>' +
           '</div>';
         top.querySelector('.bb-hide-btn').addEventListener('click', function () { timerHidden = !timerHidden; draw(); });
         top.querySelector('.bb-tool-btn').addEventListener('click', function (e) {
-          var t = e.currentTarget, old = t.textContent;
+          var t = e.currentTarget, old = t.innerHTML;
           t.textContent = 'Select text in the passage, then click Highlight';
-          setTimeout(function () { t.textContent = old; }, 2200);
+          setTimeout(function () { t.innerHTML = old; }, 2200);
+        });
+        top.querySelector('.bb-more').addEventListener('click', function () {
+          if (confirm('Leave the test and go back to the SAT page?')) location.href = 'sat.html';
         });
         top.querySelector('.pr-exit-x').addEventListener('click', function () { if (timerId) { clearInterval(timerId); timerId = null; } });
         var cb = top.querySelector('.pr-calc-btn'); if (cb) cb.addEventListener('click', toggleDesmos);
         root.appendChild(top);
+        root.appendChild(el('div', 'bb-ruler'));
 
         var stage = el('div', 'pr-stage');
         var card = el('div', 'pr-card');
         var head = el('div', 'pr-head bb-head');
-        head.innerHTML = '<span class="pr-kicker">' + (idx + 1) + '</span>';
+        var headLeft = el('span', 'bb-head-left');
+        headLeft.innerHTML = '<span class="pr-kicker">' + (idx + 1) + '</span>';
         var flagBtn = el('button', 'pr-flag' + (flagged[q.id] ? ' on' : ''), '<span class="fl">' + (flagged[q.id] ? '&#9873;' : '&#9872;') + '</span> Mark for Review');
         flagBtn.type = 'button';
         flagBtn.addEventListener('click', function () { flagged[q.id] = !flagged[q.id]; draw(); });
-        head.appendChild(flagBtn);
+        headLeft.appendChild(flagBtn);
+        var abcBtn = el('button', 'bb-abc-btn', 'ABC'); abcBtn.type = 'button';
+        head.appendChild(headLeft);
+        head.appendChild(abcBtn);
 
         // choices: letter circle on the right edge, Bluebook-style
         var wrap = el('div', 'pr-choices bb-choices');
@@ -1241,7 +1251,9 @@
           if (q.image) { var fig1 = el('div', 'pr-image'); fig1.innerHTML = '<img src="' + esc(q.image) + '" alt="Question image" loading="lazy">'; right.appendChild(fig1); }
           right.appendChild(el('div', 'pr-prompt', esc(q.prompt)));
           right.appendChild(wrap);
-          split.appendChild(left); split.appendChild(right);
+          split.appendChild(left);
+          split.appendChild(el('div', 'bb-divider-handle', '&#9664;&#9654;'));
+          split.appendChild(right);
           card.appendChild(split);
         } else {
           card.appendChild(head);
