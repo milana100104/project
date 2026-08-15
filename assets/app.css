@@ -382,6 +382,33 @@ section{padding:58px 0;}
 .empty-state{text-align:center;color:var(--muted);padding:50px 20px;background:var(--surface);border:1px solid var(--border);border-radius:16px;}
 .empty-state .hand-note{display:block;margin-top:10px;}
 
+/* account.html profile/saved/progress panel: white cards on the dark page,
+   same "task sheet on the chart" convention used on the exam pages */
+#panel .card,#panel .empty-state{background:#fff;border-color:#e3e7f0;box-shadow:0 10px 30px rgba(20,40,80,.12);color:#14233f;}
+#panel .card h1,#panel .card h2{color:#14233f;}
+#panel .card>.sub,#panel .card p.sub,#panel .empty-state{color:#7c88a3;}
+#panel .data-row{background:#f7f9fc;border-color:#e3e7f0;box-shadow:none;}
+#panel .data-row .rl-main b{color:#14233f;}
+#panel .data-row .rl-main span{color:#7c88a3;}
+#panel .data-row .rl-num{color:#4a5875;}
+#panel .group-title{color:#8592ab;}
+#panel .icon-btn{border-color:#dbe1ec;color:#4a5875;}
+#panel .icon-btn:hover{border-color:#e3b3b3;color:#c23b3b;}
+#panel .icon-btn.go{color:#b0851b;border-color:#e6cf7e;}
+#panel .icon-btn.go:hover{background:#e0bc4f;color:#20180a;border-color:#e0bc4f;}
+#panel .goal-check{color:#4a5875;}
+#panel .goal-check input{accent-color:#d4a72c;}
+#panel .goal-target{background:#f2f5fa;border-color:#dbe1ec;color:#14233f;}
+#panel .goal-target:focus{border-color:#e6cf7e;}
+#panel .mini-track{background:#eef1f7;}
+#panel select.exam-select{background:#f2f5fa;border:1px solid #dbe1ec;color:#14233f;border-radius:9px;
+  padding:8px 30px 8px 12px;font-family:var(--font);font-weight:600;font-size:.86rem;cursor:pointer;
+  -webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%234a5875' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;}
+#panel select.exam-select:focus{outline:none;border-color:#e6cf7e;}
+#panel .sec-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap;}
+
 /* ---------- footer ---------- */
 .site-footer{border-top:1px solid var(--border);background:var(--bg-2);margin-top:40px;padding:48px 0 30px;}
 .footer-inner{display:grid;grid-template-columns:1.4fr 1fr;gap:40px;padding-bottom:30px;}

@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Account - Beacon</title>
-<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=134">
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=135">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=134">
-<script src="assets/app.js?v=134" defer></script>
-<script src="assets/config.js?v=134" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=135">
+<script src="assets/app.js?v=135" defer></script>
+<script src="assets/config.js?v=135" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=134" defer></script>
-<script src="assets/chat.js?v=134" defer></script>
+<script src="assets/auth.js?v=135" defer></script>
+<script src="assets/chat.js?v=135" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -65,51 +65,33 @@ document.addEventListener("DOMContentLoaded", function () {
   function renderProfile() {
     var goals = BeaconStore.getGoals ? BeaconStore.getGoals() : {};
     var order = ["toefl","ielts","sat"];
-    var goalRows = order.filter(function(e){return goals[e];}).map(function(e){
-      var t = goals[e] && goals[e].target;
-      var a = BeaconStore.avgScore ? BeaconStore.avgScore(e) : null;
-      var avgTxt = a ? (fmtScore(e,a.avg)+" "+EX[e].scale+" · avg of "+a.count+" test"+(a.count>1?"s":"")) : "no full tests yet";
-      return '<div class="data-row"><div class="rl-main"><b>'+EX[e].name+'</b><span>'+
-        (t!=null ? "target "+fmtScore(e,t)+" "+EX[e].scale : "no target set")+'</span></div>'+
-        '<span class="rl-num" style="font-size:.95rem;font-weight:600">'+esc(avgTxt)+'</span></div>';
-    }).join("");
+    var examOptions = order.map(function(e){ return '<option value="'+e+'">'+EX[e].name+'</option>'; }).join("");
+    var defaultGoalExam = order.filter(function(e){ return goals[e]; })[0] || order[0];
+    var defaultResultExam = order.filter(function(e){ return (BeaconStore.scoreHistory ? BeaconStore.scoreHistory(e) : []).length; })[0] || order[0];
 
     var goalsCard =
-      '<div class="card" style="margin-top:16px;margin-bottom:48px"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px">' +
-      '<h2 style="font-size:1.1rem">Your exams &amp; goals</h2><button class="icon-btn go" id="edit-goals">Edit</button></div>' +
-      (goalRows || '<p class="sub">No exams chosen yet - tap Edit to pick what you’re preparing for and set a target.</p>') +
-      '<div id="goals-editor"></div></div>';
+      '<div class="card" style="margin-top:16px;margin-bottom:48px"><div class="sec-head">' +
+      '<h2 style="font-size:1.1rem">Your exams &amp; goals</h2>' +
+      '<select class="exam-select" id="goal-exam-sel">' + examOptions + '</select></div>' +
+      '<div id="goal-body"></div></div>';
 
-    // results history, per exam - newest attempt on top, so you can watch progress climb.
-    // Shown for admins too, so they can take a test themselves and check the whole flow.
-    var resultsGroups = order.map(function(e){
-      var hist = BeaconStore.scoreHistory ? BeaconStore.scoreHistory(e) : [];
-      if (!hist.length) return "";
-      var rows = hist.map(function(h){
-        var dateStr = new Date(h.at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
-        var detail = (e === "sat" && (h.rw != null || h.math != null))
-          ? "R&amp;W " + (h.rw!=null?fmtScore("sat",h.rw):"-") + " · Math " + (h.math!=null?fmtScore("sat",h.math):"-")
-          : "";
-        return '<div class="data-row"><div class="rl-main"><b>'+esc(dateStr)+'</b>'+
-          (detail ? '<span>'+detail+'</span>' : '')+'</div>'+
-          '<span class="rl-num" style="font-size:1.05rem;font-weight:700;color:var(--ink)">'+esc(fmtScore(e,h.score))+' '+EX[e].scale+'</span></div>';
-      }).join("");
-      return '<div class="group-title">'+esc(EX[e].name)+' · '+hist.length+' test'+(hist.length>1?"s":"")+'</div><div class="row-list">'+rows+'</div>';
-    }).join("");
+    // results history, per exam - pick an exam, see its attempts newest first, so
+    // progress is readable without three exams' worth of rows stacked at once.
     var resultsCard =
-      '<div class="card" style="margin-top:16px;margin-bottom:48px"><h2 style="font-size:1.1rem;margin-bottom:2px">Your results</h2>' +
+      '<div class="card" style="margin-top:16px;margin-bottom:48px"><div class="sec-head">' +
+      '<h2 style="font-size:1.1rem">Your results</h2>' +
+      '<select class="exam-select" id="res-exam-sel">' + examOptions + '</select></div>' +
       '<p class="sub" style="margin-bottom:6px">Every full test you’ve completed - most recent first.</p>' +
-      (resultsGroups || '<p class="sub">No full tests completed yet - finish a full TOEFL, IELTS, or SAT test (not just skill practice) and it’ll show up here.</p>') +
-      '</div>';
+      '<div id="res-body"></div></div>';
 
     panel.innerHTML =
       '<div class="card">' +
-      '<h1 style="color:var(--gold)">' + esc(user.name) + '</h1>' +
+      '<h1 style="color:#b0851b">' + esc(user.name) + '</h1>' +
       '<p class="sub">' + esc(user.email) + (user.role === "admin" ? ' · admin' : ' · student') + '</p>' +
       (user.role !== "admin" ?
         '<div class="data-row" style="margin-bottom:14px"><div class="rl-main"><b>Nickname</b><span>Shown in the community chat.</span></div>' +
           '<input id="nick-input" maxlength="20" placeholder="your nickname" autocomplete="off" ' +
-          'style="width:180px;max-width:52%;background:var(--bg-2);border:1px solid var(--border-strong);border-radius:9px;padding:8px 11px;color:var(--ink);font-family:var(--mono);font-size:.85rem"></div>' +
+          'style="width:180px;max-width:52%;background:#f2f5fa;border:1px solid #dbe1ec;border-radius:9px;padding:8px 11px;color:#14233f;font-family:var(--mono);font-size:.85rem"></div>' +
         '<div class="data-row" style="margin-bottom:14px"><div class="rl-main"><b>Avatar</b><span>Pick a picture shown next to your messages.</span></div>' +
           '<img id="av-current" alt="" style="width:38px;height:38px;border-radius:9px;object-fit:cover" src="assets/avatars/_default.svg"></div>' +
         '<div id="av-grid" style="display:flex;flex-wrap:wrap;gap:8px"></div>' +
@@ -122,8 +104,51 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById("lo").onclick = function () { BeaconAuth.logout(); };
     loadProfileEditor();
-    var eg = document.getElementById("edit-goals");
-    if (eg) eg.onclick = function(){ editGoals(goals); };
+
+    var goalSel = document.getElementById("goal-exam-sel");
+    goalSel.value = defaultGoalExam;
+    goalSel.onchange = function(){ renderGoalBody(goals, goalSel.value); };
+    renderGoalBody(goals, defaultGoalExam);
+
+    var resSel = document.getElementById("res-exam-sel");
+    resSel.value = defaultResultExam;
+    resSel.onchange = function(){ renderResultsBody(resSel.value); };
+    renderResultsBody(defaultResultExam);
+  }
+
+  function renderGoalBody(goals, exam) {
+    var box = document.getElementById("goal-body");
+    if (!box) return;
+    var t = goals[exam] && goals[exam].target;
+    var a = BeaconStore.avgScore ? BeaconStore.avgScore(exam) : null;
+    var avgTxt = a ? (fmtScore(exam,a.avg)+" "+EX[exam].scale+" · avg of "+a.count+" test"+(a.count>1?"s":"")) : "no full tests yet";
+    box.innerHTML =
+      '<div class="data-row"><div class="rl-main"><b>'+EX[exam].name+'</b><span>'+
+      (t!=null ? "target "+fmtScore(exam,t)+" "+EX[exam].scale : "no target set")+'</span></div>'+
+      '<span class="rl-num" style="font-size:.95rem;font-weight:600">'+esc(avgTxt)+'</span>'+
+      '<button class="icon-btn go" id="edit-goal-btn">Edit</button></div>' +
+      '<div id="goal-editor"></div>';
+    document.getElementById("edit-goal-btn").onclick = function(){ editSingleGoal(goals, exam); };
+  }
+
+  function renderResultsBody(exam) {
+    var box = document.getElementById("res-body");
+    if (!box) return;
+    var hist = BeaconStore.scoreHistory ? BeaconStore.scoreHistory(exam) : [];
+    if (!hist.length) {
+      box.innerHTML = '<p class="sub">No full '+esc(EX[exam].name)+' tests completed yet - finish a full test (not just skill practice) and it’ll show up here.</p>';
+      return;
+    }
+    var rows = hist.map(function(h){
+      var dateStr = new Date(h.at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+      var detail = (exam === "sat" && (h.rw != null || h.math != null))
+        ? "R&amp;W " + (h.rw!=null?fmtScore("sat",h.rw):"-") + " · Math " + (h.math!=null?fmtScore("sat",h.math):"-")
+        : "";
+      return '<div class="data-row"><div class="rl-main"><b>'+esc(dateStr)+'</b>'+
+        (detail ? '<span>'+detail+'</span>' : '')+'</div>'+
+        '<span class="rl-num" style="font-size:1.05rem;font-weight:700;color:#14233f">'+esc(fmtScore(exam,h.score))+' '+EX[exam].scale+'</span></div>';
+    }).join("");
+    box.innerHTML = '<div class="row-list">' + rows + '</div>';
   }
 
   // combined nickname + avatar editor: pick/type, then one "Save changes" button persists both
@@ -135,13 +160,13 @@ document.addEventListener("DOMContentLoaded", function () {
     var msg = document.getElementById("save-msg");
     if (!grid || !input || !saveBtn) return;
     var selected = "";
-    function setMsg(t, ok){ if (msg){ msg.textContent = t || ""; msg.style.color = ok ? "var(--good)" : "var(--bad)"; } }
+    function setMsg(t, ok){ if (msg){ msg.textContent = t || ""; msg.style.color = ok ? "#1f9d63" : "#c23b3b"; } }
     function paintGrid() {
       grid.innerHTML = AVATARS.map(function(a){
         var on = a === selected;
         return '<button type="button" class="av-opt'+(on?" on":"")+'" data-av="'+a+'" '+
           'style="width:46px;height:46px;padding:3px;border-radius:12px;cursor:pointer;'+
-          'border:2px solid '+(on?"var(--gold-line)":"var(--border)")+';background:'+(on?"var(--gold-soft)":"var(--bg-2)")+'">'+
+          'border:2px solid '+(on?"#d4a72c":"#dbe1ec")+';background:'+(on?"rgba(212,167,44,.12)":"#f2f5fa")+'">'+
           '<img alt="'+a+'" src="assets/avatars/'+a+'.svg" style="width:100%;height:100%;border-radius:8px;object-fit:cover;display:block"></button>';
       }).join("");
       var cur = document.getElementById("av-current"); if (cur) cur.src = "assets/avatars/" + (selected || "_default") + ".svg";
@@ -182,24 +207,21 @@ document.addEventListener("DOMContentLoaded", function () {
     };
   }
 
-  function editGoals(goals) {
-    var box = document.getElementById("goals-editor");
+  function editSingleGoal(goals, exam) {
+    var box = document.getElementById("goal-editor");
     if (!box) return;
-    var order = ["toefl","ielts","sat"];
+    var on = !!goals[exam]; var t = goals[exam] && goals[exam].target;
     box.innerHTML =
-      '<div style="border-top:1px solid var(--border);margin-top:12px;padding-top:14px">' +
-      order.map(function(e){
-        var on = !!goals[e]; var t = goals[e] && goals[e].target;
-        return '<div class="goal-row"><label class="goal-check"><input type="checkbox" id="g-'+e+'"'+(on?" checked":"")+'> '+EX[e].name+'</label>'+
-          '<input class="goal-target" id="gt-'+e+'" inputmode="decimal" placeholder="'+EX[e].ph+'" value="'+(t!=null?esc(t):"")+'"></div>';
-      }).join("") +
-      '<button class="btn btn-gold full" id="save-goals" style="margin-top:10px">Save goals</button></div>';
-    document.getElementById("save-goals").onclick = function(){
-      var out={}; order.forEach(function(e){
-        if (document.getElementById("g-"+e).checked){ var v=parseFloat(document.getElementById("gt-"+e).value); out[e]=isNaN(v)?{}:{target:v}; }
-      });
-      BeaconStore.setGoals(out);
-      renderProfile();
+      '<div style="border-top:1px solid #e3e7f0;margin-top:12px;padding-top:14px">' +
+      '<div class="goal-row"><label class="goal-check"><input type="checkbox" id="sg-on"'+(on?" checked":"")+'> Track '+EX[exam].name+'</label>'+
+      '<input class="goal-target" id="sg-target" inputmode="decimal" placeholder="'+EX[exam].ph+'" value="'+(t!=null?esc(t):"")+'"></div>' +
+      '<button class="btn btn-gold full" id="save-goal" style="margin-top:10px">Save</button></div>';
+    document.getElementById("save-goal").onclick = function(){
+      var checked = document.getElementById("sg-on").checked;
+      var v = parseFloat(document.getElementById("sg-target").value);
+      if (checked) goals[exam] = isNaN(v) ? {} : { target: v }; else delete goals[exam];
+      BeaconStore.setGoals(goals);
+      renderGoalBody(goals, exam);
     };
   }
 
