@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Account - Beacon</title>
-<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=137">
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=138">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=137">
-<script src="assets/app.js?v=137" defer></script>
-<script src="assets/config.js?v=137" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=138">
+<script src="assets/app.js?v=138" defer></script>
+<script src="assets/config.js?v=138" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=137" defer></script>
-<script src="assets/chat.js?v=137" defer></script>
+<script src="assets/auth.js?v=138" defer></script>
+<script src="assets/chat.js?v=138" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     var goalsCard =
       '<div class="card"><div class="sec-head">' +
-      '<h2 style="font-size:1.1rem">Your exams &amp; goals</h2>' +
+      '<h2 style="font-size:1.35rem">Your exams &amp; goals</h2>' +
       '<select class="exam-select" id="goal-exam-sel">' + examOptions + '</select></div>' +
       '<div id="goal-body"></div></div>';
 
@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // progress is readable without three exams' worth of rows stacked at once.
     var resultsCard =
       '<div class="card"><div class="sec-head">' +
-      '<h2 style="font-size:1.1rem">Your results</h2>' +
+      '<h2 style="font-size:1.35rem">Your results</h2>' +
       '<select class="exam-select" id="res-exam-sel">' + examOptions + '</select></div>' +
       '<p class="sub" style="margin-bottom:6px">Every full test you’ve completed - most recent first.</p>' +
       '<div id="res-body"></div></div>';
@@ -237,7 +237,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var defaultExam = present[0];
 
     panel.innerHTML =
-      '<div class="card"><div class="sec-head"><h2 style="font-size:1.1rem">Saved questions</h2>' +
+      '<div class="card"><div class="sec-head"><h2 style="font-size:1.35rem">Saved questions</h2>' +
       '<select class="exam-select" id="fav-exam-sel">' + examOptions + '</select></div>' +
       '<a class="btn btn-gold full" id="fav-practice" style="margin-bottom:16px">Practice saved</a>' +
       '<div id="fav-body"></div></div>';
