@@ -858,7 +858,8 @@
       crumb = 'saved · one question';
     } else if (favMode) {
       pool = BeaconStore.favoriteQuestions();
-      crumb = 'saved · redo pool';
+      if (exam) pool = pool.filter(function (q) { return q.exam === exam; });
+      crumb = 'saved · redo pool' + (exam ? ' · ' + exam : '');
       if (pool.length === 0) { root.innerHTML = errorCard('Nothing saved yet.', 'Tap “Save” on a question during practice to keep it here.'); return; }
     } else if (testMode) {
       if (!exam || !skill) { root.innerHTML = errorCard('Nothing to test yet.', 'Pick a section from an exam page.'); return; }

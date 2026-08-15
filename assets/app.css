@@ -385,8 +385,11 @@ section{padding:58px 0;}
 /* account.html profile/saved/progress panel: white cards on the dark page,
    same "task sheet on the chart" convention used on the exam pages */
 #panel .card,#panel .empty-state{background:#fff;border-color:#e3e7f0;box-shadow:0 10px 30px rgba(20,40,80,.12);color:#14233f;}
+#panel .card{margin-bottom:20px;}
 #panel .card h1,#panel .card h2{color:#14233f;}
 #panel .card>.sub,#panel .card p.sub,#panel .empty-state{color:#7c88a3;}
+#panel .card .btn-ghost{border-color:#dbe1ec;color:#14233f;}
+#panel .card .btn-ghost:hover{border-color:#e6cf7e;color:#b0851b;}
 #panel .data-row{background:#f7f9fc;border-color:#e3e7f0;box-shadow:none;}
 #panel .data-row .rl-main b{color:#14233f;}
 #panel .data-row .rl-main span{color:#7c88a3;}
