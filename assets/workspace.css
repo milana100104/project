@@ -257,6 +257,31 @@ mark.pr-hl{background:#fef08a;color:inherit;border-radius:2px;padding:0 1px;curs
 .pr-flag .fl{font-size:1.05rem;line-height:1;}
 
 .pr-passage{color:var(--ink-2);font-size:1.05rem;line-height:1.78;margin-bottom:22px;white-space:pre-line;padding-left:16px;border-left:3px solid var(--gold-line);}
+/* Hardware Check screen (mic/headset/volume icons before a full test starts) */
+.pr-hwcheck-icons{display:flex;gap:32px;margin:22px 0 26px;font-size:2.6rem;line-height:1;}
+/* section-intro task-type table, matching the real exam's own section overview screen */
+.pr-tasktable{width:100%;border-collapse:collapse;margin:18px 0 6px;font-size:.92rem;}
+.pr-tasktable th,.pr-tasktable td{border:1px solid var(--border-strong);padding:10px 14px;text-align:left;}
+.pr-tasktable th{background:var(--exam-accent-soft,var(--bg-2));color:var(--ink);font-weight:700;}
+.pr-tasktable td{color:var(--ink-2);}
+/* secondary header row under the exam top bar: section label | question range */
+.pr-exam-sub{padding:10px 22px;font-size:.86rem;color:#4a5875;border-bottom:1px solid #e3e7f0;background:#fff;}
+.pr-exam-sub b{color:#14233f;}
+.pr-exam-sub-sep{margin:0 10px;color:#98a2b8;}
+/* TOEFL: solid teal top bar with rounded white pill controls, matching the real app */
+.pr-examroom.exam-toefl .pr-exam-top{background:var(--exam-accent);}
+.pr-examroom.exam-toefl .pr-exam-top .pr-timer{color:#fff;}
+.pr-examroom.exam-toefl .pr-exit-x,
+.pr-examroom.exam-toefl .pr-arrow{background:#fff;color:var(--exam-accent);border:none;border-radius:999px;font-weight:700;}
+.pr-examroom.exam-toefl .pr-exit-x:hover{background:#eef7f5;}
+.pr-examroom.exam-toefl .pr-arrow{width:34px;height:34px;}
+.pr-examroom.exam-toefl .pr-arrow:hover{background:#eef7f5;}
+.pr-examroom.exam-toefl .pr-arrow[disabled]{opacity:.5;}
+.pr-examroom.exam-toefl .pr-exam-qn{color:#fff;font-weight:700;}
+/* a group of questions sharing one passage, stacked on the right - the following block
+   gets a divider so it's clear where one question ends and the next begins */
+.pr-exam-qblock + .pr-exam-qblock{margin-top:30px;padding-top:26px;border-top:1px solid var(--border);}
+.pr-exam-qblock .pr-kicker{display:block;margin-bottom:10px;}
 .pr-letter{margin-bottom:14px;padding-bottom:12px;border-bottom:1px dashed var(--border-strong);}
 .pr-letter-row{font-size:.92rem;line-height:1.55;color:var(--ink);}
 .pr-letter-k{display:inline-block;min-width:58px;font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-right:8px;}
@@ -604,7 +629,7 @@ body.pr-examroom{background:#fff;}
 .pr-examroom .pr-tracker-head span{color:#14233f;}
 
 /* TOEFL: ETS-blue accent, matching the real test's clean blue-on-white interface */
-.pr-examroom.exam-toefl{--exam-accent:#1450c4;--exam-accent-soft:#eaf0fd;}
+.pr-examroom.exam-toefl{--exam-accent:#00695c;--exam-accent-soft:#e3f2f0;}
 
 /* IELTS: British Council / IDP / Cambridge red accent */
 .pr-examroom.exam-ielts{--exam-accent:#c8102e;--exam-accent-soft:#fdecef;}

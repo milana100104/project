@@ -2027,6 +2027,17 @@
    * TOEFL / IELTS Reading + Listening exams. */
   function runExamBlock(root, cfg) {
     var qs_ = cfg.questions, picked = {}, idx = 0;
+    // group consecutive questions that share the same passage into one page, so a
+    // multi-question reading passage shows the text once with every question stacked
+    // on the right, instead of flipping through the same passage one question at a time
+    var groups = [], qNum = {}, qToGroup = {};
+    qs_.forEach(function (q, i) {
+      qNum[q.id] = i + 1;
+      var prevGroup = groups[groups.length - 1];
+      if (q.passage && prevGroup && prevGroup[0].passage === q.passage) prevGroup.push(q);
+      else groups.push([q]);
+      qToGroup[q.id] = groups.length - 1;
+    });
     var remaining = cfg.minutes * 60;
     var timerId = setInterval(function () {
       remaining--;
@@ -2037,16 +2048,20 @@
     draw();
 
     function draw() {
-      var q = qs_[idx];
+      var group = groups[idx];
+      var passageQ = group[0];
       root.innerHTML = '';
-      var last0 = idx === qs_.length - 1;
+      var last0 = idx === groups.length - 1;
+      var firstNum = qNum[group[0].id], lastNum = qNum[group[group.length - 1].id];
+      var rangeLabel = group.length > 1 ? ('Questions ' + firstNum + '–' + lastNum + ' of ' + qs_.length) : ('Question ' + firstNum + ' of ' + qs_.length);
+
       var top = el('div', 'pr-exam-top');
       top.innerHTML =
         '<a class="pr-exit-x" href="' + esc(cfg.exitHref) + '" title="Leave the test">Exit ✕</a>' +
         '<span class="pr-timer' + (remaining <= 60 ? ' low' : '') + '">⏱ ' + fmtTime(remaining) + '</span>' +
         '<span class="pr-exam-jump">' +
           '<button type="button" class="pr-arrow" data-prev' + (idx === 0 ? ' disabled' : '') + '>◀</button>' +
-          '<span class="pr-exam-qn">' + (idx + 1) + ' / ' + qs_.length + '</span>' +
+          '<span class="pr-exam-qn">' + (idx + 1) + ' / ' + groups.length + '</span>' +
           '<button type="button" class="pr-arrow" data-next>' + (last0 ? '✔' : '▶') + '</button>' +
         '</span>';
       top.querySelector('.pr-exit-x').addEventListener('click', stop);
@@ -2054,53 +2069,61 @@
       var nx = top.querySelector('[data-next]'); if (nx) nx.addEventListener('click', function () { if (last0) { review(); } else { idx++; draw(); } });
       root.appendChild(top);
 
+      if (cfg.label) {
+        var subhead = el('div', 'pr-exam-sub');
+        subhead.innerHTML = '<b>' + esc(cfg.label) + '</b><span class="pr-exam-sub-sep">|</span><span>' + esc(rangeLabel) + '</span>';
+        root.appendChild(subhead);
+      }
+
       var stage = el('div', 'pr-stage');
       var card = el('div', 'pr-card');
-      card.innerHTML = '<span class="pr-kicker">Question ' + (idx + 1) + ' of ' + qs_.length + '</span>';
+      if (!cfg.label) card.innerHTML = '<span class="pr-kicker">' + esc(rangeLabel) + '</span>';
 
       var imageEl = null;
-      if (q.image) { imageEl = el('div', 'pr-image'); imageEl.innerHTML = '<img src="' + esc(q.image) + '" alt="Question image" loading="lazy">'; }
-      var audioEl = null;
-      if (q.audio) {
-        audioEl = el('div', 'pr-audio');
-        audioEl.innerHTML = q.audioSrc ? '<audio controls src="' + esc(q.audioSrc) + '"></audio>'
-          : '<div class="ph"><span class="ico">▶</span> Audio placeholder - use the transcript below.</div>' +
-            (q.transcript ? '<div class="pr-transcript"><span class="tlabel">Transcript</span>' + esc(q.transcript) + '</div>' : '');
-      }
-      var promptEl = el('div', 'pr-prompt', esc(q.prompt));
+      if (passageQ.image) { imageEl = el('div', 'pr-image'); imageEl.innerHTML = '<img src="' + esc(passageQ.image) + '" alt="Question image" loading="lazy">'; }
 
-      var wrap = el('div', 'pr-choices');
-      (q.choices || []).forEach(function (choice, i) {
-        var btn = el('button', 'pr-choice' + (picked[q.id] === i ? ' picked' : ''));
-        btn.type = 'button';
-        btn.innerHTML = '<span class="mark">' + String.fromCharCode(65 + i) + '</span><span>' + esc(choice) + '</span>';
-        btn.addEventListener('click', function () {
-          picked[q.id] = i;
-          wrap.querySelectorAll('.pr-choice').forEach(function (k) { k.classList.remove('picked'); });
-          btn.classList.add('picked');
-          syncPalette();
+      // every question in the group renders in its own block, stacked in the right column
+      var right = el('div', 'pr-split-right');
+      group.forEach(function (q) {
+        var block = el('div', 'pr-exam-qblock');
+        if (group.length > 1) block.appendChild(el('div', 'pr-kicker', 'Question ' + qNum[q.id]));
+        if (q.audio) {
+          var audioEl = el('div', 'pr-audio');
+          audioEl.innerHTML = q.audioSrc ? '<audio controls src="' + esc(q.audioSrc) + '"></audio>'
+            : '<div class="ph"><span class="ico">▶</span> Audio placeholder - use the transcript below.</div>' +
+              (q.transcript ? '<div class="pr-transcript"><span class="tlabel">Transcript</span>' + esc(q.transcript) + '</div>' : '');
+          block.appendChild(audioEl);
+        }
+        block.appendChild(el('div', 'pr-prompt', esc(q.prompt)));
+        var wrap = el('div', 'pr-choices');
+        (q.choices || []).forEach(function (choice, i) {
+          var btn = el('button', 'pr-choice' + (picked[q.id] === i ? ' picked' : ''));
+          btn.type = 'button';
+          btn.innerHTML = '<span class="mark">' + String.fromCharCode(65 + i) + '</span><span>' + esc(choice) + '</span>';
+          btn.addEventListener('click', function () {
+            picked[q.id] = i;
+            wrap.querySelectorAll('.pr-choice').forEach(function (k) { k.classList.remove('picked'); });
+            btn.classList.add('picked');
+            syncPalette();
+          });
+          wrap.appendChild(btn);
         });
-        wrap.appendChild(btn);
+        block.appendChild(wrap);
+        right.appendChild(block);
       });
 
-      if (q.passage) {
+      if (passageQ.passage) {
         // reading: the text sits on the left (photo above the text, if there is one),
-        // the questions on the right
+        // every question sharing that passage stacked on the right - one continuous page
         var split = el('div', 'pr-split');
         var left = el('div', 'pr-split-left');
         if (imageEl) left.appendChild(imageEl);
-        left.appendChild(el('div', 'pr-passage', letterHeaderHtml(q) + esc(q.passage)));
-        var right = el('div', 'pr-split-right');
-        if (audioEl) right.appendChild(audioEl);
-        right.appendChild(promptEl);
-        right.appendChild(wrap);
+        left.appendChild(el('div', 'pr-passage', letterHeaderHtml(passageQ) + esc(passageQ.passage)));
         split.appendChild(left); split.appendChild(right);
         card.appendChild(split);
       } else {
         if (imageEl) card.appendChild(imageEl);
-        if (audioEl) card.appendChild(audioEl);
-        card.appendChild(promptEl);
-        card.appendChild(wrap);
+        card.appendChild(right);
       }
       stage.appendChild(card); root.appendChild(stage);
 
@@ -2138,9 +2161,9 @@
       var p = el('div', 'pr-palette');
       var grid = el('div', 'pr-palette-grid');
       qs_.forEach(function (q, i) {
-        var b = el('button', 'pr-dot' + (!inReview && i === idx ? ' current' : '') + (picked[q.id] != null ? ' done' : ''));
+        var b = el('button', 'pr-dot' + (!inReview && qToGroup[q.id] === idx ? ' current' : '') + (picked[q.id] != null ? ' done' : ''));
         b.type = 'button'; b.textContent = i + 1; b.setAttribute('data-i', i);
-        b.addEventListener('click', function () { idx = i; draw(); });
+        b.addEventListener('click', function () { idx = qToGroup[q.id]; draw(); });
         grid.appendChild(b);
       });
       p.appendChild(grid);
@@ -2200,7 +2223,7 @@
    * A complete, timed exam: Reading first, then Listening, each on its own
    * clock, scored on the real scale (TOEFL /120 estimate, IELTS overall band). */
   function renderFullExam(root, examId) {
-    document.body.classList.add('ws-white');
+    document.body.classList.add('ws-white', 'pr-examroom', 'exam-' + examId);
     var NAME = examId === 'toefl' ? 'TOEFL' : 'IELTS';
     var home = examId + '.html';
     var SECTIONS = examId === 'toefl'
@@ -2212,8 +2235,41 @@
       return;
     }
 
+    // task-type tables shown on each section's intro screen, matching the real exam's
+    // own section-overview screens
+    var TASK_TABLES = {
+      toefl: {
+        reading: [['Complete the Words', 'Fill in the missing letters in a paragraph.'],
+          ['Read in Daily Life', 'Answer questions about everyday reading material.'],
+          ['Read an Academic Passage', 'Answer questions about academic passages.']],
+        listening: [['Best Response', 'Choose the best reply to a short spoken line.'],
+          ['Short Dialogues', 'Answer questions on quick two-person conversations.'],
+          ['Lectures & Announcements', 'Answer questions on academic talks and campus notices.']]
+      },
+      ielts: {
+        reading: [['Academic Passage', 'Answer a mixed set of questions about one reading passage.']],
+        listening: [['Conversations & Monologues', 'Answer questions from everyday and academic recordings.']]
+      }
+    };
+
     var results = [], si = 0;
-    intro();
+    hardwareCheck();
+
+    function hardwareCheck() {
+      root.innerHTML = '';
+      var c = el('div', 'pr-stage'); var card = el('div', 'pr-card');
+      card.innerHTML =
+        '<span class="pr-kicker">' + NAME + ' · full test</span>' +
+        '<h2 class="pr-prompt" style="margin-top:8px">Hardware Check</h2>' +
+        '<div class="pr-passage" style="border:0;padding-left:0">Before the test begins, we will check the microphone and headset volume.</div>' +
+        '<div class="pr-hwcheck-icons"><span>🎤</span><span>🎧</span><span>🔊</span></div>' +
+        '<div class="pr-passage" style="border:0;padding-left:0">Please make sure your headset is on. Follow the instructions on each screen. Be sure that ' +
+        'your microphone is properly positioned and adjusted to allow for the best possible recording. Speak directly into the microphone and in your normal speaking voice.</div>' +
+        '<div class="pr-nav"><a class="btn btn-wire pr-exit" href="' + home + '">← Back</a>' +
+        '<div class="pr-navbtns"><button type="button" class="btn btn-white" id="fx-hw-go">Continue →</button></div></div>';
+      c.appendChild(card); root.appendChild(c);
+      document.getElementById('fx-hw-go').onclick = intro;
+    }
 
     function intro() {
       var struct = examId === 'toefl'
@@ -2229,39 +2285,48 @@
         '<div class="pr-nav"><a class="btn btn-wire pr-exit" href="' + home + '">← Back</a>' +
         '<div class="pr-navbtns"><button type="button" class="btn btn-white" id="fx-start">Start the test →</button></div></div>';
       c.appendChild(card); root.appendChild(c);
-      document.getElementById('fx-start').onclick = function () { si = 0; runSec(); };
+      document.getElementById('fx-start').onclick = function () { si = 0; sectionIntro(); };
+    }
+
+    function sectionIntro(prevName) {
+      var sec = SECTIONS[si];
+      var rows = (TASK_TABLES[examId] && TASK_TABLES[examId][sec.key]) || [];
+      root.innerHTML = '';
+      var c = el('div', 'pr-stage'); var card = el('div', 'pr-card');
+      var tableHtml = rows.length
+        ? '<table class="pr-tasktable"><thead><tr><th>Type of Task</th><th>Description</th></tr></thead><tbody>' +
+          rows.map(function (r) { return '<tr><td>' + esc(r[0]) + '</td><td>' + esc(r[1]) + '</td></tr>'; }).join('') +
+          '</tbody></table>'
+        : '';
+      card.innerHTML =
+        '<span class="pr-kicker">' + esc(NAME) + '</span>' +
+        '<h2 class="pr-prompt" style="margin-top:8px">' + esc(sec.name) + ' Section</h2>' +
+        (prevName ? '<div class="pr-passage" style="border:0;padding-left:0"><b>' + esc(prevName) + '</b> is complete. Next up: <b>' + esc(sec.name) + '</b>, ' + sec.minutes + ' minutes on its own clock.</div>' : '') +
+        '<div class="pr-passage" style="border:0;padding-left:0">In the ' + esc(sec.name) + ' section, you will answer questions to demonstrate your English skills. ' +
+        (rows.length ? 'There ' + (rows.length === 1 ? 'is one type of task' : 'are ' + rows.length + ' types of tasks') + '.' : '') + '</div>' +
+        tableHtml +
+        '<div class="pr-nav"><span></span><div class="pr-navbtns"><button type="button" class="btn btn-white" id="fx-begin">Begin →</button></div></div>';
+      c.appendChild(card); root.appendChild(c);
+      document.getElementById('fx-begin').onclick = runSec;
     }
 
     function runSec() {
       var sec = SECTIONS[si];
       var pool = shuffle(BeaconStore.questionsFor(examId, sec.key, null).slice());
       runExamBlock(root, {
-        label: NAME + ' · ' + sec.name,
+        label: sec.name,
         questions: pool,
         minutes: sec.minutes,
         exitHref: home,
         submitNote: 'Once you submit, this section locks and you move on.',
         onDone: function (mc, total) {
           results.push({ name: sec.name, correct: mc, total: total });
+          var doneName = sec.name;
           si++;
-          if (si < SECTIONS.length) {
-            var nx = SECTIONS[si];
-            transition(sec.name + ' complete', 'Next up: <b>' + nx.name + '</b> - ' + nx.minutes + ' minutes on its own clock. Take a second, then continue.', runSec);
-          } else finish();
+          if (si < SECTIONS.length) sectionIntro(doneName);
+          else finish();
         }
       });
-    }
-
-    function transition(title, body, go) {
-      root.innerHTML = '';
-      var c = el('div', 'pr-stage'); var card = el('div', 'pr-card');
-      card.innerHTML =
-        '<span class="pr-kicker">' + NAME + ' · full test</span>' +
-        '<h2 class="pr-prompt" style="margin-top:8px">' + esc(title) + '</h2>' +
-        '<div class="pr-passage" style="border:0;padding-left:0">' + body + '</div>' +
-        '<div class="pr-nav"><span></span><div class="pr-navbtns"><button type="button" class="btn btn-white" id="fx-go">Continue →</button></div></div>';
-      c.appendChild(card); root.appendChild(c);
-      document.getElementById('fx-go').onclick = go;
     }
 
     function finish() {
