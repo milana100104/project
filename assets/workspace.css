@@ -586,9 +586,12 @@ mark.pr-hl{background:#fef08a;color:inherit;border-radius:2px;padding:0 1px;curs
 
 /* ================= Exam room: full-page white runner, styled per real exam ================= */
 body.pr-examroom{background:#fff;}
-/* real exam software isn't set in the site's decorative branding typeface - use the
-   plain body font everywhere inside a test/practice run */
-.pr-examroom{--exam-accent:#b0851b;--exam-accent-soft:#fdf7e3;--display:var(--font);}
+/* real exam software isn't set in the site's branded typefaces at all - not the display
+   font, not even the site's body font (Hanken Grotesk still has a distinct rounded,
+   "designed" look). Every test/practice run uses a plain, generic system font instead,
+   for headings and body text alike. */
+.pr-examroom{--exam-accent:#b0851b;--exam-accent-soft:#fdf7e3;
+  --display:Arial,Helvetica,'Segoe UI',sans-serif;--font:Arial,Helvetica,'Segoe UI',sans-serif;}
 .pr-examroom .pr-bar{background:#fff;border-bottom:1px solid #e3e7f0;backdrop-filter:none;box-shadow:0 1px 0 rgba(20,40,80,.03);}
 .pr-examroom .pr-bar-inner{max-width:1180px;}
 .pr-examroom .pr-crumb{color:#8592ab;font-weight:600;text-transform:uppercase;letter-spacing:.04em;font-size:.72rem;}
@@ -703,13 +706,9 @@ body.pr-examroom{background:#fff;}
 .bb-divider-handle{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:20px;height:28px;
   border-radius:6px;border:1px solid #c9d2e2;background:#fff;display:flex;align-items:center;justify-content:center;
   gap:1px;font-size:.55rem;color:#7382a0;z-index:2;box-shadow:0 1px 3px rgba(0,0,0,.1);pointer-events:none;}
-.bb-passage{font-family:'Noto Serif',Georgia,serif;}
-
-/* SAT question/answer text reads in the same serif as the real Bluebook app -
-   distinct from the sans-serif used everywhere else on the site. UI chrome
-   (buttons, badges, the top bar) stays in the site's normal font. */
-.pr-examroom.exam-sat .pr-prompt,
-.pr-examroom.exam-sat .bb-choices .pr-choice > span:first-child{font-family:'Noto Serif',Georgia,serif;}
+/* plain font everywhere, including SAT passages - no serif accent, matching the
+   same "no styled fonts anywhere in a test" rule used across TOEFL/IELTS/SAT */
+.bb-passage{font-family:var(--font);}
 
 @media(max-width:860px){
   .pr-examroom .pr-split-left{border-right:0;padding-right:0;border-bottom:1px solid #e3e7f0;padding-bottom:20px;margin-bottom:16px;}
