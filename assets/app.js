@@ -2227,42 +2227,51 @@
         var left = el('div', 'pr-split-left');
         if (imageEl) left.appendChild(imageEl);
         left.appendChild(el('div', 'pr-passage', letterHeaderHtml(passageQ) + esc(passageQ.passage)));
-        split.appendChild(left); split.appendChild(right);
+        split.appendChild(left);
+        split.appendChild(el('div', 'bb-divider-handle', '&#9664;&#9654;'));
+        split.appendChild(right);
         card.appendChild(split);
       } else {
         if (imageEl) card.appendChild(imageEl);
         card.appendChild(right);
       }
       stage.appendChild(card); root.appendChild(stage);
-
-      var n = el('div', 'pr-nav');
-      var back = el('button', 'btn btn-wire', '← Back'); back.type = 'button';
-      if (idx === 0) back.setAttribute('disabled', '');
-      back.addEventListener('click', function () { if (idx > 0) { idx--; draw(); } });
-      var btns = el('div', 'pr-navbtns');
-      var nextBtn = el('button', 'btn btn-white', last0 ? 'Review <span class="amp">&amp;</span> submit' : 'Next →'); nextBtn.type = 'button';
-      nextBtn.addEventListener('click', function () { if (last0) { review(); } else { idx++; draw(); } });
-      btns.appendChild(nextBtn);
-      n.appendChild(back); n.appendChild(btns);
-      root.appendChild(n);
-      root.appendChild(trackerUI());
+      root.appendChild(qbar());
+      root.appendChild(floatNav(last0));
     }
 
-    function trackerUI() {
-      var row = el('div', 'pr-tracker-row');
-      var answered = qs_.filter(isAnswered).length;
-      var btn = el('button', 'btn btn-wire pr-tracker-btn', '🗂 Track progress (' + answered + '/' + qs_.length + ')');
-      btn.type = 'button';
-      var overlay = el('div', 'pr-tracker-overlay');
-      var panel = el('div', 'pr-tracker-panel');
-      panel.innerHTML = '<div class="pr-tracker-head"><span>Progress</span><button type="button" class="pr-tracker-x">✕</button></div>';
-      panel.appendChild(palette(false));
-      overlay.appendChild(panel);
-      btn.addEventListener('click', function () { overlay.classList.add('open'); });
-      overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.classList.remove('open'); });
-      panel.querySelector('.pr-tracker-x').addEventListener('click', function () { overlay.classList.remove('open'); });
-      row.appendChild(btn); row.appendChild(overlay);
-      return row;
+    // persistent, always-visible bottom bar: section label, a number per question
+    // (jump to any of them), a review/submit button - replaces the old click-to-open
+    // "Track progress" overlay with something you can see and use without opening anything
+    function qbar() {
+      var bar = el('div', 'pr-qbar');
+      bar.appendChild(el('div', 'pr-qbar-label', esc(cfg.label || 'Questions')));
+      var nums = el('div', 'pr-qbar-nums');
+      qs_.forEach(function (q, i) {
+        var b = el('button', 'pr-qnum' + (qToGroup[q.id] === idx ? ' current' : '') + (isAnswered(q) ? ' done' : ''), String(i + 1));
+        b.type = 'button'; b.setAttribute('data-i', i);
+        b.addEventListener('click', function () { idx = qToGroup[q.id]; draw(); });
+        nums.appendChild(b);
+      });
+      bar.appendChild(nums);
+      bar.appendChild(el('div', 'pr-qbar-spacer'));
+      var reviewBtn = el('button', 'pr-qbar-review', '&#10003;');
+      reviewBtn.type = 'button'; reviewBtn.title = 'Review & submit';
+      reviewBtn.addEventListener('click', review);
+      bar.appendChild(reviewBtn);
+      return bar;
+    }
+
+    // Back/Next float above the bottom bar - on the last question, Next becomes Review
+    function floatNav(last0) {
+      var wrap = el('div', 'pr-qbar-floatnav');
+      var back = el('button', '', '&#8592;'); back.type = 'button'; back.title = 'Back';
+      if (idx === 0) back.setAttribute('disabled', '');
+      back.addEventListener('click', function () { if (idx > 0) { idx--; draw(); } });
+      var next = el('button', '', last0 ? '&#10003;' : '&#8594;'); next.type = 'button'; next.title = last0 ? 'Review & submit' : 'Next';
+      next.addEventListener('click', function () { if (last0) { review(); } else { idx++; draw(); } });
+      wrap.appendChild(back); wrap.appendChild(next);
+      return wrap;
     }
 
     function palette(inReview) {
@@ -2278,16 +2287,16 @@
       return p;
     }
 
-    // mark the just-answered question green in the palette immediately
+    // mark the just-answered question green wherever its number appears (live bottom bar
+    // and/or the review screen's bigger grid)
     function syncPalette() {
-      var answered = 0;
       qs_.forEach(function (q, i) {
-        var done = isAnswered(q); if (done) answered++;
+        var done = isAnswered(q);
         var dot = root.querySelector('.pr-dot[data-i="' + i + '"]');
         if (dot) dot.classList.toggle('done', done);
+        var qn = root.querySelector('.pr-qnum[data-i="' + i + '"]');
+        if (qn) qn.classList.toggle('done', done);
       });
-      var tb = root.querySelector('.pr-tracker-btn');
-      if (tb) tb.textContent = '🗂 Track progress (' + answered + '/' + qs_.length + ')';
     }
 
     function review() {
@@ -2612,8 +2621,8 @@
       var totalQ = texts.reduce(function (a, q) { return a + (q.blocks || []).reduce(function (aa, b) { return aa + ((b.items || []).length); }, 0); }, 0);
       card.innerHTML =
         '<span class="pr-kicker">' + NAME + ' · full Reading test</span>' +
-        '<h2 class="pr-prompt" style="margin-top:8px">' + texts.length + ' texts · ' + totalQ + ' questions · ' + MIN + ' minutes</h2>' +
-        '<div class="pr-passage" style="border:0;padding-left:0">Exam conditions: the passages get harder (Text 1 → Text ' + texts.length + '), the clock runs across all of them, and there is <b>no feedback until you submit</b>. Move between texts and questions freely - your answers are kept. At the end you get an overall <b>Reading band</b>.</div>' +
+        '<h2 class="pr-prompt" style="margin-top:8px">' + texts.length + ' parts · ' + totalQ + ' questions · ' + MIN + ' minutes</h2>' +
+        '<div class="pr-passage" style="border:0;padding-left:0">Exam conditions: the passages get harder (Part 1 → Part ' + texts.length + '), the clock runs across all of them, and there is <b>no feedback until you submit</b>. Move between parts and questions freely - your answers are kept. At the end you get an overall <b>Reading band</b>.</div>' +
         '<div class="pr-nav"><a class="btn btn-wire" href="' + home + '">← Back</a>' +
         '<div class="pr-navbtns"><button type="button" class="btn btn-white" id="rx-start">Start the test →</button></div></div>';
       c.appendChild(card); root.appendChild(c);
@@ -2695,7 +2704,7 @@
         '<span class="pr-timer' + (remaining <= 60 ? ' low' : '') + '">⏱ ' + fmtTime(remaining) + '</span>' +
         '<span class="pr-exam-jump">' +
           '<button type="button" class="pr-arrow" data-prev' + (ti === 0 ? ' disabled' : '') + '>◀</button>' +
-          '<span class="pr-exam-qn">Text ' + (ti + 1) + ' / ' + texts.length + '</span>' +
+          '<span class="pr-exam-qn">Part ' + (ti + 1) + ' / ' + texts.length + '</span>' +
           '<button type="button" class="pr-arrow" data-next>' + (last0 ? '✔' : '▶') + '</button>' +
         '</span>';
       top.querySelector('.pr-exit-x').addEventListener('click', stopClock);
@@ -2703,9 +2712,12 @@
       var nx = top.querySelector('[data-next]'); nx.addEventListener('click', function () { if (last0) review(); else { ti++; draw(); } });
       root.appendChild(top);
 
+      var subhead = el('div', 'pr-exam-sub');
+      subhead.innerHTML = '<b>Part ' + (ti + 1) + '</b><span class="pr-exam-sub-sep">|</span><span>Read the text and answer the questions.</span>';
+      root.appendChild(subhead);
+
       var stage = el('div', 'pr-stage');
       var card = el('div', 'pr-card');
-      card.innerHTML = '<span class="pr-kicker">Text ' + (ti + 1) + '</span>';
 
       var split = el('div', 'pr-split');
       var left = el('div', 'pr-split-left');
@@ -2714,39 +2726,67 @@
       left.appendChild(el('div', 'pr-passage', letterHeaderHtml(q) + esc(q.passage || '')));
       var right = el('div', 'pr-split-right');
       right.appendChild(examBlocks(q, ti));
-      split.appendChild(left); split.appendChild(right);
+      split.appendChild(left);
+      split.appendChild(el('div', 'bb-divider-handle', '&#9664;&#9654;'));
+      split.appendChild(right);
       card.appendChild(split);
       stage.appendChild(card); root.appendChild(stage);
-
-      var n = el('div', 'pr-nav');
-      var back = el('button', 'btn btn-wire', '← Previous text'); back.type = 'button';
-      if (ti === 0) back.setAttribute('disabled', '');
-      back.addEventListener('click', function () { if (ti > 0) { ti--; draw(); } });
-      var btns = el('div', 'pr-navbtns');
-      var nextBtn = el('button', 'btn btn-white', last0 ? 'Review <span class="amp">&amp;</span> submit' : 'Next text →'); nextBtn.type = 'button';
-      nextBtn.addEventListener('click', function () { if (last0) review(); else { ti++; draw(); } });
-      btns.appendChild(nextBtn);
-      n.appendChild(back); n.appendChild(btns);
-      root.appendChild(n);
-      root.appendChild(trackerUI());
+      root.appendChild(qbar());
+      root.appendChild(floatNav(last0));
     }
 
-    function trackerUI() {
-      var row = el('div', 'pr-tracker-row');
-      var totA = 0, totT = 0;
-      texts.forEach(function (_, i) { var r = answeredIn(i); totA += r.a; totT += r.t; });
-      var btn = el('button', 'btn btn-wire pr-tracker-btn', '🗂 Track progress (' + totA + '/' + totT + ')');
-      btn.type = 'button';
-      var overlay = el('div', 'pr-tracker-overlay');
-      var panel = el('div', 'pr-tracker-panel');
-      panel.innerHTML = '<div class="pr-tracker-head"><span>Progress</span><button type="button" class="pr-tracker-x">✕</button></div>';
-      panel.appendChild(palette(false));
-      overlay.appendChild(panel);
-      btn.addEventListener('click', function () { overlay.classList.add('open'); });
-      overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.classList.remove('open'); });
-      panel.querySelector('.pr-tracker-x').addEventListener('click', function () { overlay.classList.remove('open'); });
-      row.appendChild(btn); row.appendChild(overlay);
-      return row;
+    // persistent bottom bar: the current Part's own question numbers (click to scroll to
+    // that question - everything in a Part is on one page, there's no separate page per
+    // question), plus every other Part shown as a clickable "Part N - A of T" summary
+    function qbar() {
+      var bar = el('div', 'pr-qbar');
+      texts.forEach(function (q, i) {
+        if (i === ti) {
+          var seg = el('div', 'pr-qbar-active');
+          seg.appendChild(el('span', 'pr-qbar-label', 'Part ' + (i + 1)));
+          var nums = el('div', 'pr-qbar-nums');
+          var st = state[i], n = 1;
+          (q.blocks || []).forEach(function (bl, bi) {
+            (bl.items || []).forEach(function (it, ii) {
+              var key = bi + '-' + ii, num = n++;
+              var answered = st[key] != null && st[key] !== '';
+              var b = el('button', 'pr-qnum' + (answered ? ' done' : ''), String(num));
+              b.type = 'button';
+              b.addEventListener('click', function () {
+                var rowEl = root.querySelector('.pr-gitem[data-qkey="' + key + '"]');
+                if (rowEl) rowEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              });
+              nums.appendChild(b);
+            });
+          });
+          seg.appendChild(nums);
+          bar.appendChild(seg);
+        } else {
+          var r = answeredIn(i);
+          var other = el('button', 'pr-qbar-other');
+          other.type = 'button';
+          other.innerHTML = '<b>Part ' + (i + 1) + '</b><span class="pr-qbar-count">' + r.a + ' of ' + r.t + '</span>';
+          other.addEventListener('click', function () { ti = i; draw(); });
+          bar.appendChild(other);
+        }
+      });
+      bar.appendChild(el('div', 'pr-qbar-spacer'));
+      var reviewBtn = el('button', 'pr-qbar-review', '&#10003;');
+      reviewBtn.type = 'button'; reviewBtn.title = 'Review & submit';
+      reviewBtn.addEventListener('click', review);
+      bar.appendChild(reviewBtn);
+      return bar;
+    }
+
+    function floatNav(last0) {
+      var wrap = el('div', 'pr-qbar-floatnav');
+      var back = el('button', '', '&#8592;'); back.type = 'button'; back.title = 'Previous part';
+      if (ti === 0) back.setAttribute('disabled', '');
+      back.addEventListener('click', function () { if (ti > 0) { ti--; draw(); } });
+      var next = el('button', '', last0 ? '&#10003;' : '&#8594;'); next.type = 'button'; next.title = last0 ? 'Review & submit' : 'Next part';
+      next.addEventListener('click', function () { if (last0) review(); else { ti++; draw(); } });
+      wrap.appendChild(back); wrap.appendChild(next);
+      return wrap;
     }
 
     // render one text's blocks with inputs bound to state (no checking, no reveal)
@@ -2760,6 +2800,7 @@
         (bl.items || []).forEach(function (it, ii) {
           var key = bi + '-' + ii, n = num++;
           var row = el('div', 'pr-gitem' + (bl.kind === 'choice' ? ' pr-mcitem' : ''));
+          row.setAttribute('data-qkey', key);
           row.appendChild(el('div', 'pr-gq', '<span class="pr-gn">' + n + '.</span> ' + esc(it.prompt || '')));
           if (bl.kind === 'choice') {
             var ch = el('div', 'pr-choices pr-mcchoices');
@@ -2798,7 +2839,7 @@
       texts.forEach(function (_, i) {
         var r = answeredIn(i);
         var b = el('button', 'pr-dot' + (!inReview && i === ti ? ' current' : '') + (r.t > 0 && r.a === r.t ? ' done' : ''));
-        b.type = 'button'; b.textContent = 'T' + (i + 1); b.setAttribute('data-i', i);
+        b.type = 'button'; b.textContent = 'Part ' + (i + 1); b.setAttribute('data-i', i);
         b.addEventListener('click', function () { ti = i; draw(); });
         grid.appendChild(b);
       });
@@ -2806,15 +2847,11 @@
       return p;
     }
 
+    // re-render the live bottom bar in place so its done-marks and "N of T" counts stay
+    // current as you fill in answers (cheap - it's a small bar, not the whole page)
     function syncPalette() {
-      var totA = 0, totT = 0;
-      texts.forEach(function (_, i) {
-        var r = answeredIn(i); totA += r.a; totT += r.t;
-        var dot = root.querySelector('.pr-dot[data-i="' + i + '"]');
-        if (dot) dot.classList.toggle('done', r.t > 0 && r.a === r.t);
-      });
-      var tb = root.querySelector('.pr-tracker-btn');
-      if (tb) tb.textContent = '🗂 Track progress (' + totA + '/' + totT + ')';
+      var old = root.querySelector('.pr-qbar');
+      if (old) old.replaceWith(qbar());
     }
 
     function review() {
@@ -2830,7 +2867,7 @@
         '<span class="pr-kicker">Before you submit</span>' +
         '<h2 class="pr-prompt" style="margin-top:8px">Review</h2>' +
         '<div class="pr-passage" style="border:0;padding-left:0">You answered <b>' + totA + '</b> of <b>' + totT + '</b>. ' +
-        (un ? 'Still unanswered: <b>' + un + '</b> - tap a text below to go back.' : 'All answered. You can still change anything before submitting.') +
+        (un ? 'Still unanswered: <b>' + un + '</b> - tap a part below to go back.' : 'All answered. You can still change anything before submitting.') +
         ' ' + esc(cfg.submitNote || 'Once you submit, the test locks and is scored.') + '</div>';
       card.appendChild(palette(true));
       stage.appendChild(card); root.appendChild(stage);
@@ -2860,7 +2897,7 @@
             if (ok) { c++; correct++; }
           });
         });
-        perText.push({ name: 'Text ' + (i + 1) + (q.difficulty ? ' · ' + q.difficulty : ''), correct: c, total: t });
+        perText.push({ name: 'Part ' + (i + 1) + (q.difficulty ? ' · ' + q.difficulty : ''), correct: c, total: t });
       });
       cfg.onDone(correct, total, perText);
     }
