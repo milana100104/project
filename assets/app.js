@@ -106,6 +106,24 @@
       prompt:'What is changing about the East Wing reading room?',
       choices:['It will close earlier at night.','It will close permanently.','It will open later in the morning.','It will move into the Main Hall.'],
       answer:0, explanation:'The notice says the East Wing "will close at 9 PM instead of midnight" - an earlier closing time, nothing else.' }),
+    Q({ id:'t-r-dl-4', exam:'toefl', skill:'reading', type:'daily-life', difficulty:'easy',
+      letterKind:'email', letterFrom:'Riverside Gym', letterSubject:'Pool schedule this weekend',
+      passage:'This Saturday and Sunday the pool will open at 8 AM instead of 6 AM for annual cleaning. All other facilities are open at the usual time.',
+      prompt:'What is changing this weekend?',
+      choices:['The pool will open later in the morning.','The gym will be closed all weekend.','The pool will close early.','All facilities will open later.'],
+      answer:0, explanation:'Only the pool\'s opening time is changing, to 8 AM instead of 6 AM - everything else is "the usual time."' }),
+    Q({ id:'t-r-dl-5', exam:'toefl', skill:'reading', type:'daily-life', difficulty:'medium',
+      letterKind:'message', letterFrom:'Sam',
+      passage:'Hey, landlord just texted - rent goes up $40 starting next month. Still cheaper than the place across town though. You in for renewing, or should we start looking?',
+      prompt:'What does Sam want to know?',
+      choices:['Whether the reader wants to renew the lease','How much the place across town costs','When the landlord will call','Whether the reader has paid this month\'s rent'],
+      answer:0, explanation:'Sam is asking whether to renew ("you in for renewing") or start looking elsewhere.' }),
+    Q({ id:'t-r-dl-6', exam:'toefl', skill:'reading', type:'daily-life', difficulty:'hard',
+      letterKind:'announcement', letterSubject:'Lot C Closure',
+      passage:'Parking Lot C will be closed for resurfacing from Monday through Wednesday next week. Permit holders may use Lot D at no extra charge during this period; a shuttle runs between Lot D and campus every 15 minutes.',
+      prompt:'What can permit holders for Lot C do while it is closed?',
+      choices:['Park in Lot D for free and take a shuttle','Get a full refund for the week','Park anywhere on campus','Use Lot C after 6 PM only'],
+      answer:0, explanation:'The notice says permit holders "may use Lot D at no extra charge," with a shuttle connecting it to campus.' }),
     Q({ id:'t-r-cw-1', exam:'toefl', skill:'reading', type:'complete-the-words', difficulty:'medium',
       prompt:'Complete the missing letters to finish each word.',
       parts:[{text:'A beacon is a light or fire set on a height to '},{stem:'gu',blank:'ide'},{text:' travellers and warn of '},{stem:'dan',blank:'ger'},{text:'.'}],
@@ -114,6 +132,18 @@
       prompt:'Complete the missing letters to finish each word.',
       parts:[{text:'Migrating birds '},{stem:'nav',blank:'igate'},{text:' by the stars, using them like a natural '},{stem:'com',blank:'pass'},{text:'.'}],
       explanation:'The full sentence: "…navigate by the stars, using them like a natural compass."' }),
+    Q({ id:'t-r-cw-3', exam:'toefl', skill:'reading', type:'complete-the-words', difficulty:'easy',
+      prompt:'Complete the missing letters to finish each word.',
+      parts:[{text:'Bees '},{stem:'poll',blank:'inate'},{text:' flowers while '},{stem:'col',blank:'lecting'},{text:' nectar.'}],
+      explanation:'The full sentence: "Bees pollinate flowers while collecting nectar."' }),
+    Q({ id:'t-r-cw-4', exam:'toefl', skill:'reading', type:'complete-the-words', difficulty:'medium',
+      prompt:'Complete the missing letters to finish each word.',
+      parts:[{text:'A volcano '},{stem:'er',blank:'upts'},{text:' when pressure from molten rock '},{stem:'ac',blank:'cumulates'},{text:' beneath the surface.'}],
+      explanation:'The full sentence: "…erupts when pressure from molten rock accumulates beneath the surface."' }),
+    Q({ id:'t-r-cw-5', exam:'toefl', skill:'reading', type:'complete-the-words', difficulty:'hard',
+      prompt:'Complete the missing letters to finish each word.',
+      parts:[{text:'Coral reefs are '},{stem:'vul',blank:'nerable'},{text:' to warming water, which can cause '},{stem:'blea',blank:'ching'},{text:' across large areas.'}],
+      explanation:'The full sentence: "…vulnerable to warming water, which can cause bleaching across large areas."' }),
     Q({ id:'t-r-wt-1', exam:'toefl', skill:'reading', type:'whole-text', difficulty:'medium',
       passage:'[1] Tides are driven mainly by the Moon’s gravity. [2] The Sun contributes too, but with roughly half the effect. [3] When Sun and Moon align, their pulls combine into especially high "spring" tides. [4] When they sit at right angles, the tides are gentler.',
       prompt:'What is the main idea of the passage as a whole?',
@@ -124,6 +154,21 @@
       prompt:'The passage is primarily concerned with:',
       choices:['how sailors named islands','how gaps in knowledge shaped early maps','why maps are printed on paper','the cost of ocean voyages'],
       answer:1, explanation:'Every sentence returns to how missing knowledge - and guesses about it - shaped early maps.' }),
+    Q({ id:'t-r-wt-3', exam:'toefl', skill:'reading', type:'whole-text', difficulty:'easy',
+      passage:'[1] Leaves are green because they contain chlorophyll, used for photosynthesis. [2] In autumn, trees stop producing chlorophyll as daylight shortens. [3] As the green fades, other pigments already present in the leaf - yellows and oranges - become visible.',
+      prompt:'According to the passage, why do leaves turn yellow or orange in autumn?',
+      choices:['New pigments are created by the cold.','Chlorophyll production stops, revealing pigments already there.','The leaves absorb more sunlight.','Trees add extra water to the leaves.'],
+      answer:1, explanation:'The passage says the yellow and orange pigments were "already present" and become visible once chlorophyll fades.' }),
+    Q({ id:'t-r-wt-4', exam:'toefl', skill:'reading', type:'whole-text', difficulty:'medium',
+      passage:'[1] Before the printing press, books were copied by hand, a slow and expensive process. [2] Gutenberg’s movable-type press let identical pages be produced quickly. [3] Book prices fell, and literacy spread far beyond the wealthy and the clergy.',
+      prompt:'What was one major effect of the printing press described in the passage?',
+      choices:['Books became more expensive.','Literacy spread beyond a small privileged group.','Handwritten copying became faster.','The clergy stopped reading books.'],
+      answer:1, explanation:'The passage states that as prices fell, "literacy spread far beyond the wealthy and the clergy."' }),
+    Q({ id:'t-r-wt-5', exam:'toefl', skill:'reading', type:'whole-text', difficulty:'hard',
+      passage:'[1] Glaciers move slowly downhill under their own weight. [2] As they advance, embedded rocks scrape against the bedrock beneath them. [3] Over thousands of years, this carving action can widen a narrow river valley into the broad U-shaped valleys seen in many mountain ranges today.',
+      prompt:'How do glaciers shape the valleys described in the passage?',
+      choices:['By melting and flooding the valley floor','By carving rock with embedded debris as they move','By blocking rivers with ice dams','By depositing sand that fills the valley'],
+      answer:1, explanation:'The passage describes rocks embedded in the glacier scraping the bedrock, gradually widening the valley.' }),
 
     /* ---------------- TOEFL · Listening ---------------- */
     Q({ id:'t-l-br-1', exam:'toefl', skill:'listening', type:'best-response', difficulty:'easy',
@@ -136,6 +181,21 @@
       prompt:'Choose the best response.',
       choices:['"Yes, they’re now on Thursday at two."','"I love her lectures."','"The office is painted blue."','"I’ll have the salad."'],
       answer:0, explanation:'He asks a yes/no question about a schedule change; the only response that actually answers it is the first.' }),
+    Q({ id:'t-l-br-3', exam:'toefl', skill:'listening', type:'best-response', difficulty:'hard',
+      audio:true, transcript:'Woman: "I could swear I submitted the assignment, but it’s not showing up in the system."',
+      prompt:'Choose the best response.',
+      choices:['"Try emailing the professor a copy with a timestamp."','"The system is painted blue."','"Congratulations on submitting early!"','"I haven’t started mine yet."'],
+      answer:0, explanation:'She has a practical problem (a missing submission); the helpful, on-topic reply suggests a way to prove it was done.' }),
+    Q({ id:'t-l-br-4', exam:'toefl', skill:'listening', type:'best-response', difficulty:'easy',
+      audio:true, transcript:'Man: "Thanks so much for covering my shift yesterday."',
+      prompt:'Choose the best response.',
+      choices:['"No problem, happy to help."','"The shift starts at nine."','"I don’t work here."','"See you never."'],
+      answer:0, explanation:'He is thanking her; the natural reply accepts the thanks warmly.' }),
+    Q({ id:'t-l-br-5', exam:'toefl', skill:'listening', type:'best-response', difficulty:'medium',
+      audio:true, transcript:'Woman: "Is this seat taken, or can I sit here for the lecture?"',
+      prompt:'Choose the best response.',
+      choices:['"Go ahead, it’s free."','"The lecture is two hours long."','"I already have a seat."','"Sorry, I don’t know this professor."'],
+      answer:0, explanation:'She is asking permission to sit; the direct, relevant answer grants or addresses that request.' }),
     Q({ id:'t-l-dl-1', exam:'toefl', skill:'listening', type:'dialogues', difficulty:'medium',
       audio:true, transcript:'Student: "I’d like to drop the Tuesday lab and switch to Friday." Advisor: "Friday’s full, but I can put you on the waitlist - you’re second in line."',
       prompt:'What does the advisor offer the student?',
@@ -146,6 +206,21 @@
       prompt:'What does the student want to do?',
       choices:['Borrow the book overnight','Copy a few pages','Buy the book','Return a late book'],
       answer:1, explanation:'The student asks to photocopy a few pages once told the book cannot be borrowed.' }),
+    Q({ id:'t-l-dl-3', exam:'toefl', skill:'listening', type:'dialogues', difficulty:'hard',
+      audio:true, transcript:'Student: "My scholarship renewal needs a form signed by my advisor, but she’s away until next week." Clerk: "Bring it in as soon as she’s back - the deadline has a five-day grace period for exactly this kind of thing."',
+      prompt:'What does the clerk tell the student about the deadline?',
+      choices:['It cannot be extended for any reason.','There is a five-day grace period for cases like this.','The scholarship has already been cancelled.','The advisor must sign it today.'],
+      answer:1, explanation:'The clerk explains a five-day grace period exists specifically for situations like the student\'s.' }),
+    Q({ id:'t-l-dl-4', exam:'toefl', skill:'listening', type:'dialogues', difficulty:'medium',
+      audio:true, transcript:'Student: "Is the computer lab open on weekends?" Staff: "Yes, but only until 6 PM on Saturdays, and it’s closed Sundays."',
+      prompt:'When is the computer lab closed?',
+      choices:['All weekend','Saturday mornings only','Sundays','Every evening'],
+      answer:2, explanation:'The staff member says it is open Saturday until 6 PM but "closed Sundays."' }),
+    Q({ id:'t-l-dl-5', exam:'toefl', skill:'listening', type:'dialogues', difficulty:'easy',
+      audio:true, transcript:'Student: "Do you sell notebooks here?" Cashier: "Yes, they’re on the shelf right behind you."',
+      prompt:'What is the student looking for?',
+      choices:['Notebooks','Pens','A cashier','A shelf'],
+      answer:0, explanation:'The student directly asks whether the shop sells notebooks.' }),
     Q({ id:'t-l-lec-1', exam:'toefl', skill:'listening', type:'lectures', difficulty:'hard',
       audio:true, transcript:'Professor: "Photosynthesis is often summarized as a single reaction, but it really has two stages: the light-dependent reactions, which capture energy, and the Calvin cycle, which uses that energy to build sugar."',
       prompt:'According to the professor, the Calvin cycle is responsible for:',
@@ -156,6 +231,21 @@
       prompt:'Why will the science building close early?',
       choices:['For a holiday','For maintenance','For an exam','For a lecture'],
       answer:1, explanation:'The announcement states the early closure is for maintenance, with labs vacated by 4 p.m.' }),
+    Q({ id:'t-l-lec-3', exam:'toefl', skill:'listening', type:'lectures', difficulty:'easy',
+      audio:true, transcript:'Professor: "Today we’ll cover the water cycle. Water evaporates from oceans and lakes, forms clouds, and eventually falls back as rain or snow."',
+      prompt:'What is the lecture mainly about?',
+      choices:['The water cycle','Ocean pollution','Cloud formation only','Snowfall records'],
+      answer:0, explanation:'The professor introduces the topic directly: "Today we\'ll cover the water cycle."' }),
+    Q({ id:'t-l-lec-4', exam:'toefl', skill:'listening', type:'lectures', difficulty:'medium',
+      audio:true, transcript:'Professor: "Coral polyps get most of their color from algae living inside their tissue. When water gets too warm, the polyps expel the algae - which is what causes coral bleaching."',
+      prompt:'According to the professor, what directly causes coral bleaching?',
+      choices:['Polyps expelling their algae','Algae eating the coral','Cold water temperatures','A lack of sunlight'],
+      answer:0, explanation:'The professor says bleaching happens because "the polyps expel the algae" that gives coral its color.' }),
+    Q({ id:'t-l-lec-5', exam:'toefl', skill:'listening', type:'lectures', difficulty:'hard',
+      audio:true, transcript:'Professor: "Confirmation bias is our tendency to favor information that supports what we already believe, while discounting evidence that contradicts it - even when that contradicting evidence is stronger."',
+      prompt:'How does the professor describe confirmation bias?',
+      choices:['Favoring supportive evidence over stronger contradicting evidence','Always believing the strongest evidence','Ignoring all evidence equally','Changing beliefs whenever new evidence appears'],
+      answer:0, explanation:'The professor says we favor supporting information "even when that contradicting evidence is stronger."' }),
 
     /* ---------------- IELTS · Listening (real question types) ---------------- */
     Q({ id:'i-l-2', exam:'ielts', skill:'listening', type:'multiple-choice', part:2, difficulty:'medium',
@@ -2226,9 +2316,18 @@
     document.body.classList.add('ws-white', 'pr-examroom', 'exam-' + examId);
     var NAME = examId === 'toefl' ? 'TOEFL' : 'IELTS';
     var home = examId + '.html';
+    // as of the January 2026 redesign, TOEFL Reading and Listening are both multistage
+    // adaptive - two modules each, module 1 the same for everyone, module 2 harder or
+    // easier depending on module 1 performance (same idea as the Digital SAT elsewhere
+    // in this app). IELTS format is unchanged.
     var SECTIONS = examId === 'toefl'
-      ? [{ key: 'reading', name: 'Reading', minutes: 35 }, { key: 'listening', name: 'Listening', minutes: 36 }]
+      ? [{ key: 'reading', name: 'Reading', minutes: 30 }, { key: 'listening', name: 'Listening', minutes: 27 }]
       : [{ key: 'reading', name: 'Reading', minutes: 60 }, { key: 'listening', name: 'Listening', minutes: 30 }];
+    // the real test always presents each section's task types in this order (with a
+    // shuffled sample of each type in every module) rather than a random mix
+    var TYPE_ORDER = {
+      toefl: { reading: ['complete-the-words', 'daily-life', 'whole-text'], listening: ['best-response', 'dialogues', 'lectures'] }
+    };
     SECTIONS = SECTIONS.filter(function (s) { return BeaconStore.questionsFor(examId, s.key, null).length > 0; });
     if (!SECTIONS.length) {
       root.innerHTML = errorCard('This test isn’t ready yet.', 'Add ' + NAME + ' Reading or Listening questions in the admin panel first.');
@@ -2273,7 +2372,7 @@
 
     function intro() {
       var struct = examId === 'toefl'
-        ? 'The official TOEFL Reading is 20 questions in 35 min; Listening is 28 in about 36 min.'
+        ? 'The official TOEFL Reading is 50 questions across two adaptive modules in 30 min; Listening is about 47 items across two adaptive modules in around 27 min. Module 2 gets harder or easier depending on how you do in Module 1.'
         : 'Official IELTS Reading and Listening are 40 questions each (60 min and about 30 min).';
       root.innerHTML = '';
       var c = el('div', 'pr-stage'); var card = el('div', 'pr-card');
@@ -2310,23 +2409,96 @@
       document.getElementById('fx-begin').onclick = runSec;
     }
 
+    // split a section's pool into two roughly-even, type-ordered halves: mod1 (the fixed
+    // first module) and a candidate pool for mod2 to draw from once we know the path
+    function splitForModules(all, typeOrder) {
+      if (!typeOrder) { var s = shuffle(all.slice()); var half = Math.ceil(s.length / 2); return { mod1: s.slice(0, half), rest: s.slice(half) }; }
+      var buckets = {};
+      all.forEach(function (q) { (buckets[q.type] = buckets[q.type] || []).push(q); });
+      var mod1 = [], rest = [];
+      typeOrder.forEach(function (t) {
+        var group = shuffle((buckets[t] || []).slice());
+        var half = Math.ceil(group.length / 2);
+        mod1 = mod1.concat(group.slice(0, half));
+        rest = rest.concat(group.slice(half));
+      });
+      return { mod1: mod1, rest: rest };
+    }
+
+    // module 2's questions: prefer the target difficulty from the leftover pool, keep the
+    // real task-type order, fall back to whatever's left if the bank is too small
+    function pickModule2(rest, path, typeOrder) {
+      var pref = rest.filter(function (q) { return (q.difficulty || 'medium') === path; });
+      var others = rest.filter(function (q) { return pref.indexOf(q) === -1; });
+      var combined = pref.concat(others);
+      if (!typeOrder) return combined;
+      var buckets = {};
+      combined.forEach(function (q) { (buckets[q.type] = buckets[q.type] || []).push(q); });
+      var out = [];
+      typeOrder.forEach(function (t) { if (buckets[t]) out = out.concat(buckets[t]); });
+      return out;
+    }
+
     function runSec() {
       var sec = SECTIONS[si];
-      var pool = shuffle(BeaconStore.questionsFor(examId, sec.key, null).slice());
+      var typeOrder = TYPE_ORDER[examId] && TYPE_ORDER[examId][sec.key];
+      var all = BeaconStore.questionsFor(examId, sec.key, null).slice();
+      if (examId !== 'toefl') {
+        // IELTS keeps the existing single-pool, single-timer section (unchanged)
+        runExamBlock(root, {
+          label: sec.name,
+          questions: shuffle(all),
+          minutes: sec.minutes,
+          exitHref: home,
+          submitNote: 'Once you submit, this section locks and you move on.',
+          onDone: function (mc, total) { finishSec(sec, { correct: mc, total: total }); }
+        });
+        return;
+      }
+      var split = splitForModules(all, typeOrder);
+      runModule(sec, 1, split.mod1, split.rest, typeOrder, { correct: 0, total: 0 });
+    }
+
+    function runModule(sec, moduleNo, questions, rest, typeOrder, secState) {
+      if (!questions.length) { finishSec(sec, secState); return; }
       runExamBlock(root, {
         label: sec.name,
-        questions: pool,
-        minutes: sec.minutes,
+        questions: questions,
+        minutes: Math.max(3, Math.round(sec.minutes / 2)),
         exitHref: home,
-        submitNote: 'Once you submit, this section locks and you move on.',
+        submitNote: moduleNo === 1 ? 'Once you submit this module, Module 2 adapts to how you did here.' : 'Once you submit, this section locks and you move on.',
         onDone: function (mc, total) {
-          results.push({ name: sec.name, correct: mc, total: total });
-          var doneName = sec.name;
-          si++;
-          if (si < SECTIONS.length) sectionIntro(doneName);
-          else finish();
+          secState.correct += mc; secState.total += total;
+          if (moduleNo === 1 && rest.length) {
+            var pct = total ? mc / total : 0;
+            var path = pct >= 0.6 ? 'hard' : 'easy';
+            var mod2 = pickModule2(rest, path, typeOrder);
+            moduleBreak(sec, function () { runModule(sec, 2, mod2, [], typeOrder, secState); });
+          } else {
+            finishSec(sec, secState);
+          }
         }
       });
+    }
+
+    function moduleBreak(sec, go) {
+      root.innerHTML = '';
+      var c = el('div', 'pr-stage'); var card = el('div', 'pr-card');
+      card.innerHTML =
+        '<span class="pr-kicker">' + esc(NAME) + '</span>' +
+        '<h2 class="pr-prompt" style="margin-top:8px">Module 1 complete</h2>' +
+        '<div class="pr-passage" style="border:0;padding-left:0">Starting Module 2 of <b>' + esc(sec.name) + '</b> - it has adapted to how you did in Module 1. No going back now.</div>' +
+        '<div class="pr-nav"><span></span><div class="pr-navbtns"><button type="button" class="btn btn-white" id="fx-mod-go">Continue →</button></div></div>';
+      c.appendChild(card); root.appendChild(c);
+      document.getElementById('fx-mod-go').onclick = go;
+    }
+
+    function finishSec(sec, secState) {
+      results.push({ name: sec.name, correct: secState.correct, total: secState.total });
+      var doneName = sec.name;
+      si++;
+      if (si < SECTIONS.length) sectionIntro(doneName);
+      else finish();
     }
 
     function finish() {

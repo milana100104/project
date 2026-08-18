@@ -261,9 +261,9 @@ mark.pr-hl{background:#fef08a;color:inherit;border-radius:2px;padding:0 1px;curs
 .pr-hwcheck-icons{display:flex;gap:32px;margin:22px 0 26px;font-size:2.6rem;line-height:1;}
 /* section-intro task-type table, matching the real exam's own section overview screen */
 .pr-tasktable{width:100%;border-collapse:collapse;margin:18px 0 6px;font-size:.92rem;}
-.pr-tasktable th,.pr-tasktable td{border:1px solid var(--border-strong);padding:10px 14px;text-align:left;}
-.pr-tasktable th{background:var(--exam-accent-soft,var(--bg-2));color:var(--ink);font-weight:700;}
-.pr-tasktable td{color:var(--ink-2);}
+.pr-tasktable th,.pr-tasktable td{border:1px solid #c9d2e2;padding:10px 14px;text-align:left;}
+.pr-tasktable th{background:var(--exam-accent-soft,#eef1f7);color:#14233f;font-weight:700;}
+.pr-tasktable td{color:#33415f;}
 /* secondary header row under the exam top bar: section label | question range */
 .pr-exam-sub{padding:10px 22px;font-size:.86rem;color:#4a5875;border-bottom:1px solid #e3e7f0;background:#fff;}
 .pr-exam-sub b{color:#14233f;}
