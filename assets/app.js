@@ -2116,7 +2116,17 @@
    * and a selection you can change until you submit. Used by the full
    * TOEFL / IELTS Reading + Listening exams. */
   function runExamBlock(root, cfg) {
-    var qs_ = cfg.questions, picked = {}, idx = 0;
+    var qs_ = cfg.questions, picked = {}, typed = {}, idx = 0;
+    // "answered" covers both multiple-choice (picked) and typed-answer questions -
+    // IELTS Listening mixes both formats in the same section
+    function isAnswered(q) { return (q.choices && q.choices.length) ? picked[q.id] != null : (typed[q.id] != null && typed[q.id] !== ''); }
+    function isCorrect(q) {
+      if (q.choices && q.choices.length) return picked[q.id] === q.answer;
+      var v = (typed[q.id] || '').trim().toLowerCase();
+      if (!v) return false;
+      var accept = [String(q.answer == null ? '' : q.answer)].concat(q.accept || []).map(function (a) { return String(a).trim().toLowerCase(); });
+      return accept.indexOf(v) !== -1;
+    }
     // group consecutive questions that share the same passage into one page, so a
     // multi-question reading passage shows the text once with every question stacked
     // on the right, instead of flipping through the same passage one question at a time
@@ -2185,20 +2195,28 @@
           block.appendChild(audioEl);
         }
         block.appendChild(el('div', 'pr-prompt', esc(q.prompt)));
-        var wrap = el('div', 'pr-choices');
-        (q.choices || []).forEach(function (choice, i) {
-          var btn = el('button', 'pr-choice' + (picked[q.id] === i ? ' picked' : ''));
-          btn.type = 'button';
-          btn.innerHTML = '<span class="mark">' + String.fromCharCode(65 + i) + '</span><span>' + esc(choice) + '</span>';
-          btn.addEventListener('click', function () {
-            picked[q.id] = i;
-            wrap.querySelectorAll('.pr-choice').forEach(function (k) { k.classList.remove('picked'); });
-            btn.classList.add('picked');
-            syncPalette();
+        if (q.choices && q.choices.length) {
+          var wrap = el('div', 'pr-choices');
+          q.choices.forEach(function (choice, i) {
+            var btn = el('button', 'pr-choice' + (picked[q.id] === i ? ' picked' : ''));
+            btn.type = 'button';
+            btn.innerHTML = '<span class="mark">' + String.fromCharCode(65 + i) + '</span><span>' + esc(choice) + '</span>';
+            btn.addEventListener('click', function () {
+              picked[q.id] = i;
+              wrap.querySelectorAll('.pr-choice').forEach(function (k) { k.classList.remove('picked'); });
+              btn.classList.add('picked');
+              syncPalette();
+            });
+            wrap.appendChild(btn);
           });
-          wrap.appendChild(btn);
-        });
-        block.appendChild(wrap);
+          block.appendChild(wrap);
+        } else {
+          var inp = document.createElement('input');
+          inp.type = 'text'; inp.className = 'pr-gin'; inp.placeholder = 'Your answer';
+          inp.value = typed[q.id] == null ? '' : typed[q.id];
+          inp.addEventListener('input', function () { typed[q.id] = inp.value; syncPalette(); });
+          block.appendChild(inp);
+        }
         right.appendChild(block);
       });
 
@@ -2232,7 +2250,7 @@
 
     function trackerUI() {
       var row = el('div', 'pr-tracker-row');
-      var answered = qs_.filter(function (q) { return picked[q.id] != null; }).length;
+      var answered = qs_.filter(isAnswered).length;
       var btn = el('button', 'btn btn-wire pr-tracker-btn', '🗂 Track progress (' + answered + '/' + qs_.length + ')');
       btn.type = 'button';
       var overlay = el('div', 'pr-tracker-overlay');
@@ -2251,7 +2269,7 @@
       var p = el('div', 'pr-palette');
       var grid = el('div', 'pr-palette-grid');
       qs_.forEach(function (q, i) {
-        var b = el('button', 'pr-dot' + (!inReview && qToGroup[q.id] === idx ? ' current' : '') + (picked[q.id] != null ? ' done' : ''));
+        var b = el('button', 'pr-dot' + (!inReview && qToGroup[q.id] === idx ? ' current' : '') + (isAnswered(q) ? ' done' : ''));
         b.type = 'button'; b.textContent = i + 1; b.setAttribute('data-i', i);
         b.addEventListener('click', function () { idx = qToGroup[q.id]; draw(); });
         grid.appendChild(b);
@@ -2264,7 +2282,7 @@
     function syncPalette() {
       var answered = 0;
       qs_.forEach(function (q, i) {
-        var done = picked[q.id] != null; if (done) answered++;
+        var done = isAnswered(q); if (done) answered++;
         var dot = root.querySelector('.pr-dot[data-i="' + i + '"]');
         if (dot) dot.classList.toggle('done', done);
       });
@@ -2273,7 +2291,7 @@
     }
 
     function review() {
-      var un = qs_.filter(function (q) { return picked[q.id] == null; }).length;
+      var un = qs_.filter(function (q) { return !isAnswered(q); }).length;
       root.innerHTML = '';
       var top = el('div', 'pr-exam-top');
       top.innerHTML =
@@ -2304,7 +2322,7 @@
     function submit() {
       stop();
       var mc = 0;
-      qs_.forEach(function (q) { if (picked[q.id] === q.answer) mc++; });
+      qs_.forEach(function (q) { if (isCorrect(q)) mc++; });
       cfg.onDone(mc, qs_.length);
     }
   }
@@ -2320,9 +2338,11 @@
     // adaptive - two modules each, module 1 the same for everyone, module 2 harder or
     // easier depending on module 1 performance (same idea as the Digital SAT elsewhere
     // in this app). IELTS format is unchanged.
+    // TOEFL runs Reading then Listening; the real IELTS test runs Listening first, then
+    // Reading (Writing follows on the same day - not part of this app's full test)
     var SECTIONS = examId === 'toefl'
       ? [{ key: 'reading', name: 'Reading', minutes: 30 }, { key: 'listening', name: 'Listening', minutes: 27 }]
-      : [{ key: 'reading', name: 'Reading', minutes: 60 }, { key: 'listening', name: 'Listening', minutes: 30 }];
+      : [{ key: 'listening', name: 'Listening', minutes: 30 }, { key: 'reading', name: 'Reading', minutes: 60 }];
     // the real test always presents each section's task types in this order (with a
     // shuffled sample of each type in every module) rather than a random mix
     var TYPE_ORDER = {
@@ -2373,13 +2393,15 @@
     function intro() {
       var struct = examId === 'toefl'
         ? 'The official TOEFL Reading is 50 questions across two adaptive modules in 30 min; Listening is about 47 items across two adaptive modules in around 27 min. Module 2 gets harder or easier depending on how you do in Module 1.'
-        : 'Official IELTS Reading and Listening are 40 questions each (60 min and about 30 min).';
+        : 'Official IELTS Reading and Listening are 40 questions each (60 min and about 30 min). Unlike TOEFL, IELTS is a fixed, non-adaptive test.';
+      var firstName = SECTIONS[0].name, secondName = SECTIONS[1] ? SECTIONS[1].name : null;
       root.innerHTML = '';
       var c = el('div', 'pr-stage'); var card = el('div', 'pr-card');
       card.innerHTML =
         '<span class="pr-kicker">' + NAME + ' · full test</span>' +
         '<h2 class="pr-prompt" style="margin-top:8px">Full ' + NAME + ' - Reading <span class="amp">&amp;</span> Listening</h2>' +
-        '<div class="pr-passage" style="border:0;padding-left:0">A complete, timed exam: <b>Reading</b> first, then <b>Listening</b>, each on its own clock. ' +
+        '<div class="pr-passage" style="border:0;padding-left:0">A complete, timed exam: <b>' + esc(firstName) + '</b> first' +
+        (secondName ? ', then <b>' + esc(secondName) + '</b>, each on its own clock. ' : '. ') +
         'No feedback until the end. ' + struct + ' This one is built from the questions in the bank, so it may be shorter - timing and scoring work the same way.</div>' +
         '<div class="pr-nav"><a class="btn btn-wire pr-exit" href="' + home + '">← Back</a>' +
         '<div class="pr-navbtns"><button type="button" class="btn btn-white" id="fx-start">Start the test →</button></div></div>';
@@ -2441,10 +2463,24 @@
 
     function runSec() {
       var sec = SECTIONS[si];
+      if (examId === 'ielts' && sec.key === 'reading') {
+        // IELTS Reading questions are always full multi-block passages, not single
+        // choice questions - they need the block-based runner, not runExamBlock
+        var texts = pickReadingTexts(examId);
+        if (!texts.length) { finishSec(sec, { correct: 0, total: 0 }); return; }
+        runReadingBlock(root, {
+          texts: texts,
+          minutes: sec.minutes,
+          exitHref: home,
+          submitNote: 'Once you submit, this section locks and you move on.',
+          onDone: function (correct, total) { finishSec(sec, { correct: correct, total: total }); }
+        });
+        return;
+      }
       var typeOrder = TYPE_ORDER[examId] && TYPE_ORDER[examId][sec.key];
       var all = BeaconStore.questionsFor(examId, sec.key, null).slice();
       if (examId !== 'toefl') {
-        // IELTS keeps the existing single-pool, single-timer section (unchanged)
+        // IELTS Listening keeps the existing single-pool, single-timer section (unchanged)
         runExamBlock(root, {
           label: sec.name,
           questions: shuffle(all),
@@ -2540,6 +2576,21 @@
     }
   }
 
+  // pick the 3 real reading texts for an exam, one per difficulty (easy/medium/hard)
+  // where available - shared by the standalone Reading test and the full test's Reading section
+  function pickReadingTexts(examId) {
+    var all = BeaconStore.allQuestions().filter(function (q) {
+      return q.exam === examId && q.skill === 'reading' && q.blocks && q.blocks.length;
+    });
+    var texts = [];
+    ['easy', 'medium', 'hard'].forEach(function (d) {
+      var first = all.filter(function (q) { return (q.difficulty || 'medium') === d; })[0];
+      if (first) texts.push(first);
+    });
+    if (texts.length < Math.min(3, all.length)) texts = all.slice(0, 3);
+    return texts;
+  }
+
   /* ===================== full IELTS Reading test (3 texts, one clock) =====================
    * Three passages (easy → medium → hard), each with mixed question blocks, a
    * single 60-minute timer, no feedback until you submit, then a Reading band. */
@@ -2547,27 +2598,71 @@
     document.body.classList.add('ws-white');
     var home = qs('ret') || (examId + '.html#reading');
     var NAME = examId === 'toefl' ? 'TOEFL' : 'IELTS';
-
-    var all = BeaconStore.allQuestions().filter(function (q) {
-      return q.exam === examId && q.skill === 'reading' && q.blocks && q.blocks.length;
-    });
-    // one passage per difficulty, ordered easy → medium → hard
-    var texts = [];
-    ['easy', 'medium', 'hard'].forEach(function (d) {
-      var first = all.filter(function (q) { return (q.difficulty || 'medium') === d; })[0];
-      if (first) texts.push(first);
-    });
-    if (texts.length < Math.min(3, all.length)) texts = all.slice(0, 3);
+    var texts = pickReadingTexts(examId);
     if (!texts.length) {
       root.innerHTML = errorCard('This test isn’t ready yet.', 'Add IELTS Reading passages (★ Full passage) in the admin panel first.');
       return;
     }
-
     var MIN = 60;
-    var state = texts.map(function () { return {}; });   // state[ti]['bi-ii'] = value
-    var ti = 0, remaining = MIN * 60, timerId = null;
+    intro();
 
-    function qCount(q) { return (q.blocks || []).reduce(function (a, b) { return a + ((b.items || []).length); }, 0); }
+    function intro() {
+      root.innerHTML = '';
+      var c = el('div', 'pr-stage'); var card = el('div', 'pr-card');
+      var totalQ = texts.reduce(function (a, q) { return a + (q.blocks || []).reduce(function (aa, b) { return aa + ((b.items || []).length); }, 0); }, 0);
+      card.innerHTML =
+        '<span class="pr-kicker">' + NAME + ' · full Reading test</span>' +
+        '<h2 class="pr-prompt" style="margin-top:8px">' + texts.length + ' texts · ' + totalQ + ' questions · ' + MIN + ' minutes</h2>' +
+        '<div class="pr-passage" style="border:0;padding-left:0">Exam conditions: the passages get harder (Text 1 → Text ' + texts.length + '), the clock runs across all of them, and there is <b>no feedback until you submit</b>. Move between texts and questions freely - your answers are kept. At the end you get an overall <b>Reading band</b>.</div>' +
+        '<div class="pr-nav"><a class="btn btn-wire" href="' + home + '">← Back</a>' +
+        '<div class="pr-navbtns"><button type="button" class="btn btn-white" id="rx-start">Start the test →</button></div></div>';
+      c.appendChild(card); root.appendChild(c);
+      document.getElementById('rx-start').onclick = function () {
+        runReadingBlock(root, {
+          texts: texts, minutes: MIN, exitHref: home,
+          submitNote: 'Once you submit, the test locks and is scored.',
+          onDone: function (correct, total, perText) { showResult(correct, total, perText); }
+        });
+      };
+    }
+
+    function showResult(correct, total, perText) {
+      var pct = total ? Math.round(correct / total * 100) : 0;
+      var sc = examScore(examId, 'reading', correct, total);
+      if (BeaconStore.recordScore) BeaconStore.recordScore(examId, examId === 'ielts' ? ieltsBand(pct) : pct);
+
+      var rows = perText.map(function (r, i) {
+        var p = r.total ? Math.round(r.correct / r.total * 100) : 0;
+        var mark = examId === 'ielts' ? ieltsBand(p).toFixed(1) : p + '%';
+        return '<div class="pr-rev ok"><span class="pr-rev-n">' + (i + 1) + '</span>' +
+          '<div class="pr-rev-main"><div class="pr-rev-q">' + esc(r.name) + '</div>' +
+          '<div class="pr-rev-a"><b>' + mark + '</b> · ' + r.correct + '/' + r.total + ' correct</div></div>' +
+          '<span class="pr-rev-mark">' + mark + '</span></div>';
+      }).join('');
+
+      root.innerHTML =
+        '<div class="pr-stage"><div class="pr-result">' +
+        '<div class="pr-score ' + (sc.pass ? 'pass' : 'fail') + '"><span class="pct">' + sc.big + '</span><span class="frac">' + esc(sc.sub) + '</span></div>' +
+        '<div class="pr-review">' + rows + '</div>' +
+        '<div class="pr-passage" style="border:0;padding-left:0;font-size:.9rem;color:#7c88a3">An estimate from the band tables - a study guide, not an official score. Saved to your profile average.</div>' +
+        '<div class="fin-actions">' +
+        '<a class="btn btn-white" href="' + home + '">Back to ' + NAME + '</a>' +
+        '<a class="btn btn-wire" href="practice.html?mode=readingtest&exam=' + examId + '">Retake test</a>' +
+        '</div></div></div>';
+    }
+  }
+
+  /* ===================== reusable reading-passage exam block (multi-text, blocks-based) =====================
+   * Runs a fixed set of full-passage texts on one shared clock, free Back/Next
+   * navigation, no feedback until submit - the engine behind renderReadingExam above,
+   * and also reused for the Reading section of the combined full IELTS test (IELTS
+   * Reading questions are always multi-block full passages, not single choice
+   * questions, so they need this renderer rather than the plain runExamBlock one). */
+  function runReadingBlock(root, cfg) {
+    var texts = cfg.texts;
+    var state = texts.map(function () { return {}; });   // state[ti]['bi-ii'] = value
+    var ti = 0, remaining = cfg.minutes * 60, timerId = null;
+
     function answeredIn(i) {
       var q = texts[i], st = state[i], a = 0, t = 0;
       (q.blocks || []).forEach(function (bl, bi) {
@@ -2587,21 +2682,8 @@
     }
     function stopClock() { if (timerId) { clearInterval(timerId); timerId = null; } }
 
-    intro();
-
-    function intro() {
-      root.innerHTML = '';
-      var c = el('div', 'pr-stage'); var card = el('div', 'pr-card');
-      var totalQ = texts.reduce(function (a, q) { return a + qCount(q); }, 0);
-      card.innerHTML =
-        '<span class="pr-kicker">' + NAME + ' · full Reading test</span>' +
-        '<h2 class="pr-prompt" style="margin-top:8px">' + texts.length + ' texts · ' + totalQ + ' questions · ' + MIN + ' minutes</h2>' +
-        '<div class="pr-passage" style="border:0;padding-left:0">Exam conditions: the passages get harder (Text 1 → Text ' + texts.length + '), the clock runs across all of them, and there is <b>no feedback until you submit</b>. Move between texts and questions freely - your answers are kept. At the end you get an overall <b>Reading band</b>.</div>' +
-        '<div class="pr-nav"><a class="btn btn-wire" href="' + home + '">← Back</a>' +
-        '<div class="pr-navbtns"><button type="button" class="btn btn-white" id="rx-start">Start the test →</button></div></div>';
-      c.appendChild(card); root.appendChild(c);
-      document.getElementById('rx-start').onclick = function () { ti = 0; startClock(); draw(); };
-    }
+    startClock();
+    draw();
 
     function draw() {
       var q = texts[ti];
@@ -2609,7 +2691,7 @@
       var last0 = ti === texts.length - 1;
       var top = el('div', 'pr-exam-top');
       top.innerHTML =
-        '<a class="pr-exit-x" href="' + esc(home) + '" title="Leave the test">Exit ✕</a>' +
+        '<a class="pr-exit-x" href="' + esc(cfg.exitHref) + '" title="Leave the test">Exit ✕</a>' +
         '<span class="pr-timer' + (remaining <= 60 ? ' low' : '') + '">⏱ ' + fmtTime(remaining) + '</span>' +
         '<span class="pr-exam-jump">' +
           '<button type="button" class="pr-arrow" data-prev' + (ti === 0 ? ' disabled' : '') + '>◀</button>' +
@@ -2749,7 +2831,7 @@
         '<h2 class="pr-prompt" style="margin-top:8px">Review</h2>' +
         '<div class="pr-passage" style="border:0;padding-left:0">You answered <b>' + totA + '</b> of <b>' + totT + '</b>. ' +
         (un ? 'Still unanswered: <b>' + un + '</b> - tap a text below to go back.' : 'All answered. You can still change anything before submitting.') +
-        ' Once you submit, the test locks and is scored.</div>';
+        ' ' + esc(cfg.submitNote || 'Once you submit, the test locks and is scored.') + '</div>';
       card.appendChild(palette(true));
       stage.appendChild(card); root.appendChild(stage);
       var n = el('div', 'pr-nav');
@@ -2780,28 +2862,7 @@
         });
         perText.push({ name: 'Text ' + (i + 1) + (q.difficulty ? ' · ' + q.difficulty : ''), correct: c, total: t });
       });
-      var pct = total ? Math.round(correct / total * 100) : 0;
-      var sc = examScore(examId, 'reading', correct, total);
-      if (BeaconStore.recordScore) BeaconStore.recordScore(examId, examId === 'ielts' ? ieltsBand(pct) : pct);
-
-      var rows = perText.map(function (r, i) {
-        var p = r.total ? Math.round(r.correct / r.total * 100) : 0;
-        var mark = examId === 'ielts' ? ieltsBand(p).toFixed(1) : p + '%';
-        return '<div class="pr-rev ok"><span class="pr-rev-n">' + (i + 1) + '</span>' +
-          '<div class="pr-rev-main"><div class="pr-rev-q">' + esc(r.name) + '</div>' +
-          '<div class="pr-rev-a"><b>' + mark + '</b> · ' + r.correct + '/' + r.total + ' correct</div></div>' +
-          '<span class="pr-rev-mark">' + mark + '</span></div>';
-      }).join('');
-
-      root.innerHTML =
-        '<div class="pr-stage"><div class="pr-result">' +
-        '<div class="pr-score ' + (sc.pass ? 'pass' : 'fail') + '"><span class="pct">' + sc.big + '</span><span class="frac">' + esc(sc.sub) + '</span></div>' +
-        '<div class="pr-review">' + rows + '</div>' +
-        '<div class="pr-passage" style="border:0;padding-left:0;font-size:.9rem;color:#7c88a3">An estimate from the band tables - a study guide, not an official score. Saved to your profile average.</div>' +
-        '<div class="fin-actions">' +
-        '<a class="btn btn-white" href="' + home + '">Back to ' + NAME + '</a>' +
-        '<a class="btn btn-wire" href="practice.html?mode=readingtest&exam=' + examId + '">Retake test</a>' +
-        '</div></div></div>';
+      cfg.onDone(correct, total, perText);
     }
   }
 
