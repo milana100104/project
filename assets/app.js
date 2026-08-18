@@ -784,12 +784,10 @@
       panel.appendChild(body);
     }
 
-    // ---- Saved lives as a small star in the top nav (see .ws-saved); light it up ----
+    // ---- Saved lives as a small flag in the top nav (see .ws-saved); light it up ----
     var favN = BeaconStore.favCount();
     document.querySelectorAll('.ws-saved').forEach(function (a) {
       a.classList.toggle('has', !!favN);
-      var n = a.querySelector('.ws-saved-n');
-      if (n) { n.textContent = favN; n.style.display = favN ? '' : 'none'; }
       var st = a.querySelector('.ws-saved-star');
       if (st) st.innerHTML = favN ? '&#9873;' : '&#9872;';
     });
@@ -1065,8 +1063,10 @@
         var btn = el('button', 'pr-choice' + (elimOn ? ' eliminated' : ''));
         btn.type = 'button';
         btn.innerHTML = '<span>' + esc(choice) + '</span>' +
+          '<span class="pr-choice-right">' +
           (abcMode ? '<span class="pr-elim-x" title="' + (elimOn ? 'Undo cross-out' : 'Cross out') + '">' + (elimOn ? '&#8617;' : '&#10005;') + '</span>' : '') +
-          '<span class="mark">' + String.fromCharCode(65 + i) + '</span>';
+          '<span class="mark">' + String.fromCharCode(65 + i) + '</span>' +
+          '</span>';
         var elimX = btn.querySelector('.pr-elim-x');
         if (elimX) {
           elimX.addEventListener('click', function (e) {
@@ -1940,6 +1940,32 @@
   function closeCalcPanel() {
     if (calcPanel) { calcPanel.remove(); calcPanel = null; calcPanelKind = null; calcInstance = null; }
   }
+  // drag the panel anywhere by its header (resizing is plain CSS resize:both on the
+  // bottom-right corner) - switches from right/bottom anchoring to left/top on first drag
+  function wireCalcDrag(panel, handle) {
+    handle.addEventListener('mousedown', function (e) {
+      if (e.target.closest('.pr-desmos-x')) return;
+      e.preventDefault();
+      var rect = panel.getBoundingClientRect();
+      panel.style.left = rect.left + 'px';
+      panel.style.top = rect.top + 'px';
+      panel.style.right = 'auto';
+      panel.style.bottom = 'auto';
+      var startX = e.clientX, startY = e.clientY, startLeft = rect.left, startTop = rect.top;
+      function onMove(ev) {
+        var maxLeft = window.innerWidth - panel.offsetWidth;
+        var maxTop = window.innerHeight - panel.offsetHeight;
+        panel.style.left = Math.max(0, Math.min(maxLeft, startLeft + (ev.clientX - startX))) + 'px';
+        panel.style.top = Math.max(0, Math.min(maxTop, startTop + (ev.clientY - startY))) + 'px';
+      }
+      function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  }
   function toggleCalcPanel(kind, title) {
     if (calcPanel && calcPanelKind === kind) { closeCalcPanel(); return; }
     closeCalcPanel();
@@ -1949,6 +1975,7 @@
       '<div class="pr-desmos-mount"><p class="pr-desmos-status">Loading calculator…</p></div>';
     document.body.appendChild(calcPanel);
     calcPanel.querySelector('.pr-desmos-x').addEventListener('click', closeCalcPanel);
+    wireCalcDrag(calcPanel, calcPanel.querySelector('.pr-desmos-head'));
     loadInto(kind);
   }
   function loadInto(kind) {
