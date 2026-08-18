@@ -52,6 +52,10 @@ body>*:not(.grain):not(#beacon-grain):not(#beacon-sketch-defs):not(.site-header)
 /* ---------- headings ---------- */
 h1,h2,h3,h4,h5{font-family:var(--display);font-weight:600;letter-spacing:-.02em;line-height:1.12;}
 
+/* the display font's "&" reads unclear at a glance - always render it in the
+   plainer body font instead, everywhere on the site */
+.amp{font-family:var(--font);font-style:normal;font-weight:inherit;}
+
 /* ---------- logo (placeholder until beacon-logo-icon.jpg is added) ---------- */
 .logo-mark{width:40px;height:40px;border-radius:10px;flex-shrink:0;background-color:#0b1a34;
   border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.28);

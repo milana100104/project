@@ -20,6 +20,7 @@
   ready(boot);
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function escAmp(s) { return esc(s).replace(/&amp;/g, '<span class="amp">&amp;</span>'); }
   function timeStr(iso) { try { return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
 
   var sb, me = null, myNick = '', myAvatar = '';
@@ -309,7 +310,7 @@
       '<div class="bc-meta">' + avatarHtml(av) +
       '<b class="bc-nick">' + (mine ? 'You' : esc(nick)) + '</b>' +
       '<span class="bc-time">' + timeStr(m.created_at) + '</span>' + dmBtn + '</div>' +
-      '<div class="bc-text">' + esc(m.body) + '</div>';
+      '<div class="bc-text">' + escAmp(m.body) + '</div>';
     if (me && !mine && m.user_id) {   // click name or ✉ to open a DM
       var open = function () { openThread({ id: m.user_id, nick: nick }); };
       var nk = d.querySelector('.bc-nick'); nk.style.cursor = 'pointer'; nk.onclick = open;
@@ -362,7 +363,7 @@
     var av = mine ? myAvatar : m.avatar;
     var d = document.createElement('div'); d.className = 'bc-msg' + (mine ? ' mine' : '');
     d.innerHTML = '<div class="bc-meta">' + avatarHtml(av) + '<b>' + (mine ? 'You' : esc(m.from_nick)) + '</b><span class="bc-time">' + timeStr(m.created_at) + '</span></div>' +
-      '<div class="bc-text">' + esc(m.body) + '</div>';
+      '<div class="bc-text">' + escAmp(m.body) + '</div>';
     return d;
   }
 

@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Webinar - Beacon</title>
-<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=138">
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=139">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=138">
-<script src="assets/app.js?v=138" defer></script>
-<script src="assets/config.js?v=138" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=139">
+<script src="assets/app.js?v=139" defer></script>
+<script src="assets/config.js?v=139" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=138" defer></script>
-<script src="assets/chat.js?v=138" defer></script>
+<script src="assets/auth.js?v=139" defer></script>
+<script src="assets/chat.js?v=139" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -32,7 +32,7 @@
 <main>
   <div class="wrap">
     <div class="page-head">
-      <span class="mono-label">// this week &amp; beyond, live</span>
+      <span class="mono-label">// this week <span class="amp">&amp;</span> beyond, live</span>
       <a href="webinars.html" class="link-quiet link-arrow wd-back">&#8592; All webinars</a>
     </div>
     <div id="webinar-detail"></div>
@@ -58,7 +58,7 @@
         </ul></div>
       </div>
     </div>
-    <div class="footer-bottom"><p>&copy; 2026 Beacon</p><p>Reading &amp; Listening, free - and we mean it.</p></div>
+    <div class="footer-bottom"><p>&copy; 2026 Beacon</p><p>Reading <span class="amp">&amp;</span> Listening, free - and we mean it.</p></div>
   </div>
 </footer>
 
@@ -67,6 +67,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var host = document.getElementById("webinar-detail");
   var glyph = '<div class="thumb-ph"><svg class="ph-glyph" viewBox="0 0 56 56" aria-hidden="true"><path d="M22 48 Q24 33 26 19"/><path d="M34 48 Q32 33 30 19"/><path d="M19 48 L37 48"/><path d="M25 19 L31 19"/><path d="M24 19 L24 11 L32 11 L32 19"/><path d="M21 11 L28 4 L35 11"/><path class="ph-beam" d="M33 9 L47 4"/><path class="ph-beam" d="M33 12 L48 13"/></svg></div>';
   function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+  function escAmp(s){return esc(s).replace(/&amp;/g,'<span class="amp">&amp;</span>');}
   function qs(name){ var m = new RegExp("[?&]" + name + "=([^&]*)").exec(location.search); return m ? decodeURIComponent(m[1].replace(/\+/g," ")) : null; }
   function render() {
     var id = qs("id");
@@ -86,8 +87,8 @@ document.addEventListener("DOMContentLoaded", function () {
         '<div class="wd-media">' + thumb + (finished ? '<span class="webinar-badge">Finished</span>' : '') + '</div>' +
         '<div class="wd-info">' +
           '<div class="webinar-date">' + esc(w.date) + (finished ? ' <span class="wd-finished-tag">· Finished</span>' : '') + '</div>' +
-          '<h1>' + esc(w.title) + '</h1>' +
-          '<p class="wd-desc">' + esc(w.desc || "") + '</p>' +
+          '<h1>' + escAmp(w.title) + '</h1>' +
+          '<p class="wd-desc">' + escAmp(w.desc || "") + '</p>' +
           cta +
         '</div>' +
       '</div></div>';

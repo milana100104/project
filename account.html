@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Account - Beacon</title>
-<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=138">
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=139">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=138">
-<script src="assets/app.js?v=138" defer></script>
-<script src="assets/config.js?v=138" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=139">
+<script src="assets/app.js?v=139" defer></script>
+<script src="assets/config.js?v=139" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=138" defer></script>
-<script src="assets/chat.js?v=138" defer></script>
+<script src="assets/auth.js?v=139" defer></script>
+<script src="assets/chat.js?v=139" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     var goalsCard =
       '<div class="card"><div class="sec-head">' +
-      '<h2 style="font-size:1.35rem">Your exams &amp; goals</h2>' +
+      '<h2 style="font-size:1.35rem">Your exams <span class="amp">&amp;</span> goals</h2>' +
       '<select class="exam-select" id="goal-exam-sel">' + examOptions + '</select></div>' +
       '<div id="goal-body"></div></div>';
 
@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var rows = hist.map(function(h){
       var dateStr = new Date(h.at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
       var detail = (exam === "sat" && (h.rw != null || h.math != null))
-        ? "R&amp;W " + (h.rw!=null?fmtScore("sat",h.rw):"-") + " · Math " + (h.math!=null?fmtScore("sat",h.math):"-")
+        ? "R<span class=\"amp\">&amp;</span>W " + (h.rw!=null?fmtScore("sat",h.rw):"-") + " · Math " + (h.math!=null?fmtScore("sat",h.math):"-")
         : "";
       return '<div class="data-row"><div class="rl-main"><b>'+esc(dateStr)+'</b>'+
         (detail ? '<span>'+detail+'</span>' : '')+'</div>'+

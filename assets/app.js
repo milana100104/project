@@ -618,6 +618,9 @@
   /* ============================ helpers ============================ */
   function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
+  // like esc(), but also marks "&" to render in the clearer body font - only safe
+  // to use where the result lands in text content, never inside an HTML attribute
+  function escAmp(s) { return esc(s).replace(/&amp;/g, '<span class="amp">&amp;</span>'); }
   function qs(name) { var m = new RegExp('[?&]' + name + '=([^&]*)').exec(location.search); return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : null; }
   /* "Read in Daily Life": an optional email/notice/message header rendered above the passage text. */
   function letterHeaderHtml(q) {
@@ -750,7 +753,7 @@
           if (dev) {
             var locked = el('div', 'ws-item is-locked');
             locked.innerHTML =
-              '<div class="ws-item-main"><h3>' + esc(t.name) + '</h3>' + (t.desc ? '<p>' + esc(t.desc) + '</p>' : '') + '</div>' +
+              '<div class="ws-item-main"><h3>' + escAmp(t.name) + '</h3>' + (t.desc ? '<p>' + escAmp(t.desc) + '</p>' : '') + '</div>' +
               '<span class="ws-count empty">soon</span>';
             body.appendChild(locked);
           } else {
@@ -758,7 +761,7 @@
             item.href = 'practice.html?exam=' + exam + '&skill=' + skill.id + '&type=' + t.id;
             var pct = c.total ? Math.round((c.solved / c.total) * 100) : 0;
             item.innerHTML =
-              '<div class="ws-item-main"><h3>' + esc(t.name) + '</h3>' + (t.desc ? '<p>' + esc(t.desc) + '</p>' : '') + '</div>' +
+              '<div class="ws-item-main"><h3>' + escAmp(t.name) + '</h3>' + (t.desc ? '<p>' + escAmp(t.desc) + '</p>' : '') + '</div>' +
               '<span class="ws-count' + (c.total ? '' : ' empty') + '">' + (c.total ? c.solved + '/' + c.total : 'no questions yet') + '</span>' +
               (c.total ? '<span class="ws-progress-track"><span class="ws-progress-fill" style="width:' + pct + '%"></span></span>' : '') +
               '<span class="ws-go">Practice →</span>';
@@ -771,8 +774,8 @@
           var tItem = el('a', 'ws-item ws-item-full');
           tItem.href = 'practice.html?mode=test&exam=' + exam + '&skill=' + skill.id;
           tItem.innerHTML =
-            '<div class="ws-item-main"><h3>Take a full ' + esc(skill.name) + ' test</h3>' +
-            '<p>A timed, exam-style test built from every ' + esc(skill.name) + ' question - scored at the end, no hints along the way.</p></div>' +
+            '<div class="ws-item-main"><h3>Take a full ' + escAmp(skill.name) + ' test</h3>' +
+            '<p>A timed, exam-style test built from every ' + escAmp(skill.name) + ' question - scored at the end, no hints along the way.</p></div>' +
             '<span class="ws-count">' + (tot ? tot + ' Qs' : 'no questions yet') + '</span>' +
             '<span class="ws-go">Start test →</span>';
           body.appendChild(tItem);
@@ -796,8 +799,8 @@
       var ft = el('div', 'ws-fulltest' + (ready ? ' is-ready' : ''));
       ft.innerHTML =
         '<span class="ws-badge ' + (ready ? 'free' : 'dev') + '">' + (ready ? 'New · live' : 'In development') + '</span>' +
-        '<h2>' + esc(config.fullTest.title) + '</h2>' +
-        '<p>' + esc(config.fullTest.desc) + '</p>' +
+        '<h2>' + escAmp(config.fullTest.title) + '</h2>' +
+        '<p>' + escAmp(config.fullTest.desc) + '</p>' +
         (ready ? '<a class="btn-white ws-fulltest-cta" href="' + esc(config.fullTest.href) + '">Start the full test →</a>' : '');
       root.appendChild(ft);
     }
@@ -1123,10 +1126,10 @@
         '<span class="pr-kicker">SAT · full adaptive test</span>' +
         '<h2 class="pr-prompt" style="margin-top:8px">Full adaptive SAT</h2>' +
         '<div class="pr-passage" style="border:0;padding-left:0">' +
-          'Just like the real Digital SAT: <b>Reading &amp; Writing</b> first, then <b>Math</b>, each in <b>two modules</b>. ' +
+          'Just like the real Digital SAT: <b>Reading <span class="amp">&amp;</span> Writing</b> first, then <b>Math</b>, each in <b>two modules</b>. ' +
           'Module&nbsp;2 gets <b>harder or easier</b> depending on how you do in Module&nbsp;1. No feedback until the end - ' +
           'you’re scored on the <b>400–1600</b> scale.' +
-          '<br><br>The official test is 98 questions (54 R&amp;W + 44 Math) in 2h14m. This one is built from the ' +
+          '<br><br>The official test is 98 questions (54 R<span class="amp">&amp;</span>W + 44 Math) in 2h14m. This one is built from the ' +
           'questions currently in the bank, so it may be shorter - the structure and scoring work the same.' +
         '</div>' +
         '<div class="pr-nav"><a class="btn btn-wire pr-exit" href="sat.html">← Back</a>' +
@@ -1204,7 +1207,7 @@
         // section name (left) · timer + hide (center) · tools + exit (right)
         var top = el('div', 'pr-exam-top bb-top');
         top.innerHTML =
-          '<div class="bb-top-left"><span class="bb-sec-name">Section ' + (si + 1) + ': ' + esc(sec.name) + '</span></div>' +
+          '<div class="bb-top-left"><span class="bb-sec-name">Section ' + (si + 1) + ': ' + escAmp(sec.name) + '</span></div>' +
           '<div class="bb-top-center">' +
             (timerHidden
               ? '<span class="pr-timer bb-timer-off">Time is hidden</span>'
@@ -1212,7 +1215,7 @@
             '<button type="button" class="bb-hide-btn">' + (timerHidden ? 'Show' : 'Hide') + '</button>' +
           '</div>' +
           '<div class="bb-top-right">' +
-            '<button type="button" class="bb-tool-btn bb-hl-btn' + (highlightMode ? ' on' : '') + '">&#9998; Highlights &amp; Notes</button>' +
+            '<button type="button" class="bb-tool-btn bb-hl-btn' + (highlightMode ? ' on' : '') + '">&#9998; Highlights <span class="amp">&amp;</span> Notes</button>' +
             (sec.key === 'math'
               ? '<button type="button" class="bb-tool-btn bb-calc-btn">&#128425; Calculator</button>' +
                 '<button type="button" class="bb-tool-btn bb-desmos-btn">&#128200; Desmos</button>'
@@ -1308,7 +1311,7 @@
         back.addEventListener('click', function () { if (idx > 0) { idx--; draw(); } });
         var btns = el('div', 'pr-navbtns');
         var last = idx === qs_.length - 1;
-        var nextBtn = el('button', 'btn btn-white', last ? 'Review & submit' : 'Next →'); nextBtn.type = 'button';
+        var nextBtn = el('button', 'btn btn-white', last ? 'Review <span class="amp">&amp;</span> submit' : 'Next →'); nextBtn.type = 'button';
         nextBtn.addEventListener('click', function () { if (last) { review(); } else { idx++; draw(); } });
         btns.appendChild(nextBtn);
         n.appendChild(back); n.appendChild(btns);
@@ -1431,11 +1434,11 @@
         card.innerHTML =
           '<span class="pr-kicker">Break</span>' +
           '<h2 class="pr-prompt" style="margin-top:8px">10-minute break</h2>' +
-          '<div class="pr-passage" style="border:0;padding-left:0">Reading &amp; Writing is done. On the real SAT you get a 10-minute break here before Math. ' +
-          'Stretch, breathe - <b>' + esc(next.name) + '</b> starts automatically when the timer reaches zero.</div>' +
+          '<div class="pr-passage" style="border:0;padding-left:0">Reading <span class="amp">&amp;</span> Writing is done. On the real SAT you get a 10-minute break here before Math. ' +
+          'Stretch, breathe - <b>' + escAmp(next.name) + '</b> starts automatically when the timer reaches zero.</div>' +
           '<div class="brk-clock"><span class="brk-time">' + fmtTime(left) + '</span></div>' +
           '<div class="pr-nav"><span></span><div class="pr-navbtns">' +
-          '<button type="button" class="btn btn-white" id="brk-skip">Skip break - start ' + esc(next.name) + ' →</button>' +
+          '<button type="button" class="btn btn-white" id="brk-skip">Skip break - start ' + escAmp(next.name) + ' →</button>' +
           '</div></div>';
         c.appendChild(card); root.appendChild(c);
         document.getElementById('brk-skip').onclick = function () { go(); };
@@ -1458,8 +1461,8 @@
       var mathSec = results.filter(function (r) { return r.name === 'Math'; })[0];
 
       var note = results.length < 2
-        ? '<div class="pr-passage" style="border:0;padding-left:0">Only the <b>' + esc(results[0].name) + '</b> section had questions, so this is a section score out of 800. Add ' +
-          (results[0].name.indexOf('Math') === -1 ? 'Math' : 'Reading &amp; Writing') + ' questions to get the full 400–1600.</div>'
+        ? '<div class="pr-passage" style="border:0;padding-left:0">Only the <b>' + escAmp(results[0].name) + '</b> section had questions, so this is a section score out of 800. Add ' +
+          (results[0].name.indexOf('Math') === -1 ? 'Math' : 'Reading <span class="amp">&amp;</span> Writing') + ' questions to get the full 400–1600.</div>'
         : '';
 
       var big = results.length < 2 ? results[0].scaled : totalScore;
@@ -1932,7 +1935,7 @@
       if (idx === 0) back.setAttribute('disabled', '');
       back.addEventListener('click', function () { if (idx > 0) { idx--; draw(); } });
       var btns = el('div', 'pr-navbtns');
-      var nextBtn = el('button', 'btn btn-white', last0 ? 'Review & submit' : 'Next →'); nextBtn.type = 'button';
+      var nextBtn = el('button', 'btn btn-white', last0 ? 'Review <span class="amp">&amp;</span> submit' : 'Next →'); nextBtn.type = 'button';
       nextBtn.addEventListener('click', function () { if (last0) { review(); } else { idx++; draw(); } });
       btns.appendChild(nextBtn);
       n.appendChild(back); n.appendChild(btns);
@@ -2046,7 +2049,7 @@
       var c = el('div', 'pr-stage'); var card = el('div', 'pr-card');
       card.innerHTML =
         '<span class="pr-kicker">' + NAME + ' · full test</span>' +
-        '<h2 class="pr-prompt" style="margin-top:8px">Full ' + NAME + ' - Reading &amp; Listening</h2>' +
+        '<h2 class="pr-prompt" style="margin-top:8px">Full ' + NAME + ' - Reading <span class="amp">&amp;</span> Listening</h2>' +
         '<div class="pr-passage" style="border:0;padding-left:0">A complete, timed exam: <b>Reading</b> first, then <b>Listening</b>, each on its own clock. ' +
         'No feedback until the end. ' + struct + ' This one is built from the questions in the bank, so it may be shorter - timing and scoring work the same way.</div>' +
         '<div class="pr-nav"><a class="btn btn-wire pr-exit" href="' + home + '">← Back</a>' +
@@ -2227,7 +2230,7 @@
       if (ti === 0) back.setAttribute('disabled', '');
       back.addEventListener('click', function () { if (ti > 0) { ti--; draw(); } });
       var btns = el('div', 'pr-navbtns');
-      var nextBtn = el('button', 'btn btn-white', last0 ? 'Review & submit' : 'Next text →'); nextBtn.type = 'button';
+      var nextBtn = el('button', 'btn btn-white', last0 ? 'Review <span class="amp">&amp;</span> submit' : 'Next text →'); nextBtn.type = 'button';
       nextBtn.addEventListener('click', function () { if (last0) review(); else { ti++; draw(); } });
       btns.appendChild(nextBtn);
       n.appendChild(back); n.appendChild(btns);
