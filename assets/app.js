@@ -883,10 +883,26 @@
     pool = shuffle(pool.slice());
     var idx = 0, answered = false, answers = {};
 
-    // exam-style countdown for full-skill tests - the real per-section time limit, not a guess from question count
-    var remaining = testMode ? officialSectionSeconds(exam, skill, pool.length) : 0;
+    // SAT practice mirrors the real exam's Bluebook look (top bar, flag, ABC eliminator,
+    // calculator) - detected from the question itself so it also works for the "redo one
+    // saved question" and "practice saved" routes, which don't carry an ?exam= param
+    var satStyle = pool.length > 0 && pool[0].exam === 'sat';
+    // the "redo one saved question" / "practice saved" routes don't carry ?exam=sat, so the
+    // SAT accent theme (set from examForTheme, above) needs a second check here once the
+    // pool itself is known
+    if (satStyle) document.body.classList.add('exam-sat');
+    var flagged = {};           // qid -> true, "Mark for Review" like the real Bluebook app
+    var highlightMode = false;  // "Highlights & Notes" toggle
+    var abcMode = false;        // "ABC" answer-eliminator toggle
+    var eliminated = {};        // qid -> {choiceIndex: true}
+    var exitHref = qs('ret') || (exam ? (exam + '.html' + (skill ? '#' + skill : '')) : 'account.html?tab=favorites');
+
+    // exam-style countdown for full-skill tests - the real per-section time limit, not a guess
+    // from question count. SAT practice skips the clock entirely, same look as the real test
+    // minus the countdown pressure.
+    var remaining = (testMode && !satStyle) ? officialSectionSeconds(exam, skill, pool.length) : 0;
     var timerId = null;
-    if (testMode) {
+    if (testMode && !satStyle) {
       timerId = setInterval(function () {
         remaining--;
         var t = root.querySelector('.pr-timer'); if (t) t.textContent = '⏱ ' + fmtTime(remaining);
@@ -898,17 +914,41 @@
       answered = false;
       var q = pool[idx];
       root.innerHTML = '';
-      var barNav = testMode ? {
-        prev: function () { if (idx > 0) { idx--; draw(); } },
-        next: function () { var nb = root.querySelector('[data-next]'); if (nb) nb.click(); }
-      } : null;
-      root.appendChild(bar(idx, pool.length, crumb, testMode ? remaining : null, barNav));
+
+      if (satStyle) {
+        // exam top bar (sticky), laid out like the real Bluebook app - same three-column
+        // grid as the exam, just with an empty center column instead of a timer
+        var top = el('div', 'pr-exam-top bb-top');
+        top.innerHTML =
+          '<div class="bb-top-left"><span class="bb-sec-name">' + escAmp(crumb) + '</span></div>' +
+          '<div class="bb-top-center"></div>' +
+          '<div class="bb-top-right">' +
+            '<button type="button" class="bb-tool-btn bb-hl-btn' + (highlightMode ? ' on' : '') + '">&#9998; Highlights <span class="amp">&amp;</span> Notes</button>' +
+            (q.skill === 'math'
+              ? '<button type="button" class="bb-tool-btn bb-calc-btn">&#128425; Calculator</button>' +
+                '<button type="button" class="bb-tool-btn bb-desmos-btn">&#128200; Desmos</button>'
+              : '') +
+            '<a class="pr-exit-x" href="' + esc(exitHref) + '">Exit &#10005;</a>' +
+          '</div>';
+        top.querySelector('.bb-hl-btn').addEventListener('click', function () { highlightMode = !highlightMode; draw(); });
+        var calcBtn = top.querySelector('.bb-calc-btn');
+        if (calcBtn) calcBtn.addEventListener('click', function () { toggleCalcPanel('scientific', 'Calculator'); });
+        var desmosBtn = top.querySelector('.bb-desmos-btn');
+        if (desmosBtn) desmosBtn.addEventListener('click', function () { toggleCalcPanel('graphing', 'Desmos'); });
+        root.appendChild(top);
+        root.appendChild(el('div', 'bb-ruler'));
+      } else {
+        var barNav = testMode ? {
+          prev: function () { if (idx > 0) { idx--; draw(); } },
+          next: function () { var nb = root.querySelector('[data-next]'); if (nb) nb.click(); }
+        } : null;
+        root.appendChild(bar(idx, pool.length, crumb, testMode ? remaining : null, barNav));
+      }
 
       var stage = el('div', 'pr-stage');
       var card = el('div', 'pr-card');
 
-      var head = el('div', 'pr-head');
-      head.innerHTML = '<span class="pr-kicker">Question ' + (idx + 1) + '</span>';
+      var head = el('div', satStyle ? 'pr-head bb-head' : 'pr-head');
       var save = el('button', 'pr-save' + (BeaconStore.isFav(q.id) ? ' on' : ''));
       save.type = 'button';
       save.innerHTML = '<span class="st">' + (BeaconStore.isFav(q.id) ? '&#9873;' : '&#9872;') + '</span> ' + (BeaconStore.isFav(q.id) ? 'Saved' : 'Save');
@@ -917,8 +957,28 @@
         save.classList.toggle('on', on);
         save.innerHTML = '<span class="st">' + (on ? '&#9873;' : '&#9872;') + '</span> ' + (on ? 'Saved' : 'Save');
       });
-      head.appendChild(save);
-      card.appendChild(head);
+      if (satStyle) {
+        // Bluebook-style head: number + "Mark for Review" flag + "ABC" eliminator on the
+        // left, Save (a practice-only extra, not in the real exam) on the right
+        var headLeft = el('span', 'bb-head-left');
+        headLeft.innerHTML = '<span class="pr-kicker">' + (idx + 1) + '</span>';
+        var flagBtn = el('button', 'pr-flag' + (flagged[q.id] ? ' on' : ''), '<span class="fl">' + (flagged[q.id] ? '&#9873;' : '&#9872;') + '</span> Mark for Review');
+        flagBtn.type = 'button';
+        flagBtn.addEventListener('click', function () { flagged[q.id] = !flagged[q.id]; draw(); });
+        headLeft.appendChild(flagBtn);
+        var abcBtn = el('button', 'bb-abc-btn' + (abcMode ? ' on' : ''), 'ABC');
+        abcBtn.type = 'button'; abcBtn.title = 'Cross out answer choices you’ve ruled out';
+        abcBtn.addEventListener('click', function () { abcMode = !abcMode; draw(); });
+        headLeft.appendChild(abcBtn);
+        head.appendChild(headLeft);
+        head.appendChild(save);
+      } else {
+        head.innerHTML = '<span class="pr-kicker">Question ' + (idx + 1) + '</span>';
+        head.appendChild(save);
+      }
+      // for a passage question in SAT style, the head moves inside the right column
+      // (next to the prompt) instead of spanning the full card - see the passage branch below
+      if (!(satStyle && q.passage)) card.appendChild(head);
 
       var feedback = el('div', 'pr-feedback');
       var fmt = q.format || q.type;
@@ -929,7 +989,7 @@
       else if (q.blocks && q.blocks.length) answerEl = passageSetBlock(q, feedback, onResolved, reveal);   // one passage, mixed blocks
       else if (q.items && q.items.length) answerEl = groupBlock(q, feedback, onResolved, reveal);   // matching / multi-blank completion
       else if (fmt === 'text') answerEl = textBlock(q, feedback, onResolved, reveal);
-      else answerEl = choiceBlock(q, feedback, onResolved, reveal);
+      else answerEl = satStyle ? satChoiceBlock(q, feedback, onResolved, reveal) : choiceBlock(q, feedback, onResolved, reveal);
 
       var imageEl = null;
       if (q.image) { imageEl = el('div', 'pr-image'); imageEl.innerHTML = '<img src="' + esc(q.image) + '" alt="Question image" loading="lazy">'; }
@@ -954,18 +1014,23 @@
 
       if (q.passage) {
         // reading: the text sits on the left (photo above the text, if there is one),
-        // the questions on the right
-        var split = el('div', 'pr-split');
-        var left = el('div', 'pr-split-left');
+        // the questions on the right - SAT practice uses the same Bluebook split as the exam
+        var split = el('div', satStyle ? 'pr-split bb-split' : 'pr-split');
+        var left = el('div', satStyle ? 'pr-split-left bb-passage-col' : 'pr-split-left');
         if (imageEl) left.appendChild(imageEl);
-        left.appendChild(el('div', 'pr-passage', letterHeaderHtml(q) + esc(q.passage)));
+        var passageEl = el('div', satStyle ? 'pr-passage bb-passage' + (highlightMode ? ' hl-on' : '') : 'pr-passage', letterHeaderHtml(q) + esc(q.passage));
+        left.appendChild(passageEl);
+        if (satStyle) wireHighlight(passageEl, highlightMode);
         var right = el('div', 'pr-split-right');
+        if (satStyle) right.appendChild(head);
         right.appendChild(promptEl);
         if (audioEl) right.appendChild(audioEl);
         right.appendChild(answerEl);
         right.appendChild(feedback);
         if (tbtn) { right.appendChild(tbtn); right.appendChild(tp); }
-        split.appendChild(left); split.appendChild(right);
+        split.appendChild(left);
+        if (satStyle) split.appendChild(el('div', 'bb-divider-handle', '&#9664;&#9654;'));
+        split.appendChild(right);
         card.appendChild(split);
       } else {
         if (imageEl) card.appendChild(imageEl);
@@ -991,11 +1056,49 @@
       }
     }
 
+    // choice list for SAT practice - same letter-circle layout as choiceBlock, plus the
+    // Bluebook "ABC" cross-out toggle (armed via abcMode, persisted per question in eliminated)
+    function satChoiceBlock(q, feedback, done, reveal) {
+      var wrap = el('div', 'pr-choices bb-choices');
+      (q.choices || []).forEach(function (choice, i) {
+        var elimOn = !!(eliminated[q.id] && eliminated[q.id][i]);
+        var btn = el('button', 'pr-choice' + (elimOn ? ' eliminated' : ''));
+        btn.type = 'button';
+        btn.innerHTML = '<span>' + esc(choice) + '</span>' +
+          (abcMode ? '<span class="pr-elim-x" title="' + (elimOn ? 'Undo cross-out' : 'Cross out') + '">' + (elimOn ? '&#8617;' : '&#10005;') + '</span>' : '') +
+          '<span class="mark">' + String.fromCharCode(65 + i) + '</span>';
+        var elimX = btn.querySelector('.pr-elim-x');
+        if (elimX) {
+          elimX.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (!eliminated[q.id]) eliminated[q.id] = {};
+            eliminated[q.id][i] = !eliminated[q.id][i];
+            draw();
+          });
+        }
+        btn.addEventListener('click', function () {
+          if (wrap.dataset.done) return;
+          if (eliminated[q.id] && eliminated[q.id][i]) return;
+          wrap.dataset.done = '1';
+          var correct = i === q.answer;
+          var kids = wrap.querySelectorAll('.pr-choice');
+          kids.forEach(function (k) { k.setAttribute('disabled', ''); });
+          if (reveal) {
+            btn.classList.add(correct ? 'correct' : 'wrong');
+            if (!correct) kids[q.answer].classList.add('correct');
+            showFeedback(feedback, correct, q.explanation);
+          } else {
+            btn.classList.add('picked');
+          }
+          done(correct);
+        });
+        wrap.appendChild(btn);
+      });
+      return wrap;
+    }
+
     function nav(answerEl) {
       var n = el('div', 'pr-nav');
-      var exit = el('a', 'btn btn-wire pr-exit', '← Exit');
-      exit.href = qs('ret') || (exam ? (exam + '.html' + (skill ? '#' + skill : '')) : 'account.html?tab=favorites');
-      exit.addEventListener('click', function () { if (timerId) { clearInterval(timerId); timerId = null; } });
       var btns = el('div', 'pr-navbtns');
       var last = idx === pool.length - 1;
       var canResolve = answerEl && typeof answerEl.resolve === 'function';
@@ -1007,7 +1110,20 @@
         if (last) { finish(); } else { idx++; draw(); }
       });
       btns.appendChild(nextBtn);
-      n.appendChild(exit); n.appendChild(btns);
+      if (satStyle) {
+        // the real exam navigates with Back/Next at the bottom - exit lives in the top bar's X instead
+        var back = el('button', 'btn btn-wire', '← Back');
+        back.type = 'button';
+        if (idx === 0) back.setAttribute('disabled', '');
+        back.addEventListener('click', function () { if (idx > 0) { idx--; draw(); } });
+        n.appendChild(back);
+      } else {
+        var exit = el('a', 'btn btn-wire pr-exit', '← Exit');
+        exit.href = exitHref;
+        exit.addEventListener('click', function () { if (timerId) { clearInterval(timerId); timerId = null; } });
+        n.appendChild(exit);
+      }
+      n.appendChild(btns);
       return n;
     }
 
@@ -1017,10 +1133,10 @@
       var grid = el('div', 'pr-palette-grid');
       pool.forEach(function (q, i) {
         var known = q.id in answers;
-        var cls = 'pr-dot' + (!inReview && i === idx ? ' current' : '');
+        var cls = 'pr-dot' + (!inReview && i === idx ? ' current' : '') + (flagged[q.id] ? ' flagged' : '');
         if (known) cls += reveal ? (answers[q.id] ? ' done' : ' wrong') : ' done';
-        var b = el('button', cls);
-        b.type = 'button'; b.textContent = i + 1; b.setAttribute('data-i', i);
+        var b = el('button', cls, (flagged[q.id] ? '<span class="flag-dot">&#9873;</span>' : '') + (i + 1));
+        b.type = 'button'; b.setAttribute('data-i', i);
         b.addEventListener('click', function () { idx = i; draw(); });
         grid.appendChild(b);
       });
@@ -1795,12 +1911,31 @@
    * graphing calculator - both float in a resizable panel inside the test instead of
    * navigating to desmos.com. Loaded lazily from Desmos's own embed API on first use. */
   var calcPanel = null, calcPanelKind = null, calcInstance = null;
-  function ensureDesmos(cb) {
-    if (window.Desmos) { cb(); return; }
+  // tracks the one shared script-load attempt so Calculator/Desmos never race each other,
+  // and so a failure (blocked request, offline, slow network) shows a retry instead of
+  // silently leaving the panel blank forever
+  var desmosLoad = null; // null | 'loading' | 'ready' | 'error'
+  var desmosWaiters = [];
+  function ensureDesmos(onReady, onError) {
+    if (window.Desmos) { onReady(); return; }
+    if (desmosLoad === 'error') { onError(); return; }
+    desmosWaiters.push({ ready: onReady, error: onError });
+    if (desmosLoad === 'loading') return;
+    desmosLoad = 'loading';
+    var settled = false;
+    var settle = function (ok) {
+      if (settled) return;
+      settled = true;
+      desmosLoad = ok ? 'ready' : 'error';
+      var waiters = desmosWaiters; desmosWaiters = [];
+      waiters.forEach(function (w) { ok ? w.ready() : w.error(); });
+    };
     var s = document.createElement('script');
     s.src = 'https://www.desmos.com/api/v1.11/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6';
-    s.onload = cb;
+    s.onload = function () { settle(!!window.Desmos); };
+    s.onerror = function () { settle(false); };
     document.head.appendChild(s);
+    setTimeout(function () { settle(!!window.Desmos); }, 8000);
   }
   function closeCalcPanel() {
     if (calcPanel) { calcPanel.remove(); calcPanel = null; calcPanelKind = null; calcInstance = null; }
@@ -1810,19 +1945,31 @@
     closeCalcPanel();
     calcPanelKind = kind;
     calcPanel = el('div', 'pr-desmos-panel');
-    calcPanel.innerHTML = '<div class="pr-desmos-head"><span>' + esc(title) + '</span><button type="button" class="pr-desmos-x">&#10005;</button></div><div class="pr-desmos-mount"></div>';
+    calcPanel.innerHTML = '<div class="pr-desmos-head"><span>' + esc(title) + '</span><button type="button" class="pr-desmos-x">&#10005;</button></div>' +
+      '<div class="pr-desmos-mount"><p class="pr-desmos-status">Loading calculator…</p></div>';
     document.body.appendChild(calcPanel);
     calcPanel.querySelector('.pr-desmos-x').addEventListener('click', closeCalcPanel);
+    loadInto(kind);
+  }
+  function loadInto(kind) {
     ensureDesmos(function () {
-      if (!calcPanel) return;
+      if (!calcPanel || calcPanelKind !== kind) return;
       var mount = calcPanel.querySelector('.pr-desmos-mount');
       if (!mount) return;
+      mount.innerHTML = '';
       calcInstance = (kind === 'scientific' && window.Desmos.ScientificCalculator)
         ? window.Desmos.ScientificCalculator(mount)
         : window.Desmos.GraphingCalculator(mount);
       if (window.ResizeObserver) {
         new ResizeObserver(function () { if (calcInstance) calcInstance.resize(); }).observe(mount);
       }
+    }, function () {
+      if (!calcPanel || calcPanelKind !== kind) return;
+      var mount = calcPanel.querySelector('.pr-desmos-mount');
+      if (!mount) return;
+      mount.innerHTML = '<p class="pr-desmos-status">Couldn’t load the calculator - check your connection.</p><button type="button" class="btn btn-wire pr-desmos-retry">Try again</button>';
+      var retry = mount.querySelector('.pr-desmos-retry');
+      if (retry) retry.addEventListener('click', function () { desmosLoad = null; mount.innerHTML = '<p class="pr-desmos-status">Loading calculator…</p>'; loadInto(kind); });
     });
   }
 
