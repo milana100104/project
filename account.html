@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Account - Beacon</title>
-<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=140">
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=141">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=140">
-<script src="assets/app.js?v=140" defer></script>
-<script src="assets/config.js?v=140" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=141">
+<script src="assets/app.js?v=141" defer></script>
+<script src="assets/config.js?v=141" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=140" defer></script>
-<script src="assets/chat.js?v=140" defer></script>
+<script src="assets/auth.js?v=141" defer></script>
+<script src="assets/chat.js?v=141" defer></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -251,16 +251,17 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
     var rows = filtered.map(function (q) {
-      return '<div class="data-row"><div class="rl-main"><b>' + esc(shorten(q.prompt)) + '</b>' +
+      return '<div class="data-row fav-row" data-href="practice.html?one=' + esc(q.id) + '"><div class="rl-main"><b>' + esc(shorten(q.prompt)) + '</b>' +
         '<span>' + esc(q.skill) + ' · ' + esc((q.type||"").replace(/-/g," ")) + '</span></div>' +
-        (q.difficulty ? '<span class="pill-diff">' + esc(q.difficulty) + '</span>' : '') +
-        '<a class="icon-btn go" href="practice.html?one=' + esc(q.id) + '">Redo &#8594;</a>' +
         '<button class="icon-btn" data-id="' + esc(q.id) + '">Remove</button></div>';
     }).join("");
     box.innerHTML = '<a class="btn btn-gold full" href="practice.html?fav=1&exam=' + esc(exam) + '" style="margin-bottom:16px">Practice saved (' + filtered.length + ')</a>' +
       '<div class="row-list">' + rows + '</div>';
+    box.querySelectorAll(".fav-row").forEach(function (row) {
+      row.onclick = function (e) { if (!e.target.closest(".icon-btn")) location.href = row.dataset.href; };
+    });
     box.querySelectorAll("button.icon-btn").forEach(function (b) {
-      b.onclick = function () { BeaconStore.toggleFav(b.dataset.id); renderFavorites(); };
+      b.onclick = function (e) { e.stopPropagation(); BeaconStore.toggleFav(b.dataset.id); renderFavorites(); };
     });
   }
 
