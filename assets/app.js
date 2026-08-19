@@ -731,10 +731,10 @@
       var sb = window.sb;
       code = String(code || '').trim();
       if (!sb) return Promise.resolve({ ok: false, error: 'Not reachable right now.' });
-      if (!code) return Promise.resolve({ ok: false, error: 'Введите промокод.' });
+      if (!code) return Promise.resolve({ ok: false, error: 'Enter a promo code.' });
       return sb.rpc('beacon_check_promo', { pcode: code }).then(function (res) {
         if (res.error) return { ok: false, error: res.error.message };
-        return res.data || { ok: false, error: 'Промокод не найден' };
+        return res.data || { ok: false, error: 'Promo code not found' };
       });
     },
     listPromos: function () {

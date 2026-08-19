@@ -407,13 +407,13 @@ declare r public.promo_codes;
 begin
   select * into r from public.promo_codes where code = upper(trim(pcode));
   if not found or not r.active then
-    return jsonb_build_object('ok', false, 'error', 'Промокод не найден');
+    return jsonb_build_object('ok', false, 'error', 'Promo code not found');
   end if;
   if r.expires_at is not null and r.expires_at < now() then
-    return jsonb_build_object('ok', false, 'error', 'Промокод истёк');
+    return jsonb_build_object('ok', false, 'error', 'Promo code has expired');
   end if;
   if r.max_uses is not null and r.used_count >= r.max_uses then
-    return jsonb_build_object('ok', false, 'error', 'Промокод больше не действует');
+    return jsonb_build_object('ok', false, 'error', 'Promo code is no longer valid');
   end if;
   return jsonb_build_object('ok', true, 'discount_percent', r.discount_percent);
 end; $$;

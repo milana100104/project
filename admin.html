@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin - Beacon</title>
-<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=155">
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=156">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=155">
-<script src="assets/app.js?v=155" defer></script>
-<script src="assets/config.js?v=155" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=156">
+<script src="assets/app.js?v=156" defer></script>
+<script src="assets/config.js?v=156" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=155" defer></script>
-<script src="assets/chat.js?v=155" defer></script>
+<script src="assets/auth.js?v=156" defer></script>
+<script src="assets/chat.js?v=156" defer></script>
 <style>
 /* ---- Admin: clean white workspace ---- */
 body.adm-body{background:#eef1f7;font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;}
@@ -809,7 +809,7 @@ document.addEventListener("DOMContentLoaded", function () {
           '<button class="adm-btn" id="gaadd">Grant access</button>' +
           '<div class="adm-msg" id="gam"></div>' +
         '</div>' +
-        '<h3 class="adm-listtitle">Active access</h3><div id="galist"></div>';
+        '<h3 class="adm-listtitle">Who has a subscription</h3><div id="galist"></div>';
 
       /* ---- plans ---- */
       var plm = document.getElementById("plm");
@@ -939,10 +939,15 @@ document.addEventListener("DOMContentLoaded", function () {
           if (!res.ok) { box.innerHTML = '<div class="adm-empty">' + esc(res.error || "Could not load.") + '</div>'; return; }
           box.innerHTML = res.rows.map(function (r){
             var until = new Date(r.access_until);
-            var active = until > new Date();
+            var now = new Date();
+            var active = until > now;
+            var days = Math.ceil((until - now) / 86400000);
             var when = until.toLocaleDateString("en-US", { day:"2-digit", month:"long", year:"numeric" });
+            var daysLine = active
+              ? '<span style="color:#1a8f5a;font-weight:600">' + days + ' day' + (days === 1 ? '' : 's') + ' left</span>'
+              : '<span style="color:#c23b3b;font-weight:600">expired</span>';
             return '<div class="adm-item"><div class="adm-item-main"><b>' + esc(r.email) + '</b>' +
-              '<span>until ' + esc(when) + (active ? '' : ' &middot; <span style="color:#c23b3b;font-weight:600">expired</span>') + '</span></div>' +
+              '<span>until ' + esc(when) + ' &middot; ' + daysLine + '</span></div>' +
               '<button class="adm-del" data-email="' + esc(r.email) + '">Revoke access</button></div>';
           }).join("") || '<div class="adm-empty">No one has paid yet.</div>';
           box.querySelectorAll(".adm-del").forEach(function (b){ b.onclick = function(){ b.disabled = true; BeaconStore.revokeSatAccess(b.dataset.email).then(listAccess); }; });

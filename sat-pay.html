@@ -1,19 +1,19 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Оплата - Beacon</title>
-<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=155">
+<title>Payment - Beacon</title>
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=156">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/workspace.css?v=155">
-<script src="assets/config.js?v=155" defer></script>
+<link rel="stylesheet" href="assets/workspace.css?v=156">
+<script src="assets/config.js?v=156" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=155" defer></script>
-<script src="assets/chat.js?v=155" defer></script>
-<script src="assets/app.js?v=155" defer></script>
+<script src="assets/auth.js?v=156" defer></script>
+<script src="assets/chat.js?v=156" defer></script>
+<script src="assets/app.js?v=156" defer></script>
 <style>
 .pay-wrap{max-width:640px;margin:0 auto;}
 .pay-includes{background:#f6f8fc;border:1px solid #e4e9f2;border-radius:14px;padding:18px 20px;margin:18px 0 26px;}
@@ -59,9 +59,9 @@
 <main class="ws-page">
   <div class="ws-eyebrow">SAT · Full Test</div>
   <div class="ws-panel">
-    <h1 class="ws-h1">Оплата подписки</h1>
+    <h1 class="ws-h1">Subscription payment</h1>
     <div class="pay-wrap" id="pay-root">
-      <p style="color:#7c88a3">Загрузка…</p>
+      <p style="color:#7c88a3">Loading…</p>
     </div>
   </div>
 </main>
@@ -88,29 +88,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function showLoggedOut() {
     root.innerHTML =
-      '<div class="pay-gate"><p>Войди или зарегистрируйся, чтобы оформить подписку на Full Test.</p>' +
-      '<a class="ws-btn ws-btn-primary" href="auth.html?view=login&next=' + encodeURIComponent('sat-pay.html') + '">Войти</a>' +
-      '<a class="ws-btn ws-btn-ghost" href="auth.html?view=register&next=' + encodeURIComponent('sat-pay.html') + '">Регистрация</a></div>';
+      '<div class="pay-gate"><p>Log in or sign up to subscribe to the Full Test.</p>' +
+      '<a class="ws-btn ws-btn-primary" href="auth.html?view=login&next=' + encodeURIComponent('sat-pay.html') + '">Log in</a>' +
+      '<a class="ws-btn ws-btn-ghost" href="auth.html?view=register&next=' + encodeURIComponent('sat-pay.html') + '">Sign up</a></div>';
   }
 
   function showActive(until) {
     var d = new Date(until);
-    var when = d.toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric" });
+    var when = d.toLocaleDateString("en-US", { day: "2-digit", month: "long", year: "numeric" });
     root.innerHTML =
-      '<div class="pay-gate"><p>Доступ к Full Test уже открыт — до <b>' + esc(when) + '</b>.</p>' +
-      '<a class="ws-btn ws-btn-primary" href="practice.html?mode=adaptive&exam=sat">Перейти к тесту &#8594;</a></div>';
+      '<div class="pay-gate"><p>Full Test access is already open - until <b>' + esc(when) + '</b>.</p>' +
+      '<a class="ws-btn ws-btn-primary" href="practice.html?mode=adaptive&exam=sat">Go to the test &#8594;</a></div>';
   }
 
   function fmt(n, cur) {
     if (cur === "usd") { n = Math.round(n * 100) / 100; return "$" + (n % 1 ? n.toFixed(2) : n); }
-    return Math.round(n).toLocaleString("ru-RU") + " ₽";
+    return Math.round(n).toLocaleString("en-US") + " &#8381;";
   }
   function priceOf(p, cur) { return cur === "usd" ? p.price_usd : p.price_rub; }
 
   function showPlans(user) {
     var allPlans = BeaconStore.satPlans();
     if (!allPlans.length) {
-      root.innerHTML = '<div class="pay-gate"><p>Тарифы ещё не добавлены — загляни чуть позже.</p></div>';
+      root.innerHTML = '<div class="pay-gate"><p>No plans yet - check back soon.</p></div>';
       return;
     }
     var currency = "rub";
@@ -120,14 +120,14 @@ document.addEventListener("DOMContentLoaded", function () {
     var promoCode = "";
 
     root.innerHTML =
-      '<div class="pay-includes"><h3>Что входит</h3><p>Full adaptive SAT test — Reading &amp; Writing, затем Math, по два модуля, как на настоящем Digital SAT. Второй модуль подстраивается под то, как ты прошла первый. Результат — по шкале 400–1600.</p></div>' +
-      '<div class="pay-cur"><button type="button" class="pay-cur-btn sel" data-cur="rub">Российская карта · ₽</button>' +
-      '<button type="button" class="pay-cur-btn" data-cur="usd">Иностранная карта · $</button></div>' +
+      '<div class="pay-includes"><h3>What\'s included</h3><p>The full adaptive SAT test - Reading &amp; Writing first, then Math, two modules each, just like the real Digital SAT. Your second module adapts to how you did on the first. Scored on the 400-1600 scale.</p></div>' +
+      '<div class="pay-cur"><button type="button" class="pay-cur-btn sel" data-cur="rub">Russian card · &#8381;</button>' +
+      '<button type="button" class="pay-cur-btn" data-cur="usd">International card · $</button></div>' +
       '<div id="pay-plans"></div>' +
-      '<div class="pay-promo"><input id="pay-promo-in" placeholder="Промокод (необязательно)" autocomplete="off"><button class="ws-btn ws-btn-ghost" id="pay-promo-go" type="button">Применить</button></div>' +
+      '<div class="pay-promo"><input id="pay-promo-in" placeholder="Promo code (optional)" autocomplete="off"><button class="ws-btn ws-btn-ghost" id="pay-promo-go" type="button">Apply</button></div>' +
       '<div class="pay-msg" id="pay-promo-msg"></div>' +
-      '<div class="pay-total"><span>Итого</span><span id="pay-total-val"></span></div>' +
-      '<button class="ws-btn ws-btn-primary pay-cta" id="pay-go" type="button">Оплатить</button>' +
+      '<div class="pay-total"><span>Total</span><span id="pay-total-val"></span></div>' +
+      '<button class="ws-btn ws-btn-primary pay-cta" id="pay-go" type="button">Pay</button>' +
       '<div class="pay-msg" id="pay-msg"></div>' +
       '<p class="pay-note" id="pay-note"></p>';
 
@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!plans.length) plans = allPlans; // nothing priced in $ yet - still show plans, block payment instead
         if (!plans.some(function (p) { return p.id === selected; })) selected = plans[0].id;
         renderPlans(); renderTotal(); renderNote();
-        document.getElementById("pay-go").textContent = currency === "usd" ? "Pay with international card" : "Оплатить российской картой";
+        document.getElementById("pay-go").textContent = currency === "usd" ? "Pay with international card" : "Pay with Russian card";
       });
     });
 
@@ -150,7 +150,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return '<label class="pay-plan' + (p.id === selected ? ' sel' : '') + '" data-plan="' + esc(p.id) + '">' +
           '<input type="radio" name="pay-plan" value="' + esc(p.id) + '"' + (p.id === selected ? ' checked' : '') + '>' +
           '<span class="pay-plan-name">' + esc(p.name) + '</span>' +
-          '<span class="pay-plan-price">' + (price ? fmt(price, currency) : "скоро") + '</span></label>';
+          '<span class="pay-plan-price">' + (price ? fmt(price, currency) : "coming soon") + '</span></label>';
       }).join("");
       plansEl.querySelectorAll(".pay-plan").forEach(function (el) {
         el.addEventListener("click", function () { selected = el.dataset.plan; renderPlans(); renderTotal(); });
@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function () {
       var p = currentPlan(); if (!p) return;
       var base = priceOf(p, currency);
       var val = document.getElementById("pay-total-val");
-      if (!base) { val.innerHTML = '<b>—</b>'; return; }
+      if (!base) { val.innerHTML = '<b>&mdash;</b>'; return; }
       var final = currency === "usd"
         ? Math.round(base * (1 - discount / 100) * 100) / 100
         : Math.max(0, Math.round(base * (1 - discount / 100)));
@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function renderNote() {
       document.getElementById("pay-note").textContent = currency === "usd"
         ? "International cards (any country except Russia). Access opens right after the payment is confirmed."
-        : "Оплата картой РФ (СБП). Доступ откроется сразу после подтверждения платежа.";
+        : "Russian card payment (SBP). Access opens right after the payment is confirmed.";
     }
     renderPlans(); renderTotal(); renderNote();
 
@@ -178,13 +178,13 @@ document.addEventListener("DOMContentLoaded", function () {
     function pmsg(t, k) { pm.className = "pay-msg" + (k ? " " + k : ""); pm.textContent = t || ""; }
     document.getElementById("pay-promo-go").onclick = function () {
       var code = document.getElementById("pay-promo-in").value.trim();
-      if (!code) return pmsg("Введи промокод.", "bad");
-      pmsg("Проверяю…");
+      if (!code) return pmsg("Enter a promo code.", "bad");
+      pmsg("Checking…");
       BeaconStore.checkPromo(code).then(function (res) {
-        if (!res.ok) { discount = 0; promoCode = ""; renderTotal(); return pmsg(res.error || "Промокод не найден.", "bad"); }
+        if (!res.ok) { discount = 0; promoCode = ""; renderTotal(); return pmsg(res.error || "Promo code not found.", "bad"); }
         discount = res.discount_percent || 0; promoCode = code.toUpperCase();
         renderTotal();
-        pmsg("Промокод применён: -" + discount + "%", "good");
+        pmsg("Promo code applied: -" + discount + "%", "good");
       });
     };
 
@@ -193,7 +193,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("pay-go").onclick = function () {
       var p = currentPlan(); if (!p) return;
       var base = priceOf(p, currency);
-      if (!base) return gmsg(currency === "usd" ? "Price in $ isn't set for this plan yet." : "Цена в ₽ пока не задана для этого тарифа.", "bad");
+      if (!base) return gmsg(currency === "usd" ? "The $ price isn't set for this plan yet." : "The ₽ price isn't set for this plan yet.", "bad");
       var pay = window.BEACON_PAYMENT || {};
       var link = currency === "usd" ? pay.intl : pay.ru;
       var final = currency === "usd" ? Math.round(base * (1 - discount / 100) * 100) / 100 : Math.max(0, Math.round(base * (1 - discount / 100)));
@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       gmsg(currency === "usd"
         ? "Payment by international card is being connected - it'll appear here automatically soon."
-        : "Оплата картой РФ подключается — этот способ появится здесь автоматически в ближайшие дни.", "bad");
+        : "Payment by Russian card is being connected - it'll appear here automatically soon.", "bad");
     };
   }
 });
