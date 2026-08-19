@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Оплата - Beacon</title>
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=153">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/workspace.css?v=153">
+<script src="assets/config.js?v=153" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+<script src="assets/auth.js?v=153" defer></script>
+<script src="assets/chat.js?v=153" defer></script>
+<script src="assets/app.js?v=153" defer></script>
+<style>
+.pay-wrap{max-width:640px;margin:0 auto;}
+.pay-includes{background:#f6f8fc;border:1px solid #e4e9f2;border-radius:14px;padding:18px 20px;margin:18px 0 26px;}
+.pay-includes h3{font-size:.95rem;font-weight:700;color:#14233f;margin:0 0 8px;}
+.pay-includes p{color:#4a5875;font-size:.92rem;line-height:1.55;margin:0;}
+.pay-plan{display:flex;align-items:center;gap:14px;background:#fff;border:1.5px solid #e6eaf2;border-radius:14px;padding:16px 18px;margin-bottom:12px;cursor:pointer;transition:border-color .15s,background .15s;}
+.pay-plan:hover{border-color:#d4a72c;}
+.pay-plan.sel{border-color:#d4a72c;background:#fdf7e3;}
+.pay-plan input{width:18px;height:18px;accent-color:#d4a72c;flex-shrink:0;}
+.pay-plan-name{flex:1;font-weight:700;color:#14233f;font-size:.98rem;}
+.pay-plan-price{font-family:var(--mono);font-weight:600;color:#14233f;font-size:1.05rem;white-space:nowrap;}
+.pay-promo{display:flex;gap:10px;margin:20px 0 6px;}
+.pay-promo input{flex:1;background:#f7f9fc;border:1px solid #dbe1ec;border-radius:10px;padding:11px 14px;font-size:.95rem;color:#14233f;font-family:inherit;}
+.pay-promo input:focus{outline:none;border-color:#d4a72c;}
+.pay-msg{font-size:.85rem;min-height:1.2em;margin:4px 0 4px;font-weight:600;}
+.pay-msg.good{color:#1a8f5a;}.pay-msg.bad{color:#c23b3b;}
+.pay-total{display:flex;justify-content:space-between;align-items:baseline;margin:22px 0 6px;padding-top:16px;border-top:1px solid #e4e9f2;}
+.pay-total span:first-child{color:#4a5875;font-size:.92rem;}
+.pay-total b{font-size:1.4rem;color:#14233f;}
+.pay-total .was{color:#9aa4bb;text-decoration:line-through;font-weight:400;font-size:1rem;margin-right:8px;}
+.pay-cta{width:100%;margin-top:14px;padding:14px;font-size:1rem;}
+.pay-note{color:#7c88a3;font-size:.82rem;margin-top:12px;text-align:center;line-height:1.5;}
+.pay-gate{background:#fff;border:1px solid #e3e7f0;border-radius:16px;padding:34px 28px;text-align:center;}
+.pay-gate p{color:#4a5875;margin:8px 0 20px;}
+.pay-gate .ws-btn{margin:0 6px;}
+</style>
+</head>
+<body class="ws-white">
+<header class="ws-topbar">
+  <div class="ws-topbar-inner">
+    <a href="index.html" class="ws-brand"><span class="logo"></span><span>Beacon</span></a>
+    <nav class="ws-nav"><a href="index.html">Home</a><a href="toefl.html">TOEFL</a><a href="ielts.html">IELTS</a><a href="sat.html" class="active">SAT</a><a href="webinars.html">Webinars</a></nav>
+    <div class="header-actions">
+      <a href="auth.html?view=login" class="link-quiet">Log in</a>
+      <a href="auth.html?view=register" class="ws-btn ws-btn-primary">Start free</a>
+    </div>
+  </div>
+</header>
+<main class="ws-page">
+  <div class="ws-eyebrow">SAT · Full Test</div>
+  <div class="ws-panel">
+    <h1 class="ws-h1">Оплата подписки</h1>
+    <div class="pay-wrap" id="pay-root">
+      <p style="color:#7c88a3">Загрузка…</p>
+    </div>
+  </div>
+</main>
+<footer class="ws-footer">
+  <div class="ws-footer-inner">
+    <span>&copy; 2026 Beacon</span>
+    <span><a href="index.html">Home</a> &middot; <a href="webinars.html">Webinars</a> &middot; <a href="auth.html?view=login">Log in</a></span>
+  </div>
+</footer>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var root = document.getElementById("pay-root");
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+  function money(n){ return Number(n||0).toLocaleString("ru-RU") + " ₽"; }
+
+  Promise.all([BeaconAuth.getUser(), BeaconStore.ready()]).then(function (res) {
+    var user = res[0];
+    if (!user) return showLoggedOut();
+    BeaconStore.satAccessUntil().then(function (until) {
+      var active = until && new Date(until) > new Date();
+      if (active) return showActive(until);
+      showPlans(user);
+    });
+  });
+
+  function showLoggedOut() {
+    root.innerHTML =
+      '<div class="pay-gate"><p>Войди или зарегистрируйся, чтобы оформить подписку на Full Test.</p>' +
+      '<a class="ws-btn ws-btn-primary" href="auth.html?view=login&next=' + encodeURIComponent('sat-pay.html') + '">Войти</a>' +
+      '<a class="ws-btn ws-btn-ghost" href="auth.html?view=register&next=' + encodeURIComponent('sat-pay.html') + '">Регистрация</a></div>';
+  }
+
+  function showActive(until) {
+    var d = new Date(until);
+    var when = d.toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric" });
+    root.innerHTML =
+      '<div class="pay-gate"><p>Доступ к Full Test уже открыт — до <b>' + esc(when) + '</b>.</p>' +
+      '<a class="ws-btn ws-btn-primary" href="practice.html?mode=adaptive&exam=sat">Перейти к тесту &#8594;</a></div>';
+  }
+
+  function showPlans(user) {
+    var plans = BeaconStore.satPlans();
+    if (!plans.length) {
+      root.innerHTML = '<div class="pay-gate"><p>Тарифы ещё не добавлены — загляни чуть позже.</p></div>';
+      return;
+    }
+    var selected = plans[0].id;
+    var discount = 0; // percent
+    var promoCode = "";
+
+    root.innerHTML =
+      '<div class="pay-includes"><h3>Что входит</h3><p>Full adaptive SAT test — Reading &amp; Writing, затем Math, по два модуля, как на настоящем Digital SAT. Второй модуль подстраивается под то, как ты прошла первый. Результат — по шкале 400–1600.</p></div>' +
+      '<div id="pay-plans"></div>' +
+      '<div class="pay-promo"><input id="pay-promo-in" placeholder="Промокод (необязательно)" autocomplete="off"><button class="ws-btn ws-btn-ghost" id="pay-promo-go" type="button">Применить</button></div>' +
+      '<div class="pay-msg" id="pay-promo-msg"></div>' +
+      '<div class="pay-total"><span>Итого</span><span id="pay-total-val"></span></div>' +
+      '<button class="ws-btn ws-btn-primary pay-cta" id="pay-go" type="button">Оплатить российской картой</button>' +
+      '<div class="pay-msg" id="pay-msg"></div>' +
+      '<p class="pay-note">Оплата картой РФ (СБП). Доступ откроется сразу после подтверждения платежа.</p>';
+
+    var plansEl = document.getElementById("pay-plans");
+    function renderPlans() {
+      plansEl.innerHTML = plans.map(function (p) {
+        return '<label class="pay-plan' + (p.id === selected ? ' sel' : '') + '" data-plan="' + esc(p.id) + '">' +
+          '<input type="radio" name="pay-plan" value="' + esc(p.id) + '"' + (p.id === selected ? ' checked' : '') + '>' +
+          '<span class="pay-plan-name">' + esc(p.name) + '</span>' +
+          '<span class="pay-plan-price">' + money(p.price_rub) + '</span></label>';
+      }).join("");
+      plansEl.querySelectorAll(".pay-plan").forEach(function (el) {
+        el.addEventListener("click", function () { selected = el.dataset.plan; renderPlans(); renderTotal(); });
+      });
+    }
+    function currentPlan() { return plans.filter(function (p) { return p.id === selected; })[0]; }
+    function renderTotal() {
+      var p = currentPlan(); if (!p) return;
+      var final = Math.max(0, Math.round(p.price_rub * (1 - discount / 100)));
+      var val = document.getElementById("pay-total-val");
+      val.innerHTML = discount ? '<span class="was">' + money(p.price_rub) + '</span><b>' + money(final) + '</b>' : '<b>' + money(final) + '</b>';
+    }
+    renderPlans(); renderTotal();
+
+    var pm = document.getElementById("pay-promo-msg");
+    function pmsg(t, k) { pm.className = "pay-msg" + (k ? " " + k : ""); pm.textContent = t || ""; }
+    document.getElementById("pay-promo-go").onclick = function () {
+      var code = document.getElementById("pay-promo-in").value.trim();
+      if (!code) return pmsg("Введи промокод.", "bad");
+      pmsg("Проверяю…");
+      BeaconStore.checkPromo(code).then(function (res) {
+        if (!res.ok) { discount = 0; promoCode = ""; renderTotal(); return pmsg(res.error || "Промокод не найден.", "bad"); }
+        discount = res.discount_percent || 0; promoCode = code.toUpperCase();
+        renderTotal();
+        pmsg("Промокод применён: -" + discount + "%", "good");
+      });
+    };
+
+    var msg = document.getElementById("pay-msg");
+    function gmsg(t, k) { msg.className = "pay-msg" + (k ? " " + k : ""); msg.textContent = t || ""; }
+    document.getElementById("pay-go").onclick = function () {
+      var p = currentPlan(); if (!p) return;
+      var pay = window.BEACON_PAYMENT || {};
+      if (pay.ru) {
+        var url = pay.ru
+          .replace("{amount}", encodeURIComponent(Math.max(0, Math.round(p.price_rub * (1 - discount / 100)))))
+          .replace("{plan}", encodeURIComponent(p.id))
+          .replace("{email}", encodeURIComponent(user.email || ""))
+          .replace("{promo}", encodeURIComponent(promoCode || ""));
+        location.href = url;
+        return;
+      }
+      gmsg("Оплата картой РФ подключается — этот способ появится здесь автоматически в ближайшие дни.", "bad");
+    };
+  }
+});
+</script>
+</body>
+</html>

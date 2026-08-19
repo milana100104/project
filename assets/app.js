@@ -365,6 +365,7 @@
     _remote: {},   // questions loaded from Supabase (shared across everyone). Not persisted locally.
     _webRemote: {},   // webinars loaded from Supabase (shared across everyone)
     _webLoaded: false,
+    _planRemote: {},  // SAT subscription plans loaded from Supabase (shared across everyone)
     _isAdmin: false,  // true when the signed-in account's email is a configured admin
     _ready: null,
 
@@ -409,7 +410,12 @@
           self._webLoaded = true;   // shared list is authoritative once it loads
         }
       }).catch(function () { /* table missing / offline: fall back to the seed */ });
-      this._ready = Promise.all([qP, wP, this._loadProgress()]).then(function () {});
+      var planP = sb.from('sat_plans').select('data').then(function (res) {
+        if (res && !res.error && res.data) {
+          res.data.forEach(function (row) { var p = row && row.data; if (p && p.id) self._planRemote[p.id] = p; });
+        }
+      }).catch(function () { /* table missing / offline: no plans to show yet */ });
+      this._ready = Promise.all([qP, wP, planP, this._loadProgress()]).then(function () {});
       return this._ready;
     },
 
@@ -685,6 +691,119 @@
         if (res.error) return { ok: false, error: res.error.message };
         return { ok: true };
       });
+    },
+
+    /* =================== SAT Full Test subscription =================== */
+    /** Active, public-facing plans (for the payment page), cheapest sort first. */
+    satPlans: function () {
+      var self = this;
+      return Object.keys(this._planRemote).map(function (id) { return self._planRemote[id]; })
+        .filter(function (p) { return p.active !== false; })
+        .sort(function (a, b) { return (a.sort || 0) - (b.sort || 0); });
+    },
+    /** Admin only: every plan, including disabled ones. */
+    allSatPlans: function () {
+      var self = this;
+      return Object.keys(this._planRemote).map(function (id) { return self._planRemote[id]; })
+        .sort(function (a, b) { return (a.sort || 0) - (b.sort || 0); });
+    },
+    addSatPlan: function (p) {
+      var self = this, sb = window.sb, pw = this._adminPw();
+      if (!sb) return Promise.resolve({ ok: false, error: 'Not reachable right now.' });
+      return sb.rpc('beacon_add_sat_plan', { pass: pw || '', p: p }).then(function (res) {
+        if (res.error) return { ok: false, error: res.error.message };
+        self._planRemote[p.id] = p;
+        return { ok: true };
+      });
+    },
+    removeSatPlan: function (id) {
+      var self = this, sb = window.sb, pw = this._adminPw();
+      if (!sb) return Promise.resolve({ ok: false, error: 'Not reachable right now.' });
+      return sb.rpc('beacon_delete_sat_plan', { pass: pw || '', pid: id }).then(function (res) {
+        if (res.error) return { ok: false, error: res.error.message };
+        delete self._planRemote[id];
+        return { ok: true };
+      });
+    },
+
+    /** Look up a promo code without exposing the whole table. */
+    checkPromo: function (code) {
+      var sb = window.sb;
+      code = String(code || '').trim();
+      if (!sb) return Promise.resolve({ ok: false, error: 'Not reachable right now.' });
+      if (!code) return Promise.resolve({ ok: false, error: 'Введите промокод.' });
+      return sb.rpc('beacon_check_promo', { pcode: code }).then(function (res) {
+        if (res.error) return { ok: false, error: res.error.message };
+        return res.data || { ok: false, error: 'Промокод не найден' };
+      });
+    },
+    listPromos: function () {
+      var sb = window.sb, pw = this._adminPw();
+      if (!sb) return Promise.resolve({ ok: false, error: 'Not reachable right now.' });
+      return sb.rpc('beacon_list_promos', { pass: pw || '' }).then(function (res) {
+        if (res.error) return { ok: false, error: res.error.message };
+        return { ok: true, rows: res.data || [] };
+      });
+    },
+    addPromo: function (p) {
+      var sb = window.sb, pw = this._adminPw();
+      if (!sb) return Promise.resolve({ ok: false, error: 'Not reachable right now.' });
+      return sb.rpc('beacon_add_promo', { pass: pw || '', p: p }).then(function (res) {
+        if (res.error) return { ok: false, error: res.error.message };
+        return { ok: true };
+      });
+    },
+    removePromo: function (code) {
+      var sb = window.sb, pw = this._adminPw();
+      if (!sb) return Promise.resolve({ ok: false, error: 'Not reachable right now.' });
+      return sb.rpc('beacon_delete_promo', { pass: pw || '', pcode: code }).then(function (res) {
+        if (res.error) return { ok: false, error: res.error.message };
+        return { ok: true };
+      });
+    },
+
+    /** async → ISO timestamp string the signed-in student's SAT access runs until, or null. */
+    satAccessUntil: function () {
+      var sb = window.sb;
+      if (!sb) return Promise.resolve(null);
+      return sb.auth.getSession().then(function (res) {
+        var u = res && res.data && res.data.session && res.data.session.user;
+        if (!u) return null;
+        return sb.from('sat_access').select('access_until').eq('user_id', u.id).maybeSingle().then(function (r) {
+          return (r && !r.error && r.data) ? r.data.access_until : null;
+        });
+      }).catch(function () { return null; });
+    },
+    /** async → true if the signed-in student currently has paid SAT Full Test access. */
+    hasSatAccess: function () {
+      return this.satAccessUntil().then(function (until) { return !!until && new Date(until) > new Date(); });
+    },
+    /** Admin only: grant/extend access after confirming a payment by hand. */
+    grantSatAccess: function (email, days, promoCode) {
+      var sb = window.sb, pw = this._adminPw();
+      if (!sb) return Promise.resolve({ ok: false, error: 'Not reachable right now.' });
+      return sb.rpc('beacon_grant_sat_access', { pass: pw || '', student_email: email, days: days, promo_code: promoCode || null }).then(function (res) {
+        if (res.error) return { ok: false, error: res.error.message };
+        var d = res.data || {};
+        if (d.ok === false) return { ok: false, error: d.error || 'Could not grant access.' };
+        return { ok: true };
+      });
+    },
+    revokeSatAccess: function (email) {
+      var sb = window.sb, pw = this._adminPw();
+      if (!sb) return Promise.resolve({ ok: false, error: 'Not reachable right now.' });
+      return sb.rpc('beacon_revoke_sat_access', { pass: pw || '', student_email: email }).then(function (res) {
+        if (res.error) return { ok: false, error: res.error.message };
+        return { ok: true };
+      });
+    },
+    listSatAccess: function () {
+      var sb = window.sb, pw = this._adminPw();
+      if (!sb) return Promise.resolve({ ok: false, error: 'Not reachable right now.' });
+      return sb.rpc('beacon_list_sat_access', { pass: pw || '' }).then(function (res) {
+        if (res.error) return { ok: false, error: res.error.message };
+        return { ok: true, rows: res.data || [] };
+      });
     }
   };
 
@@ -832,6 +951,16 @@
         '<span class="ws-tile-ico">' + skillIcon('full') + '</span>' +
         '<span class="ws-tile-name">Full Test</span>' +
         '<span class="ws-tile-tag">' + (ftReady ? 'new' : 'soon') + '</span>';
+      // paid full tests: check access before leaving the page, instead of
+      // following the href straight away
+      if (ftReady && config.fullTest.gated) {
+        ftTile.addEventListener('click', function (e) {
+          e.preventDefault();
+          BeaconStore.hasSatAccess().then(function (has) {
+            location.href = has ? config.fullTest.href : 'sat-pay.html';
+          });
+        });
+      }
       tiles.appendChild(ftTile);
     }
 

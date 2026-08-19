@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SAT - Beacon</title>
-<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=152">
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=153">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/workspace.css?v=152">
-<script src="assets/config.js?v=152" defer></script>
+<link rel="stylesheet" href="assets/workspace.css?v=153">
+<script src="assets/config.js?v=153" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=152" defer></script>
-<script src="assets/chat.js?v=152" defer></script>
-<script src="assets/app.js?v=152" defer></script>
+<script src="assets/auth.js?v=153" defer></script>
+<script src="assets/chat.js?v=153" defer></script>
+<script src="assets/app.js?v=153" defer></script>
 </head>
 <body class="ws-white">
 <header class="ws-topbar">
@@ -63,7 +63,8 @@ document.addEventListener("DOMContentLoaded", function () {
     fullTest: {
       title: "Full adaptive SAT test",
       desc: "Reading & Writing first, then Math - each in two modules, just like the real Digital SAT. Your second module turns harder or easier based on how you do in the first, and you're scored on the 400–1600 scale. Built from the questions in the bank.",
-      href: "practice.html?mode=adaptive&exam=sat"
+      href: "practice.html?mode=adaptive&exam=sat",
+      gated: true
     }
   });
 });

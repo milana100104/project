@@ -319,6 +319,167 @@ select cron.schedule(
   $$delete from public.messages where created_at < now() - interval '7 days'$$
 );
 
+-- ============================================================================
+-- 11) SAT Full Test subscription: plans, promo codes, granted access --------
+-- ----------------------------------------------------------------------------
+-- Plans (price/duration) are admin-managed and publicly readable, same pattern
+-- as webinars, so the payment page can list them without a login.
+create table if not exists public.sat_plans (
+  id          text primary key,
+  data        jsonb not null,      -- { id, name, price_rub, duration_days, active, sort }
+  created_at  timestamptz default now()
+);
+alter table public.sat_plans enable row level security;
+drop policy if exists "sat_plans public read" on public.sat_plans;
+create policy "sat_plans public read" on public.sat_plans for select using (true);
+
+create or replace function public.beacon_add_sat_plan(pass text, p jsonb)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.beacon_is_admin(pass) then raise exception 'not authorized'; end if;
+  insert into public.sat_plans (id, data) values (p->>'id', p)
+    on conflict (id) do update set data = excluded.data;
+end; $$;
+
+create or replace function public.beacon_delete_sat_plan(pass text, pid text)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.beacon_is_admin(pass) then raise exception 'not authorized'; end if;
+  delete from public.sat_plans where id = pid;
+end; $$;
+
+grant execute on function public.beacon_add_sat_plan(text, jsonb) to anon, authenticated;
+grant execute on function public.beacon_delete_sat_plan(text, text) to anon, authenticated;
+
+-- Seed one starter plan (edit the price/duration any time from the admin panel).
+insert into public.sat_plans (id, data) values
+  ('sat-30', '{"id":"sat-30","name":"Доступ на 30 дней","price_rub":990,"duration_days":30,"active":true,"sort":1}'::jsonb)
+on conflict (id) do nothing;
+
+-- Promo codes: deliberately NOT readable directly (would let anyone list every
+-- code) - the only way to check one is the beacon_check_promo() function below,
+-- which returns just the discount, never the whole table.
+create table if not exists public.promo_codes (
+  code             text primary key,
+  discount_percent int not null default 0,
+  max_uses         int,                 -- null = unlimited
+  used_count       int not null default 0,
+  expires_at       timestamptz,         -- null = never expires
+  active           boolean not null default true,
+  created_at       timestamptz default now()
+);
+alter table public.promo_codes enable row level security;
+-- (no select/insert/update policy for anon/authenticated on purpose)
+
+create or replace function public.beacon_add_promo(pass text, p jsonb)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.beacon_is_admin(pass) then raise exception 'not authorized'; end if;
+  insert into public.promo_codes (code, discount_percent, max_uses, expires_at, active)
+  values (upper(p->>'code'), coalesce((p->>'discount_percent')::int, 0), (p->>'max_uses')::int,
+          nullif(p->>'expires_at','')::timestamptz, coalesce((p->>'active')::boolean, true))
+  on conflict (code) do update
+    set discount_percent = excluded.discount_percent,
+        max_uses = excluded.max_uses,
+        expires_at = excluded.expires_at,
+        active = excluded.active;
+end; $$;
+
+create or replace function public.beacon_delete_promo(pass text, pcode text)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.beacon_is_admin(pass) then raise exception 'not authorized'; end if;
+  delete from public.promo_codes where code = upper(pcode);
+end; $$;
+
+create or replace function public.beacon_list_promos(pass text)
+returns setof public.promo_codes
+language plpgsql security definer set search_path = public as $$
+begin
+  if not public.beacon_is_admin(pass) then raise exception 'not authorized'; end if;
+  return query select * from public.promo_codes order by created_at desc;
+end; $$;
+
+-- Anyone may call this to preview a discount; it never exposes the raw table.
+create or replace function public.beacon_check_promo(pcode text)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare r public.promo_codes;
+begin
+  select * into r from public.promo_codes where code = upper(trim(pcode));
+  if not found or not r.active then
+    return jsonb_build_object('ok', false, 'error', 'Промокод не найден');
+  end if;
+  if r.expires_at is not null and r.expires_at < now() then
+    return jsonb_build_object('ok', false, 'error', 'Промокод истёк');
+  end if;
+  if r.max_uses is not null and r.used_count >= r.max_uses then
+    return jsonb_build_object('ok', false, 'error', 'Промокод больше не действует');
+  end if;
+  return jsonb_build_object('ok', true, 'discount_percent', r.discount_percent);
+end; $$;
+
+grant execute on function public.beacon_add_promo(text, jsonb) to anon, authenticated;
+grant execute on function public.beacon_delete_promo(text, text) to anon, authenticated;
+grant execute on function public.beacon_list_promos(text) to anon, authenticated;
+grant execute on function public.beacon_check_promo(text) to anon, authenticated;
+
+-- Granted access: which students currently have paid SAT Full Test access.
+-- A student can read only their OWN row (proves they have access); there is no
+-- insert/update policy for them at all, so access can only be granted through
+-- the admin-gated function below (today: after you manually confirm a payment;
+-- later: from a real payment webhook, once one exists).
+create table if not exists public.sat_access (
+  user_id      uuid primary key references auth.users(id) on delete cascade,
+  access_until timestamptz not null,
+  note         text,
+  updated_at   timestamptz default now()
+);
+alter table public.sat_access enable row level security;
+drop policy if exists "sat_access owner read" on public.sat_access;
+create policy "sat_access owner read" on public.sat_access for select using (auth.uid() = user_id);
+
+create or replace function public.beacon_grant_sat_access(pass text, student_email text, days int, promo_code text default null)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare uid uuid;
+begin
+  if not public.beacon_is_admin(pass) then raise exception 'not authorized'; end if;
+  select id into uid from auth.users where lower(email) = lower(student_email);
+  if uid is null then return jsonb_build_object('ok', false, 'error', 'No account with that email'); end if;
+
+  insert into public.sat_access (user_id, access_until, note)
+  values (uid, now() + make_interval(days => days), student_email)
+  on conflict (user_id) do update
+    set access_until = greatest(public.sat_access.access_until, now()) + make_interval(days => days),
+        updated_at = now();
+
+  if promo_code is not null and promo_code <> '' then
+    update public.promo_codes set used_count = used_count + 1 where code = upper(promo_code);
+  end if;
+  return jsonb_build_object('ok', true);
+end; $$;
+
+create or replace function public.beacon_revoke_sat_access(pass text, student_email text)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not public.beacon_is_admin(pass) then raise exception 'not authorized'; end if;
+  delete from public.sat_access where user_id = (select id from auth.users where lower(email) = lower(student_email));
+end; $$;
+
+create or replace function public.beacon_list_sat_access(pass text)
+returns table(user_id uuid, email text, access_until timestamptz, note text)
+language plpgsql security definer set search_path = public as $$
+begin
+  if not public.beacon_is_admin(pass) then raise exception 'not authorized'; end if;
+  return query
+    select sa.user_id, u.email, sa.access_until, sa.note
+    from public.sat_access sa join auth.users u on u.id = sa.user_id
+    order by sa.access_until desc;
+end; $$;
+
+grant execute on function public.beacon_grant_sat_access(text, text, int, text) to anon, authenticated;
+grant execute on function public.beacon_revoke_sat_access(text, text) to anon, authenticated;
+grant execute on function public.beacon_list_sat_access(text) to anon, authenticated;
+
 -- Done. Reload the site; questions AND webinars you manage in the admin panel are
 -- now shared with everyone, each student's Saved list + progress follow them to any
 -- device, and the bottom-right chat is live for signed-in students.

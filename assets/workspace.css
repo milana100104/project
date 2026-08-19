@@ -614,6 +614,11 @@ mark.pr-hl{background:#fef08a;color:inherit;border-radius:2px;padding:0 1px;curs
 .ws-white .ws-panel .acc-head:hover,
 .ws-white .ws-panel a.ws-item:hover{background:#eef2f9;}
 
+/* secondary ("ghost") buttons on white content - the plain --ink color is
+   sized for the dark navy marketing theme and is nearly invisible on white */
+.ws-white .ws-btn-ghost{color:#14233f;border-color:#c9d2e2;}
+.ws-white .ws-btn-ghost:hover{color:#b0851b;border-color:#d4a72c;}
+
 /* ================= Exam room: full-page white runner, styled per real exam ================= */
 body.pr-examroom{background:#fff;}
 /* real exam software isn't set in the site's branded typefaces at all - not the display
