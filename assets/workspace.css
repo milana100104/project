@@ -398,6 +398,15 @@ mark.pr-hl{background:#fef08a;color:inherit;border-radius:2px;padding:0 1px;curs
 .ws-tile.is-dev .ws-tile-tag{color:#c0a24b;}
 .ws-tile.is-dev.active{border-color:#d4a72c;background:#fdf8ec;box-shadow:0 8px 22px rgba(212,167,44,.13);}
 .ws-tile.is-dev.active .ws-tile-ico,.ws-tile.is-dev.active .ws-tile-name{color:#b0851b;}
+.ws-tile-tag.ws-tag-sub{color:#b0851b;font-weight:700;}
+
+/* subscription banner under the tile row, pointing at the payment page */
+.ws-subbanner{display:flex;align-items:center;gap:12px;background:#fdf7e3;border:1.5px solid #e6cf7e;border-radius:14px;
+  padding:14px 18px;margin:14px 0 22px;text-decoration:none;color:#5c4a12;font-size:.92rem;transition:border-color .15s,box-shadow .15s;}
+.ws-subbanner:hover{border-color:#d4a72c;box-shadow:0 8px 22px rgba(212,167,44,.16);}
+.ws-subbanner-ico{font-size:1.15rem;flex-shrink:0;}
+.ws-subbanner span:nth-child(2){flex:1;}
+.ws-subbanner-cta{font-weight:700;color:#b0851b;white-space:nowrap;flex-shrink:0;}
 /* the selected-skill panel */
 .ws-skillpanel{margin-bottom:0;}
 /* the full-reading-test row sits the same distance below the level accordions

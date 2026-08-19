@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin - Beacon</title>
-<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=154">
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=155">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=154">
-<script src="assets/app.js?v=154" defer></script>
-<script src="assets/config.js?v=154" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=155">
+<script src="assets/app.js?v=155" defer></script>
+<script src="assets/config.js?v=155" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=154" defer></script>
-<script src="assets/chat.js?v=154" defer></script>
+<script src="assets/auth.js?v=155" defer></script>
+<script src="assets/chat.js?v=155" defer></script>
 <style>
 /* ---- Admin: clean white workspace ---- */
 body.adm-body{background:#eef1f7;font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;}
@@ -770,46 +770,46 @@ document.addEventListener("DOMContentLoaded", function () {
     function renderSubs(){
       panel.innerHTML =
         '<div class="adm-card">' +
-          '<h2 class="adm-h">Тарифы</h2>' +
-          '<p class="adm-sub">Цена и срок доступа к SAT Full Test. Указывай обе цены — ученик выбирает валюту на странице оплаты в зависимости от того, какой картой платит.</p>' +
+          '<h2 class="adm-h">Plans</h2>' +
+          '<p class="adm-sub">Price and access length for the SAT Full Test. Fill in both prices - the student picks a currency on the payment page depending on which card they pay with.</p>' +
           '<div class="adm-grid3">' +
-            '<div class="adm-field"><label>Название</label><input class="adm-input" id="pl-name" placeholder="Доступ на 30 дней"></div>' +
-            '<div class="adm-field"><label>Цена, ₽ <span class="hint">(рос. карта)</span></label><input class="adm-input" id="pl-price" type="number" min="0" placeholder="990"></div>' +
-            '<div class="adm-field"><label>Цена, $ <span class="hint">(иностр. карта)</span></label><input class="adm-input" id="pl-price-usd" type="number" min="0" step="0.01" placeholder="12"></div>' +
+            '<div class="adm-field"><label>Name</label><input class="adm-input" id="pl-name" placeholder="30-day access"></div>' +
+            '<div class="adm-field"><label>Price, &#8381; <span class="hint">(RU card)</span></label><input class="adm-input" id="pl-price" type="number" min="0" placeholder="990"></div>' +
+            '<div class="adm-field"><label>Price, $ <span class="hint">(international card)</span></label><input class="adm-input" id="pl-price-usd" type="number" min="0" step="0.01" placeholder="12"></div>' +
           '</div>' +
-          '<div class="adm-field"><label>Срок, дней</label><input class="adm-input" id="pl-days" type="number" min="1" placeholder="30"></div>' +
-          '<button class="adm-btn" id="pladd">Добавить тариф</button>' +
-          '<button class="adm-btn sec" id="plcancel" style="display:none">Отменить редактирование</button>' +
+          '<div class="adm-field"><label>Length, days</label><input class="adm-input" id="pl-days" type="number" min="1" placeholder="30"></div>' +
+          '<button class="adm-btn" id="pladd">Add plan</button>' +
+          '<button class="adm-btn sec" id="plcancel" style="display:none">Cancel editing</button>' +
           '<div class="adm-msg" id="plm"></div>' +
         '</div>' +
         '<div id="pllist"></div>' +
 
         '<div class="adm-card">' +
-          '<h2 class="adm-h">Промокоды</h2>' +
-          '<p class="adm-sub">Скидка в процентах, применяется на странице оплаты.</p>' +
+          '<h2 class="adm-h">Promo codes</h2>' +
+          '<p class="adm-sub">Percentage discount, applied on the payment page.</p>' +
           '<div class="adm-grid3">' +
-            '<div class="adm-field"><label>Код</label><input class="adm-input" id="pr-code" placeholder="SALE20" style="text-transform:uppercase"></div>' +
-            '<div class="adm-field"><label>Скидка, %</label><input class="adm-input" id="pr-pct" type="number" min="1" max="100" placeholder="20"></div>' +
-            '<div class="adm-field"><label>Лимит использований <span class="hint">(пусто = без лимита)</span></label><input class="adm-input" id="pr-max" type="number" min="1"></div>' +
+            '<div class="adm-field"><label>Code</label><input class="adm-input" id="pr-code" placeholder="SALE20" style="text-transform:uppercase"></div>' +
+            '<div class="adm-field"><label>Discount, %</label><input class="adm-input" id="pr-pct" type="number" min="1" max="100" placeholder="20"></div>' +
+            '<div class="adm-field"><label>Use limit <span class="hint">(blank = unlimited)</span></label><input class="adm-input" id="pr-max" type="number" min="1"></div>' +
           '</div>' +
-          '<div class="adm-field"><label>Истекает <span class="hint">(необязательно)</span></label><input class="adm-input" id="pr-exp" type="date"></div>' +
-          '<button class="adm-btn" id="pradd">Добавить промокод</button>' +
+          '<div class="adm-field"><label>Expires <span class="hint">(optional)</span></label><input class="adm-input" id="pr-exp" type="date"></div>' +
+          '<button class="adm-btn" id="pradd">Add promo code</button>' +
           '<div class="adm-msg" id="prm"></div>' +
         '</div>' +
         '<div id="prlist"></div>' +
 
         '<div class="adm-card">' +
-          '<h2 class="adm-h">Открыть доступ вручную</h2>' +
-          '<p class="adm-sub">Пока оплата не подключена автоматически: получила перевод — вводишь email ученицы, и доступ к Full Test открывается сам.</p>' +
+          '<h2 class="adm-h">Grant access manually</h2>' +
+          '<p class="adm-sub">Until payment is automated: once you see the transfer come in, enter the student\'s email and their Full Test access opens right away.</p>' +
           '<div class="adm-grid3">' +
-            '<div class="adm-field"><label>Email ученицы</label><input class="adm-input" id="ga-email" type="email" placeholder="student@mail.com"></div>' +
-            '<div class="adm-field"><label>Дней доступа</label><input class="adm-input" id="ga-days" type="number" min="1" placeholder="30"></div>' +
-            '<div class="adm-field"><label>Промокод <span class="hint">(если использовался)</span></label><input class="adm-input" id="ga-promo" style="text-transform:uppercase"></div>' +
+            '<div class="adm-field"><label>Student email</label><input class="adm-input" id="ga-email" type="email" placeholder="student@mail.com"></div>' +
+            '<div class="adm-field"><label>Days of access</label><input class="adm-input" id="ga-days" type="number" min="1" placeholder="30"></div>' +
+            '<div class="adm-field"><label>Promo code <span class="hint">(if one was used)</span></label><input class="adm-input" id="ga-promo" style="text-transform:uppercase"></div>' +
           '</div>' +
-          '<button class="adm-btn" id="gaadd">Открыть доступ</button>' +
+          '<button class="adm-btn" id="gaadd">Grant access</button>' +
           '<div class="adm-msg" id="gam"></div>' +
         '</div>' +
-        '<h3 class="adm-listtitle">Действующие доступы</h3><div id="galist"></div>';
+        '<h3 class="adm-listtitle">Active access</h3><div id="galist"></div>';
 
       /* ---- plans ---- */
       var plm = document.getElementById("plm");
@@ -820,17 +820,17 @@ document.addEventListener("DOMContentLoaded", function () {
       function resetPlanForm(){
         editingId = null;
         ["pl-name","pl-price","pl-price-usd","pl-days"].forEach(function (id){ document.getElementById(id).value=""; });
-        plAddBtn.textContent = "Добавить тариф";
+        plAddBtn.textContent = "Add plan";
         plCancel.style.display = "none";
       }
       plCancel.onclick = resetPlanForm;
       plAddBtn.onclick = function(){
         var name = val("pl-name"), price = Number(val("pl-price")), priceUsd = val("pl-price-usd"), days = Number(val("pl-days"));
-        if (!name) return plmsg("Добавь название.","bad");
-        if (!price || price < 0) return plmsg("Укажи цену в рублях.","bad");
-        if (!days || days < 1) return plmsg("Укажи срок в днях.","bad");
+        if (!name) return plmsg("Add a name.","bad");
+        if (!price || price < 0) return plmsg("Set a price in rubles.","bad");
+        if (!days || days < 1) return plmsg("Set the length in days.","bad");
         var id = editingId || ("sat-" + Date.now().toString(36));
-        var btn = this; btn.disabled = true; plmsg("Сохраняю…");
+        var btn = this; btn.disabled = true; plmsg("Saving…");
         var plan = { id: id, name: name, price_rub: price, duration_days: days, active: true, sort: Date.now() };
         if (priceUsd) plan.price_usd = Number(priceUsd);
         if (editingId) {
@@ -839,8 +839,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         BeaconStore.addSatPlan(plan).then(function (res){
           btn.disabled = false;
-          if (!res.ok) return plmsg(res.error || "Не удалось сохранить.","bad");
-          plmsg(editingId ? "Изменения сохранены." : "Добавлено.","good");
+          if (!res.ok) return plmsg(res.error || "Could not save.","bad");
+          plmsg(editingId ? "Changes saved." : "Added.","good");
           resetPlanForm();
           listPlans();
         });
@@ -850,14 +850,14 @@ document.addEventListener("DOMContentLoaded", function () {
         var box = document.getElementById("pllist");
         var plans = BeaconStore.allSatPlans();
         box.innerHTML = plans.map(function (p){
-          var priceLine = Number(p.price_rub).toLocaleString("ru-RU") + " ₽" + (p.price_usd ? " / $" + p.price_usd : " / $ не указана");
+          var priceLine = Number(p.price_rub).toLocaleString("en-US") + " &#8381;" + (p.price_usd ? " / $" + p.price_usd : " / $ not set");
           return '<div class="adm-item"><div class="adm-item-main"><b>' + esc(p.name) + '</b>' +
-            '<span>' + priceLine + ' · ' + esc(p.duration_days) + ' дн.' +
-            (p.active === false ? ' · <span style="color:#c23b3b;font-weight:600">выключен</span>' : ' · <span style="color:#1a8f5a;font-weight:600">активен</span>') + '</span></div>' +
-            '<button type="button" class="adm-btn sec" data-edit="' + esc(p.id) + '">Изменить</button>' +
-            '<button type="button" class="adm-btn sec" data-tog="' + esc(p.id) + '">' + (p.active === false ? "Включить" : "Выключить") + '</button>' +
+            '<span>' + priceLine + ' &middot; ' + esc(p.duration_days) + ' days' +
+            (p.active === false ? ' &middot; <span style="color:#c23b3b;font-weight:600">off</span>' : ' &middot; <span style="color:#1a8f5a;font-weight:600">active</span>') + '</span></div>' +
+            '<button type="button" class="adm-btn sec" data-edit="' + esc(p.id) + '">Edit</button>' +
+            '<button type="button" class="adm-btn sec" data-tog="' + esc(p.id) + '">' + (p.active === false ? "Turn on" : "Turn off") + '</button>' +
             '<button class="adm-del" data-id="' + esc(p.id) + '">Delete</button></div>';
-        }).join("") || '<div class="adm-empty">Тарифов пока нет.</div>';
+        }).join("") || '<div class="adm-empty">No plans yet.</div>';
         box.querySelectorAll(".adm-del").forEach(function (b){ b.onclick = function(){ b.disabled = true; BeaconStore.removeSatPlan(b.dataset.id).then(listPlans); }; });
         box.querySelectorAll("[data-edit]").forEach(function (b){
           b.onclick = function(){
@@ -867,7 +867,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("pl-price").value = p.price_rub || "";
             document.getElementById("pl-price-usd").value = p.price_usd || "";
             document.getElementById("pl-days").value = p.duration_days || "";
-            plAddBtn.textContent = "Сохранить изменения";
+            plAddBtn.textContent = "Save changes";
             plCancel.style.display = "";
             plmsg("");
             document.getElementById("pl-name").scrollIntoView({ behavior: "smooth", block: "center" });
@@ -889,13 +889,13 @@ document.addEventListener("DOMContentLoaded", function () {
       function prmsg(t,k){ prm.className="adm-msg"+(k?" "+k:""); prm.textContent=t||""; }
       document.getElementById("pradd").onclick = function(){
         var code = val("pr-code").toUpperCase(), pct = Number(val("pr-pct")), max = val("pr-max"), exp = val("pr-exp");
-        if (!code) return prmsg("Введи код.","bad");
-        if (!pct || pct < 1 || pct > 100) return prmsg("Скидка от 1 до 100%.","bad");
-        var btn = this; btn.disabled = true; prmsg("Сохраняю…");
+        if (!code) return prmsg("Enter a code.","bad");
+        if (!pct || pct < 1 || pct > 100) return prmsg("Discount must be 1-100%.","bad");
+        var btn = this; btn.disabled = true; prmsg("Saving…");
         BeaconStore.addPromo({ code: code, discount_percent: pct, max_uses: max ? Number(max) : null, expires_at: exp ? exp + "T23:59:59" : null, active: true }).then(function (res){
           btn.disabled = false;
-          if (!res.ok) return prmsg(res.error || "Не удалось сохранить.","bad");
-          prmsg("Добавлено.","good");
+          if (!res.ok) return prmsg(res.error || "Could not save.","bad");
+          prmsg("Added.","good");
           ["pr-code","pr-pct","pr-max","pr-exp"].forEach(function (id){ document.getElementById(id).value=""; });
           listPromos();
         });
@@ -904,14 +904,14 @@ document.addEventListener("DOMContentLoaded", function () {
       function listPromos(){
         var box = document.getElementById("prlist");
         BeaconStore.listPromos().then(function (res){
-          if (!res.ok) { box.innerHTML = '<div class="adm-empty">' + esc(res.error || "Не удалось загрузить.") + '</div>'; return; }
+          if (!res.ok) { box.innerHTML = '<div class="adm-empty">' + esc(res.error || "Could not load.") + '</div>'; return; }
           box.innerHTML = res.rows.map(function (r){
             var uses = r.used_count + (r.max_uses != null ? " / " + r.max_uses : "");
-            var exp = r.expires_at ? new Date(r.expires_at).toLocaleDateString("ru-RU") : "бессрочно";
-            return '<div class="adm-item"><div class="adm-item-main"><b>' + esc(r.code) + ' · -' + r.discount_percent + '%</b>' +
-              '<span>использован ' + uses + ' раз · до ' + esc(exp) + (r.active === false ? ' · <span style="color:#c23b3b;font-weight:600">выключен</span>' : '') + '</span></div>' +
+            var exp = r.expires_at ? new Date(r.expires_at).toLocaleDateString("en-US") : "never";
+            return '<div class="adm-item"><div class="adm-item-main"><b>' + esc(r.code) + ' &middot; -' + r.discount_percent + '%</b>' +
+              '<span>used ' + uses + ' times &middot; expires ' + esc(exp) + (r.active === false ? ' &middot; <span style="color:#c23b3b;font-weight:600">off</span>' : '') + '</span></div>' +
               '<button class="adm-del" data-code="' + esc(r.code) + '">Delete</button></div>';
-          }).join("") || '<div class="adm-empty">Промокодов пока нет.</div>';
+          }).join("") || '<div class="adm-empty">No promo codes yet.</div>';
           box.querySelectorAll(".adm-del").forEach(function (b){ b.onclick = function(){ b.disabled = true; BeaconStore.removePromo(b.dataset.code).then(listPromos); }; });
         });
       }
@@ -921,13 +921,13 @@ document.addEventListener("DOMContentLoaded", function () {
       function gamsg(t,k){ gam.className="adm-msg"+(k?" "+k:""); gam.textContent=t||""; }
       document.getElementById("gaadd").onclick = function(){
         var email = val("ga-email"), days = Number(val("ga-days")), promo = val("ga-promo").toUpperCase();
-        if (!email) return gamsg("Введи email.","bad");
-        if (!days || days < 1) return gamsg("Укажи число дней.","bad");
-        var btn = this; btn.disabled = true; gamsg("Открываю доступ…");
+        if (!email) return gamsg("Enter an email.","bad");
+        if (!days || days < 1) return gamsg("Set the number of days.","bad");
+        var btn = this; btn.disabled = true; gamsg("Granting access…");
         BeaconStore.grantSatAccess(email, days, promo || null).then(function (res){
           btn.disabled = false;
-          if (!res.ok) return gamsg(res.error || "Не удалось открыть доступ.","bad");
-          gamsg("Готово - доступ открыт.","good");
+          if (!res.ok) return gamsg(res.error || "Could not grant access.","bad");
+          gamsg("Done - access is open.","good");
           ["ga-email","ga-days","ga-promo"].forEach(function (id){ document.getElementById(id).value=""; });
           listAccess();
         });
@@ -936,15 +936,15 @@ document.addEventListener("DOMContentLoaded", function () {
       function listAccess(){
         var box = document.getElementById("galist");
         BeaconStore.listSatAccess().then(function (res){
-          if (!res.ok) { box.innerHTML = '<div class="adm-empty">' + esc(res.error || "Не удалось загрузить.") + '</div>'; return; }
+          if (!res.ok) { box.innerHTML = '<div class="adm-empty">' + esc(res.error || "Could not load.") + '</div>'; return; }
           box.innerHTML = res.rows.map(function (r){
             var until = new Date(r.access_until);
             var active = until > new Date();
-            var when = until.toLocaleDateString("ru-RU", { day:"2-digit", month:"long", year:"numeric" });
+            var when = until.toLocaleDateString("en-US", { day:"2-digit", month:"long", year:"numeric" });
             return '<div class="adm-item"><div class="adm-item-main"><b>' + esc(r.email) + '</b>' +
-              '<span>до ' + esc(when) + (active ? '' : ' · <span style="color:#c23b3b;font-weight:600">истёк</span>') + '</span></div>' +
-              '<button class="adm-del" data-email="' + esc(r.email) + '">Забрать доступ</button></div>';
-          }).join("") || '<div class="adm-empty">Пока никто не оплатил.</div>';
+              '<span>until ' + esc(when) + (active ? '' : ' &middot; <span style="color:#c23b3b;font-weight:600">expired</span>') + '</span></div>' +
+              '<button class="adm-del" data-email="' + esc(r.email) + '">Revoke access</button></div>';
+          }).join("") || '<div class="adm-empty">No one has paid yet.</div>';
           box.querySelectorAll(".adm-del").forEach(function (b){ b.onclick = function(){ b.disabled = true; BeaconStore.revokeSatAccess(b.dataset.email).then(listAccess); }; });
         });
       }

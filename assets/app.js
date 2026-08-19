@@ -944,16 +944,17 @@
     // styled identically, but links straight out to the full-test page instead of a panel
     if (config.fullTest) {
       var ftReady = !!config.fullTest.href;
+      var ftGated = ftReady && config.fullTest.gated;
       var ftTile = el(ftReady ? 'a' : 'div', 'ws-tile' + (ftReady ? '' : ' is-dev'));
       if (ftReady) ftTile.href = config.fullTest.href;
-      ftTile.title = config.fullTest.desc || '';
+      ftTile.title = ftGated ? 'Requires a subscription' : (config.fullTest.desc || '');
       ftTile.innerHTML =
         '<span class="ws-tile-ico">' + skillIcon('full') + '</span>' +
         '<span class="ws-tile-name">Full Test</span>' +
-        '<span class="ws-tile-tag">' + (ftReady ? 'new' : 'soon') + '</span>';
+        '<span class="ws-tile-tag' + (ftGated ? ' ws-tag-sub' : '') + '">' + (ftGated ? 'subscription' : (ftReady ? 'new' : 'soon')) + '</span>';
       // paid full tests: check access before leaving the page, instead of
       // following the href straight away
-      if (ftReady && config.fullTest.gated) {
+      if (ftGated) {
         ftTile.addEventListener('click', function (e) {
           e.preventDefault();
           BeaconStore.hasSatAccess().then(function (has) {
@@ -965,6 +966,19 @@
     }
 
     root.appendChild(tiles);
+
+    // a small banner pointing at the payment page, so it's obvious a subscription
+    // exists even before anyone clicks the (locked) Full Test tile
+    if (config.fullTest && config.fullTest.gated) {
+      var subBanner = el('a', 'ws-subbanner');
+      subBanner.href = 'sat-pay.html';
+      subBanner.innerHTML =
+        '<span class="ws-subbanner-ico">&#128274;</span>' +
+        '<span>Full Test is available with a subscription - unlock the full adaptive SAT test.</span>' +
+        '<span class="ws-subbanner-cta">View pricing &#8594;</span>';
+      root.appendChild(subBanner);
+    }
+
     root.appendChild(panel);
 
     // ---- the panel body for the selected skill ----
