@@ -4,21 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Оплата - Beacon</title>
-<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=153">
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=154">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/workspace.css?v=153">
-<script src="assets/config.js?v=153" defer></script>
+<link rel="stylesheet" href="assets/workspace.css?v=154">
+<script src="assets/config.js?v=154" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=153" defer></script>
-<script src="assets/chat.js?v=153" defer></script>
-<script src="assets/app.js?v=153" defer></script>
+<script src="assets/auth.js?v=154" defer></script>
+<script src="assets/chat.js?v=154" defer></script>
+<script src="assets/app.js?v=154" defer></script>
 <style>
 .pay-wrap{max-width:640px;margin:0 auto;}
 .pay-includes{background:#f6f8fc;border:1px solid #e4e9f2;border-radius:14px;padding:18px 20px;margin:18px 0 26px;}
 .pay-includes h3{font-size:.95rem;font-weight:700;color:#14233f;margin:0 0 8px;}
 .pay-includes p{color:#4a5875;font-size:.92rem;line-height:1.55;margin:0;}
+.pay-cur{display:flex;gap:8px;margin-bottom:18px;}
+.pay-cur-btn{flex:1;background:#f7f9fc;border:1.5px solid #dbe1ec;border-radius:11px;padding:11px 10px;font-weight:600;font-size:.88rem;color:#4a5875;cursor:pointer;transition:.15s;}
+.pay-cur-btn:hover{border-color:#d4a72c;}
+.pay-cur-btn.sel{background:#fdf7e3;border-color:#d4a72c;color:#14233f;}
 .pay-plan{display:flex;align-items:center;gap:14px;background:#fff;border:1.5px solid #e6eaf2;border-radius:14px;padding:16px 18px;margin-bottom:12px;cursor:pointer;transition:border-color .15s,background .15s;}
 .pay-plan:hover{border-color:#d4a72c;}
 .pay-plan.sel{border-color:#d4a72c;background:#fdf7e3;}
@@ -71,7 +75,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   var root = document.getElementById("pay-root");
   function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
-  function money(n){ return Number(n||0).toLocaleString("ru-RU") + " ₽"; }
 
   Promise.all([BeaconAuth.getUser(), BeaconStore.ready()]).then(function (res) {
     var user = res[0];
@@ -98,33 +101,56 @@ document.addEventListener("DOMContentLoaded", function () {
       '<a class="ws-btn ws-btn-primary" href="practice.html?mode=adaptive&exam=sat">Перейти к тесту &#8594;</a></div>';
   }
 
+  function fmt(n, cur) {
+    if (cur === "usd") { n = Math.round(n * 100) / 100; return "$" + (n % 1 ? n.toFixed(2) : n); }
+    return Math.round(n).toLocaleString("ru-RU") + " ₽";
+  }
+  function priceOf(p, cur) { return cur === "usd" ? p.price_usd : p.price_rub; }
+
   function showPlans(user) {
-    var plans = BeaconStore.satPlans();
-    if (!plans.length) {
+    var allPlans = BeaconStore.satPlans();
+    if (!allPlans.length) {
       root.innerHTML = '<div class="pay-gate"><p>Тарифы ещё не добавлены — загляни чуть позже.</p></div>';
       return;
     }
+    var currency = "rub";
+    var plans = allPlans;
     var selected = plans[0].id;
     var discount = 0; // percent
     var promoCode = "";
 
     root.innerHTML =
       '<div class="pay-includes"><h3>Что входит</h3><p>Full adaptive SAT test — Reading &amp; Writing, затем Math, по два модуля, как на настоящем Digital SAT. Второй модуль подстраивается под то, как ты прошла первый. Результат — по шкале 400–1600.</p></div>' +
+      '<div class="pay-cur"><button type="button" class="pay-cur-btn sel" data-cur="rub">Российская карта · ₽</button>' +
+      '<button type="button" class="pay-cur-btn" data-cur="usd">Иностранная карта · $</button></div>' +
       '<div id="pay-plans"></div>' +
       '<div class="pay-promo"><input id="pay-promo-in" placeholder="Промокод (необязательно)" autocomplete="off"><button class="ws-btn ws-btn-ghost" id="pay-promo-go" type="button">Применить</button></div>' +
       '<div class="pay-msg" id="pay-promo-msg"></div>' +
       '<div class="pay-total"><span>Итого</span><span id="pay-total-val"></span></div>' +
-      '<button class="ws-btn ws-btn-primary pay-cta" id="pay-go" type="button">Оплатить российской картой</button>' +
+      '<button class="ws-btn ws-btn-primary pay-cta" id="pay-go" type="button">Оплатить</button>' +
       '<div class="pay-msg" id="pay-msg"></div>' +
-      '<p class="pay-note">Оплата картой РФ (СБП). Доступ откроется сразу после подтверждения платежа.</p>';
+      '<p class="pay-note" id="pay-note"></p>';
+
+    document.querySelectorAll(".pay-cur-btn").forEach(function (b) {
+      b.addEventListener("click", function () {
+        currency = b.dataset.cur;
+        document.querySelectorAll(".pay-cur-btn").forEach(function (x) { x.classList.toggle("sel", x === b); });
+        plans = allPlans.filter(function (p) { return currency === "rub" || p.price_usd; });
+        if (!plans.length) plans = allPlans; // nothing priced in $ yet - still show plans, block payment instead
+        if (!plans.some(function (p) { return p.id === selected; })) selected = plans[0].id;
+        renderPlans(); renderTotal(); renderNote();
+        document.getElementById("pay-go").textContent = currency === "usd" ? "Pay with international card" : "Оплатить российской картой";
+      });
+    });
 
     var plansEl = document.getElementById("pay-plans");
     function renderPlans() {
       plansEl.innerHTML = plans.map(function (p) {
+        var price = priceOf(p, currency);
         return '<label class="pay-plan' + (p.id === selected ? ' sel' : '') + '" data-plan="' + esc(p.id) + '">' +
           '<input type="radio" name="pay-plan" value="' + esc(p.id) + '"' + (p.id === selected ? ' checked' : '') + '>' +
           '<span class="pay-plan-name">' + esc(p.name) + '</span>' +
-          '<span class="pay-plan-price">' + money(p.price_rub) + '</span></label>';
+          '<span class="pay-plan-price">' + (price ? fmt(price, currency) : "скоро") + '</span></label>';
       }).join("");
       plansEl.querySelectorAll(".pay-plan").forEach(function (el) {
         el.addEventListener("click", function () { selected = el.dataset.plan; renderPlans(); renderTotal(); });
@@ -133,11 +159,20 @@ document.addEventListener("DOMContentLoaded", function () {
     function currentPlan() { return plans.filter(function (p) { return p.id === selected; })[0]; }
     function renderTotal() {
       var p = currentPlan(); if (!p) return;
-      var final = Math.max(0, Math.round(p.price_rub * (1 - discount / 100)));
+      var base = priceOf(p, currency);
       var val = document.getElementById("pay-total-val");
-      val.innerHTML = discount ? '<span class="was">' + money(p.price_rub) + '</span><b>' + money(final) + '</b>' : '<b>' + money(final) + '</b>';
+      if (!base) { val.innerHTML = '<b>—</b>'; return; }
+      var final = currency === "usd"
+        ? Math.round(base * (1 - discount / 100) * 100) / 100
+        : Math.max(0, Math.round(base * (1 - discount / 100)));
+      val.innerHTML = discount ? '<span class="was">' + fmt(base, currency) + '</span><b>' + fmt(final, currency) + '</b>' : '<b>' + fmt(final, currency) + '</b>';
     }
-    renderPlans(); renderTotal();
+    function renderNote() {
+      document.getElementById("pay-note").textContent = currency === "usd"
+        ? "International cards (any country except Russia). Access opens right after the payment is confirmed."
+        : "Оплата картой РФ (СБП). Доступ откроется сразу после подтверждения платежа.";
+    }
+    renderPlans(); renderTotal(); renderNote();
 
     var pm = document.getElementById("pay-promo-msg");
     function pmsg(t, k) { pm.className = "pay-msg" + (k ? " " + k : ""); pm.textContent = t || ""; }
@@ -157,17 +192,23 @@ document.addEventListener("DOMContentLoaded", function () {
     function gmsg(t, k) { msg.className = "pay-msg" + (k ? " " + k : ""); msg.textContent = t || ""; }
     document.getElementById("pay-go").onclick = function () {
       var p = currentPlan(); if (!p) return;
+      var base = priceOf(p, currency);
+      if (!base) return gmsg(currency === "usd" ? "Price in $ isn't set for this plan yet." : "Цена в ₽ пока не задана для этого тарифа.", "bad");
       var pay = window.BEACON_PAYMENT || {};
-      if (pay.ru) {
-        var url = pay.ru
-          .replace("{amount}", encodeURIComponent(Math.max(0, Math.round(p.price_rub * (1 - discount / 100)))))
+      var link = currency === "usd" ? pay.intl : pay.ru;
+      var final = currency === "usd" ? Math.round(base * (1 - discount / 100) * 100) / 100 : Math.max(0, Math.round(base * (1 - discount / 100)));
+      if (link) {
+        var url = link
+          .replace("{amount}", encodeURIComponent(final))
           .replace("{plan}", encodeURIComponent(p.id))
           .replace("{email}", encodeURIComponent(user.email || ""))
           .replace("{promo}", encodeURIComponent(promoCode || ""));
         location.href = url;
         return;
       }
-      gmsg("Оплата картой РФ подключается — этот способ появится здесь автоматически в ближайшие дни.", "bad");
+      gmsg(currency === "usd"
+        ? "Payment by international card is being connected - it'll appear here automatically soon."
+        : "Оплата картой РФ подключается — этот способ появится здесь автоматически в ближайшие дни.", "bad");
     };
   }
 });

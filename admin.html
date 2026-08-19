@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin - Beacon</title>
-<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=153">
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=154">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=153">
-<script src="assets/app.js?v=153" defer></script>
-<script src="assets/config.js?v=153" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=154">
+<script src="assets/app.js?v=154" defer></script>
+<script src="assets/config.js?v=154" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=153" defer></script>
-<script src="assets/chat.js?v=153" defer></script>
+<script src="assets/auth.js?v=154" defer></script>
+<script src="assets/chat.js?v=154" defer></script>
 <style>
 /* ---- Admin: clean white workspace ---- */
 body.adm-body{background:#eef1f7;font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;}
@@ -771,13 +771,15 @@ document.addEventListener("DOMContentLoaded", function () {
       panel.innerHTML =
         '<div class="adm-card">' +
           '<h2 class="adm-h">Тарифы</h2>' +
-          '<p class="adm-sub">Цена и срок доступа к SAT Full Test. Показываются на странице оплаты (sat-pay.html).</p>' +
+          '<p class="adm-sub">Цена и срок доступа к SAT Full Test. Указывай обе цены — ученик выбирает валюту на странице оплаты в зависимости от того, какой картой платит.</p>' +
           '<div class="adm-grid3">' +
             '<div class="adm-field"><label>Название</label><input class="adm-input" id="pl-name" placeholder="Доступ на 30 дней"></div>' +
-            '<div class="adm-field"><label>Цена, ₽</label><input class="adm-input" id="pl-price" type="number" min="0" placeholder="990"></div>' +
-            '<div class="adm-field"><label>Срок, дней</label><input class="adm-input" id="pl-days" type="number" min="1" placeholder="30"></div>' +
+            '<div class="adm-field"><label>Цена, ₽ <span class="hint">(рос. карта)</span></label><input class="adm-input" id="pl-price" type="number" min="0" placeholder="990"></div>' +
+            '<div class="adm-field"><label>Цена, $ <span class="hint">(иностр. карта)</span></label><input class="adm-input" id="pl-price-usd" type="number" min="0" step="0.01" placeholder="12"></div>' +
           '</div>' +
+          '<div class="adm-field"><label>Срок, дней</label><input class="adm-input" id="pl-days" type="number" min="1" placeholder="30"></div>' +
           '<button class="adm-btn" id="pladd">Добавить тариф</button>' +
+          '<button class="adm-btn sec" id="plcancel" style="display:none">Отменить редактирование</button>' +
           '<div class="adm-msg" id="plm"></div>' +
         '</div>' +
         '<div id="pllist"></div>' +
@@ -811,19 +813,35 @@ document.addEventListener("DOMContentLoaded", function () {
 
       /* ---- plans ---- */
       var plm = document.getElementById("plm");
+      var plCancel = document.getElementById("plcancel");
+      var plAddBtn = document.getElementById("pladd");
+      var editingId = null;
       function plmsg(t,k){ plm.className="adm-msg"+(k?" "+k:""); plm.textContent=t||""; }
-      document.getElementById("pladd").onclick = function(){
-        var name = val("pl-name"), price = Number(val("pl-price")), days = Number(val("pl-days"));
+      function resetPlanForm(){
+        editingId = null;
+        ["pl-name","pl-price","pl-price-usd","pl-days"].forEach(function (id){ document.getElementById(id).value=""; });
+        plAddBtn.textContent = "Добавить тариф";
+        plCancel.style.display = "none";
+      }
+      plCancel.onclick = resetPlanForm;
+      plAddBtn.onclick = function(){
+        var name = val("pl-name"), price = Number(val("pl-price")), priceUsd = val("pl-price-usd"), days = Number(val("pl-days"));
         if (!name) return plmsg("Добавь название.","bad");
-        if (!price || price < 0) return plmsg("Укажи цену.","bad");
+        if (!price || price < 0) return plmsg("Укажи цену в рублях.","bad");
         if (!days || days < 1) return plmsg("Укажи срок в днях.","bad");
-        var id = "sat-" + Date.now().toString(36);
+        var id = editingId || ("sat-" + Date.now().toString(36));
         var btn = this; btn.disabled = true; plmsg("Сохраняю…");
-        BeaconStore.addSatPlan({ id: id, name: name, price_rub: price, duration_days: days, active: true, sort: Date.now() }).then(function (res){
+        var plan = { id: id, name: name, price_rub: price, duration_days: days, active: true, sort: Date.now() };
+        if (priceUsd) plan.price_usd = Number(priceUsd);
+        if (editingId) {
+          var existing = BeaconStore.allSatPlans().filter(function (p){ return p.id === editingId; })[0];
+          if (existing) { plan.active = existing.active; plan.sort = existing.sort; }
+        }
+        BeaconStore.addSatPlan(plan).then(function (res){
           btn.disabled = false;
           if (!res.ok) return plmsg(res.error || "Не удалось сохранить.","bad");
-          plmsg("Добавлено.","good");
-          ["pl-name","pl-price","pl-days"].forEach(function (id){ document.getElementById(id).value=""; });
+          plmsg(editingId ? "Изменения сохранены." : "Добавлено.","good");
+          resetPlanForm();
           listPlans();
         });
       };
@@ -832,13 +850,29 @@ document.addEventListener("DOMContentLoaded", function () {
         var box = document.getElementById("pllist");
         var plans = BeaconStore.allSatPlans();
         box.innerHTML = plans.map(function (p){
+          var priceLine = Number(p.price_rub).toLocaleString("ru-RU") + " ₽" + (p.price_usd ? " / $" + p.price_usd : " / $ не указана");
           return '<div class="adm-item"><div class="adm-item-main"><b>' + esc(p.name) + '</b>' +
-            '<span>' + Number(p.price_rub).toLocaleString("ru-RU") + ' ₽ · ' + esc(p.duration_days) + ' дн.' +
+            '<span>' + priceLine + ' · ' + esc(p.duration_days) + ' дн.' +
             (p.active === false ? ' · <span style="color:#c23b3b;font-weight:600">выключен</span>' : ' · <span style="color:#1a8f5a;font-weight:600">активен</span>') + '</span></div>' +
+            '<button type="button" class="adm-btn sec" data-edit="' + esc(p.id) + '">Изменить</button>' +
             '<button type="button" class="adm-btn sec" data-tog="' + esc(p.id) + '">' + (p.active === false ? "Включить" : "Выключить") + '</button>' +
             '<button class="adm-del" data-id="' + esc(p.id) + '">Delete</button></div>';
         }).join("") || '<div class="adm-empty">Тарифов пока нет.</div>';
         box.querySelectorAll(".adm-del").forEach(function (b){ b.onclick = function(){ b.disabled = true; BeaconStore.removeSatPlan(b.dataset.id).then(listPlans); }; });
+        box.querySelectorAll("[data-edit]").forEach(function (b){
+          b.onclick = function(){
+            var p = plans.filter(function (x){ return x.id === b.dataset.edit; })[0]; if (!p) return;
+            editingId = p.id;
+            document.getElementById("pl-name").value = p.name || "";
+            document.getElementById("pl-price").value = p.price_rub || "";
+            document.getElementById("pl-price-usd").value = p.price_usd || "";
+            document.getElementById("pl-days").value = p.duration_days || "";
+            plAddBtn.textContent = "Сохранить изменения";
+            plCancel.style.display = "";
+            plmsg("");
+            document.getElementById("pl-name").scrollIntoView({ behavior: "smooth", block: "center" });
+          };
+        });
         box.querySelectorAll("[data-tog]").forEach(function (b){
           b.onclick = function(){
             b.disabled = true;
