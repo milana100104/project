@@ -821,6 +821,20 @@
       tiles.appendChild(tile);
     });
     root.appendChild(tiles);
+
+    // full-test card sits right after the tile row (Math / Reading & Writing), above the
+    // per-type practice list, so it's visible without scrolling past a whole skill's list
+    if (config.fullTest) {
+      var ready = !!config.fullTest.href;
+      var ft = el('div', 'ws-fulltest' + (ready ? ' is-ready' : ''));
+      ft.innerHTML =
+        '<span class="ws-badge ' + (ready ? 'free' : 'dev') + '">' + (ready ? 'New · live' : 'In development') + '</span>' +
+        '<h2>' + escAmp(config.fullTest.title) + '</h2>' +
+        '<p>' + escAmp(config.fullTest.desc) + '</p>' +
+        (ready ? '<a class="btn-white ws-fulltest-cta" href="' + esc(config.fullTest.href) + '">Start the full test →</a>' : '');
+      root.appendChild(ft);
+    }
+
     root.appendChild(panel);
 
     // ---- the panel body for the selected skill ----
@@ -881,17 +895,6 @@
       var st = a.querySelector('.ws-saved-star');
       if (st) st.innerHTML = favN ? '&#9873;' : '&#9872;';
     });
-
-    if (config.fullTest) {
-      var ready = !!config.fullTest.href;
-      var ft = el('div', 'ws-fulltest' + (ready ? ' is-ready' : ''));
-      ft.innerHTML =
-        '<span class="ws-badge ' + (ready ? 'free' : 'dev') + '">' + (ready ? 'New · live' : 'In development') + '</span>' +
-        '<h2>' + escAmp(config.fullTest.title) + '</h2>' +
-        '<p>' + escAmp(config.fullTest.desc) + '</p>' +
-        (ready ? '<a class="btn-white ws-fulltest-cta" href="' + esc(config.fullTest.href) + '">Start the full test →</a>' : '');
-      root.appendChild(ft);
-    }
 
     // ---- pick the initial skill: from the URL hash, else the first free one ----
     var want = (location.hash || '').replace(/^#/, '');
@@ -1357,7 +1360,13 @@
     // ---- run one section (two adaptive modules) ----
     function runSection() {
       var sec = SECTIONS[si];
-      var full = shuffle(BeaconStore.questionsFor('sat', sec.key, null).slice());
+      // never-yet-seen questions first (shared with the "Random mix" skill-practice pool),
+      // previously-seen ones only as filler once the fresh supply runs low - so with a
+      // large enough bank, retaking the full test rarely repeats a question
+      var unseen = shuffle(BeaconStore.unsolvedPool('sat', sec.key, null).slice());
+      var unseenIds = {}; unseen.forEach(function (q) { unseenIds[q.id] = 1; });
+      var seenAgain = shuffle(BeaconStore.questionsFor('sat', sec.key, null).filter(function (q) { return !unseenIds[q.id]; }));
+      var full = unseen.concat(seenAgain);
       var half = Math.max(1, Math.min(sec.size, Math.ceil(full.length / 2)));
 
       var mod1 = full.slice(0, half);
@@ -1611,7 +1620,11 @@
       function endModule() {
         if (timerId) { clearInterval(timerId); timerId = null; }
         var mc = 0;
-        qs_.forEach(function (q) { if (picked[q.id] === q.answer) mc++; });
+        qs_.forEach(function (q) {
+          if (picked[q.id] === q.answer) mc++;
+          // every question shown counts as "seen" so a future retake favors fresh ones
+          BeaconStore.markSolved('sat', sec.key, null, q.id);
+        });
         secState.correct += mc;
         secState.total += qs_.length;
         onModuleDone(qs_.length ? mc / qs_.length : 0);
