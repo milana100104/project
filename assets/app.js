@@ -933,7 +933,17 @@
     if (qs('mode') === 'readingtest') { renderReadingExam(root, qs('exam') || 'ielts'); return; }
     if (qs('mode') === 'full') {
       var fx = qs('exam');
-      if (fx === 'toefl' || fx === 'ielts') { renderFullExam(root, fx); return; }
+      if (fx === 'toefl' || fx === 'ielts') {
+        // combined Reading+Listening full test - paused for now, coming back once
+        // Writing and Speaking (and AI grading) are ready, so a "full test" is actually
+        // complete. renderFullExam itself is untouched underneath.
+        var fxName = fx === 'toefl' ? 'TOEFL' : 'IELTS';
+        root.innerHTML = '<div class="pr-finished"><h2>Full test - coming soon</h2>' +
+          '<p>The full ' + fxName + ' test is being rebuilt to include Writing and Speaking together, with AI grading. ' +
+          'For now, practice by section and skill.</p>' +
+          '<div class="fin-actions"><a class="btn btn-white" href="' + fx + '.html">Back to ' + fxName + '</a></div></div>';
+        return;
+      }
     }
 
     var oneId = qs('one');
