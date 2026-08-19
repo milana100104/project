@@ -2116,11 +2116,21 @@
    * and a selection you can change until you submit. Used by the full
    * TOEFL / IELTS Reading + Listening exams. */
   function runExamBlock(root, cfg) {
-    var qs_ = cfg.questions, picked = {}, typed = {}, idx = 0;
-    // "answered" covers both multiple-choice (picked) and typed-answer questions -
-    // IELTS Listening mixes both formats in the same section
-    function isAnswered(q) { return (q.choices && q.choices.length) ? picked[q.id] != null : (typed[q.id] != null && typed[q.id] !== ''); }
+    var qs_ = cfg.questions, picked = {}, typed = {}, clozeState = {}, idx = 0;
+    // "answered" covers multiple-choice (picked), typed-answer (typed), and multi-blank
+    // "Complete the Words" questions (clozeState) - TOEFL Reading mixes all three
+    function isAnswered(q) {
+      if (q.parts && q.parts.length) {
+        var st = clozeState[q.id] || {};
+        return q.parts.every(function (p, pi) { return p.text != null || (st[pi] != null && st[pi] !== ''); });
+      }
+      return (q.choices && q.choices.length) ? picked[q.id] != null : (typed[q.id] != null && typed[q.id] !== '');
+    }
     function isCorrect(q) {
+      if (q.parts && q.parts.length) {
+        var st = clozeState[q.id] || {};
+        return q.parts.every(function (p, pi) { return p.text != null || (String(st[pi] || '').trim().toLowerCase() === String(p.blank || '').trim().toLowerCase()); });
+      }
       if (q.choices && q.choices.length) return picked[q.id] === q.answer;
       var v = (typed[q.id] || '').trim().toLowerCase();
       if (!v) return false;
@@ -2195,7 +2205,26 @@
           block.appendChild(audioEl);
         }
         block.appendChild(el('div', 'pr-prompt', esc(q.prompt)));
-        if (q.choices && q.choices.length) {
+        if (q.parts && q.parts.length) {
+          // "Complete the Words" - a sentence with several typed blanks, like the
+          // shared clozeBlock elsewhere, but graded live (per blank) instead of on Next
+          var clozeWrap = el('div', 'cloze-text');
+          var cst = clozeState[q.id] || (clozeState[q.id] = {});
+          q.parts.forEach(function (p, pi) {
+            if (p.text != null) { clozeWrap.appendChild(document.createTextNode(p.text)); }
+            else {
+              clozeWrap.appendChild(document.createTextNode(p.stem || ''));
+              var cinp = document.createElement('input');
+              cinp.className = 'cloze-inp'; cinp.type = 'text';
+              cinp.size = Math.max(2, (p.blank || '').length);
+              cinp.setAttribute('aria-label', 'missing letters');
+              cinp.value = cst[pi] == null ? '' : cst[pi];
+              cinp.addEventListener('input', function () { cst[pi] = cinp.value; syncPalette(); });
+              clozeWrap.appendChild(cinp);
+            }
+          });
+          block.appendChild(clozeWrap);
+        } else if (q.choices && q.choices.length) {
           var wrap = el('div', 'pr-choices');
           q.choices.forEach(function (choice, i) {
             var btn = el('button', 'pr-choice' + (picked[q.id] === i ? ' picked' : ''));
