@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin - Beacon</title>
-<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=157">
+<link rel="icon" type="image/jpeg" href="assets/beacon-logo-icon.jpg?v=158">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/app.css?v=157">
-<script src="assets/app.js?v=157" defer></script>
-<script src="assets/config.js?v=157" defer></script>
+<link rel="stylesheet" href="assets/app.css?v=158">
+<script src="assets/app.js?v=158" defer></script>
+<script src="assets/config.js?v=158" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="assets/auth.js?v=157" defer></script>
-<script src="assets/chat.js?v=157" defer></script>
+<script src="assets/auth.js?v=158" defer></script>
+<script src="assets/chat.js?v=158" defer></script>
 <style>
 /* ---- Admin: clean white workspace ---- */
 body.adm-body{background:#eef1f7;font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;}
@@ -781,8 +781,8 @@ document.addEventListener("DOMContentLoaded", function () {
           '<button class="adm-btn" id="pladd">Add plan</button>' +
           '<button class="adm-btn sec" id="plcancel" style="display:none">Cancel editing</button>' +
           '<div class="adm-msg" id="plm"></div>' +
+          '<h3 class="adm-listtitle">Existing plans</h3><div id="pllist"></div>' +
         '</div>' +
-        '<div id="pllist"></div>' +
 
         '<div class="adm-card">' +
           '<h2 class="adm-h">Promo codes</h2>' +
@@ -795,8 +795,8 @@ document.addEventListener("DOMContentLoaded", function () {
           '<div class="adm-field"><label>Expires <span class="hint">(optional)</span></label><input class="adm-input" id="pr-exp" type="date"></div>' +
           '<button class="adm-btn" id="pradd">Add promo code</button>' +
           '<div class="adm-msg" id="prm"></div>' +
+          '<h3 class="adm-listtitle">Existing codes</h3><div id="prlist"></div>' +
         '</div>' +
-        '<div id="prlist"></div>' +
 
         '<div class="adm-card">' +
           '<h2 class="adm-h">Grant access manually</h2>' +
