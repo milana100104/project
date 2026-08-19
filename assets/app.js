@@ -820,21 +820,22 @@
       tile.addEventListener('click', function () { setActive(skill.id); });
       tiles.appendChild(tile);
     });
-    root.appendChild(tiles);
 
-    // full-test card sits right after the tile row (Math / Reading & Writing), above the
-    // per-type practice list, so it's visible without scrolling past a whole skill's list
+    // full-test tile sits in the same row as the skill tiles (Math / Reading & Writing),
+    // styled identically, but links straight out to the full-test page instead of a panel
     if (config.fullTest) {
-      var ready = !!config.fullTest.href;
-      var ft = el('div', 'ws-fulltest' + (ready ? ' is-ready' : ''));
-      ft.innerHTML =
-        '<span class="ws-badge ' + (ready ? 'free' : 'dev') + '">' + (ready ? 'New · live' : 'In development') + '</span>' +
-        '<h2>' + escAmp(config.fullTest.title) + '</h2>' +
-        '<p>' + escAmp(config.fullTest.desc) + '</p>' +
-        (ready ? '<a class="btn-white ws-fulltest-cta" href="' + esc(config.fullTest.href) + '">Start the full test →</a>' : '');
-      root.appendChild(ft);
+      var ftReady = !!config.fullTest.href;
+      var ftTile = el(ftReady ? 'a' : 'div', 'ws-tile' + (ftReady ? '' : ' is-dev'));
+      if (ftReady) ftTile.href = config.fullTest.href;
+      ftTile.title = config.fullTest.desc || '';
+      ftTile.innerHTML =
+        '<span class="ws-tile-ico">' + skillIcon('full') + '</span>' +
+        '<span class="ws-tile-name">Full Test</span>' +
+        '<span class="ws-tile-tag">' + (ftReady ? 'new' : 'soon') + '</span>';
+      tiles.appendChild(ftTile);
     }
 
+    root.appendChild(tiles);
     root.appendChild(panel);
 
     // ---- the panel body for the selected skill ----
@@ -913,7 +914,8 @@
       writing:   '<svg viewBox="0 0 48 48"><path d="M31 9l8 8-22 22-10 2 2-10z"/><path d="M27 13l8 8"/></svg>',
       speaking:  '<svg viewBox="0 0 48 48"><rect x="18" y="6" width="12" height="22" rx="6"/><path d="M12 22a12 12 0 0 0 24 0"/><path d="M24 34v6"/><path d="M17 40h14"/></svg>',
       math:      '<svg viewBox="0 0 48 48"><path d="M8 6v36h34"/><path d="M12 32c5-16 12-22 17-22s10 9 13 20"/></svg>',
-      english:   '<svg viewBox="0 0 48 48"><path d="M24 13v26"/><path d="M24 13c-4-3-11-3-16-1v25c5-2 12-2 16 1"/><path d="M24 13c4-3 11-3 16-1v25c-5-2-12-2-16 1"/></svg>'
+      english:   '<svg viewBox="0 0 48 48"><path d="M24 13v26"/><path d="M24 13c-4-3-11-3-16-1v25c5-2 12-2 16 1"/><path d="M24 13c4-3 11-3 16-1v25c-5-2-12-2-16 1"/></svg>',
+      full:      '<svg viewBox="0 0 48 48"><rect x="17" y="4" width="14" height="8" rx="2"/><rect x="10" y="8" width="28" height="36" rx="4"/><path d="M16 24l5 5 11-11"/></svg>'
     };
     return I[id] || '<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="14"/></svg>';
   }
